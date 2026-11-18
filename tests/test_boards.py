@@ -29,7 +29,7 @@ def data():
 
 @pytest.fixture(scope="module")
 def d():
-    return A.Data()
+    return A.Data(live=True)
 
 
 def read(rel):
@@ -44,13 +44,14 @@ def test_board_metrics_match_career_summary(data, d):
         assert (m["w"], m["l"], m["ow"], m["ol"]) == (sm["w"], sm["l"], sm["ow"], sm["ol"])
         assert (m["winning"], m["trips"], m["titles"], m["seasons"]) == (
             sm["winning"], sm["trips"], sm["titles"], sm["seasons"])
-        assert abs(m["avg"] - sm["rnk"]) < 1e-9
+        assert (m["avg"] is None and sm["rnk"] is None) or abs(m["avg"] - sm["rnk"]) < 1e-9
 
 
 def test_jordan_card_ranks_match_board_pages():
     t = read("player/michael-jordan.html")
     for key in B.BOARDS:
-        assert f'lists/{key}.html?hl=michael-jordan#p-michael-jordan' in t, key
+        if not B.BOARDS[key].get("noas"):               # the eight career cards
+            assert f'lists/{key}.html?hl=michael-jordan#p-michael-jordan' in t, key
     m = re.search(r'wins-minus-losses\.html\?hl=michael-jordan.*?<span class="rk">#(\d+)( \(tied\))? of ([\d,]+)', t, re.S)
     assert m
     board = read("lists/wins-minus-losses.html")
@@ -59,7 +60,8 @@ def test_jordan_card_ranks_match_board_pages():
 
 
 FILTERS = [{}, {"from": 1977}, {"ts": 20}, {"team": "CHI"}, {"as": "ever"}, {"season": 1998, "as": "season"},
-           {"st": "active"}, {"cg": 500}, {"from": 1990, "to": 2005, "ts": 41}]
+           {"st": "active"}, {"cg": 500}, {"from": 1990, "to": 2005, "ts": 41}, {"to": 2026}, {"self": "no"},
+           {"self": "yes"}]
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="node not installed")
@@ -69,7 +71,8 @@ def test_js_ranks_like_python(data, tmp_path):
         for srt in dfn["sorts"]:
             for f in FILTERS:
                 cases.append({"b": key, "f": dict(f, sort=srt),
-                              "def": {"sorts": {k: list(v) for k, v in dfn["sorts"].items()}, "cols": dfn["cols"]}})
+                              "def": {"sorts": {k: list(v) for k, v in dfn["sorts"].items()}, "cols": dfn["cols"],
+                                      "noas": 1 if dfn.get("noas") else 0}})
     cp = tmp_path / "cases.json"
     cp.write_text(json.dumps(cases))
     js = ("const fs=require('fs');const B=require(process.argv[1]);const d=JSON.parse(fs.readFileSync(process.argv[2]));"
@@ -116,3 +119,30 @@ def test_leads_are_templates():
     assert lead.startswith("His teams won 6 titles: 1990-91 to 1992-93 and 1995-96 to 1997-98.")
     for bad in ("carried", "lifted", "dragged", "made the", "led his", "thanks to"):
         assert bad not in lead
+
+
+def test_no_allstar_board_sanity(data):
+    r, srt, _ = B.compute(data, "no-allstar-teammate", {"to": 2026})
+    top = {m["name"]: (m["w"], m["l"], m["seasons"]) for _, _, m in r[:3]}
+    assert top["Dirk Nowitzki"] == (544, 422, 14)
+    assert top["Andre Miller"][:2] == (529, 548)
+    assert top["Nikola Jokic"][:2] == (495, 315)
+    r, srt, _ = B.compute(data, "no-allstar-teammate", {"to": 2026, "sort": "pct"})
+    assert [m["name"] for _, _, m in r[:3]] == ["Tim Duncan", "James Harden", "Rasheed Wallace"]
+    assert (r[0][2]["w"], r[0][2]["l"]) == (360, 155)
+
+
+def test_gap_board_matches_card():
+    t = read("player/michael-jordan.html")
+    board = read("lists/gap-career.html")
+    row = re.search(r'<tr id="p-michael-jordan">(.*?)</tr>', board, re.S).group(1)
+    assert "706\u2013366, 65.9%" in row and "63\u201395, 39.9%" in row and "+26.0" in row
+    assert "65.9% · 39.9%" in t and "26.0 points higher" in t
+
+
+def test_live_season_in_totals(data, d):
+    """Career W-L counts the season in progress; season counts do not."""
+    kawhi = next(k for k, v in d.ids.items() if v["slug"] == "kawhi-leonard")
+    sm = A.summary(d, kawhi)
+    sm0 = A.summary(A.Data(), kawhi)
+    assert sm["w"] + sm["l"] > sm0["w"] + sm0["l"] and sm["seasons"] == sm0["seasons"]

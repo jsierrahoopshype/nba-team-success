@@ -16,7 +16,7 @@ import sys
 from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import LAST_COMPLETE  # noqa: E402
+from common import CURRENT_SEASON, LAST_COMPLETE  # noqa: E402
 
 PO = ["", "Play-In", "First Round", "Conf Semis", "Conf Finalist", "Finalist", "Champion"]
 DEPTH = [0, 0, 1, 2, 3, 4, 5]
@@ -81,31 +81,44 @@ BOARDS = {
         "sorts": {"avg": ("Average finish", "asc", {"ms": 5}), "adj": ("Adjusted", "asc", {"ms": 5})},
         "cols": ["avg", "adj", "seasons"],
     },
+    "no-allstar-teammate": {
+        "title": "Winning without an All-Star teammate: NBA career leaderboard",
+        "h1": "Winning without an All-Star teammate",
+        "desc": "His teams' record in his games, counting only team-seasons in which no teammate who shared a game with him that season was an All-Star that season.",
+        "card": "Without an All-Star teammate",
+        "sorts": {"w": ("Wins", "desc", {}), "pct": ("Win %", "desc", {"cg": 500})},
+        "cols": ["rec", "pct", "wl", "seasons", "gp"],
+        "noas": True,
+    },
     "gap-career": {
         "title": "Biggest with/without win-rate gaps in an NBA career",
         "h1": "With vs without: career win-rate gap",
         "desc": "His teams' win % in the games he played minus in the games he missed (team-season window), minimum 200 games played and 50 missed, both samples shown.",
         "card": "With vs without",
         "sorts": {"gap": ("Gap", "desc", {"mp": 200, "mm": 50})},
-        "cols": ["gap", "with", "without", "gp", "gm"],
+        "cols": ["with", "without", "gap", "gp", "gm"],
     },
 }
 COL_LABEL = {"w": "Wins", "l": "Losses", "pct": "Win %", "gp": "Games", "wl": "W − L",
              "rec": "W–L", "winning": "Winning seasons", "seasons": "Seasons", "wshare": "Share",
              "trips": "Playoff trips", "tshare": "Share", "deep": "Deepest run", "deepn": "Times",
              "titles": "Titles", "years": "Title seasons", "avg": "Average finish",
-             "adj": "Adjusted (0 = champion)", "gap": "Gap", "with": "With him", "without": "Without him",
+             "adj": "Adjusted (0 = champion)", "gap": "Gap (points)", "with": "With him", "without": "Without him",
              "gm": "Missed"}
 
 
-def compact(d, cur):
-    """Build assets/board.json: team table + one row per player (completed seasons only)."""
+def compact(d, cur, help_doc=None, partial_years=()):
+    """Build assets/board.json: team table + one row per player, completed seasons plus the live
+    season (team entries with live = 1: in W-L totals, never in season counts).
+    Stint: [season, franchise, g, w, l, ow, ol, endTeam, played playoffs, last date,
+            no All-Star teammate (1/0), he was an All-Star (1/0), honors partial (1/0)]."""
     teams = {}
     size = defaultdict(int)
     for t in d.teams.values():
         size[t["s"]] += 1
     for k, t in d.teams.items():
-        teams[k] = [t["w"], t["l"], t["rnk"], size[t["s"]], PO.index(t["po"])]
+        teams[k] = [t["w"], t["l"], t["rnk"], size[t["s"]], PO.index(t["po"]), 1 if t.get("live") else 0]
+    hs = (help_doc or {}).get("season", {})
     active = set(cur["players"]) if cur else set()
     rows = []
     for pid, p in d.players.items():
@@ -113,25 +126,37 @@ def compact(d, cur):
         if not v:
             continue
         st = []
+        allstar = set(p.get("as", []))
         for s in p["seasons"]:
-            if s["s"] > LAST_COMPLETE or not s["g"] or not d.team(s["f"], s["s"]):
+            if s["s"] > CURRENT_SEASON or not s["g"] or not d.team(s["f"], s["s"]):
                 continue
             last = int((s.get("last") or "0").replace("-", ""))
+            mates = hs.get(pid, {}).get(f"{s['f']}-{s['s']}", [0, 0, 0, []])[3]
+            noas = 0 if any("All-Star" in m[4] for m in mates) else 1
             st.append([s["s"], s["f"], s["g"], s["w"], s["l"], s["ow"], s["ol"],
-                       1 if s.get("endTeam") else 0, 1 if (s.get("po") and s["po"]["g"] > 0) else 0, last])
+                       1 if s.get("endTeam") else 0, 1 if (s.get("po") and s["po"]["g"] > 0) else 0, last,
+                       noas, 1 if s["s"] in allstar else 0, 1 if (s["s"] in partial_years or s.get("live")) else 0])
         if not st:
             continue
-        rows.append([pid, v["slug"], v["name"], 1 if pid in active else 0, p.get("as", []), st])
+        face = v.get("hs") if v.get("hs") and os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "hs", v["hs"])) else ""
+        rows.append([pid, v["slug"], v["name"], 1 if pid in active else 0, p.get("as", []), st, face])
     rows.sort(key=lambda r: int(r[0]))
-    return {"t": teams, "p": rows, "first": 1947, "last": LAST_COMPLETE}
+    return {"t": teams, "p": rows, "first": 1947, "last": CURRENT_SEASON, "complete": LAST_COMPLETE,
+            "through": d.through}
 
 
 def player_metrics(row, teams, flt):
     """Everything any board needs for one player under one filter. None if no stint qualifies."""
-    pid, slug, name, active, allstar, stints = row
-    lo, hi = flt.get("from", 1947), flt.get("to", LAST_COMPLETE)
+    pid, slug, name, active, allstar, stints = row[:6]
+    lo, hi = flt.get("from", 1947), flt.get("to", CURRENT_SEASON)
     ts, team = flt.get("ts", 1), flt.get("team", "")
     inc = [s for s in stints if lo <= s[0] <= hi and s[2] >= ts and (not team or s[1] == team)]
+    if flt.get("noas"):                               # winning without an All-Star teammate
+        inc = [s for s in inc if s[10]]
+        if flt.get("self") == "yes":
+            inc = [s for s in inc if s[11]]
+        elif flt.get("self") == "no":
+            inc = [s for s in inc if not s[11]]
     if not inc:
         return None
     if flt.get("st") == "active" and not active:
@@ -154,8 +179,12 @@ def player_metrics(row, teams, flt):
     rk = []
     adj = []
     title_years = []
+    live_n = 0
     for sy in sorted(by):
         lst = by[sy]
+        if teams[f"{lst[0][1]}-{sy}"][5]:                     # season in progress: W-L only
+            live_n += 1
+            continue
         main = max(lst, key=lambda x: (x[2], x[9]))           # most games, ties -> later team
         ends = [x for x in lst if x[7]]
         end = ends[0] if ends else max(lst, key=lambda x: x[9])
@@ -180,12 +209,13 @@ def player_metrics(row, teams, flt):
             deep, deepn = dpt, 1
         elif dpt == deep:
             deepn += 1
-    n = len(by)
+    n = len(by) - live_n
     return {"pid": pid, "slug": slug, "name": name, "w": w, "l": l, "ow": ow, "ol": ol,
             "gp": w + l, "gm": ow + ol, "wl": w - l, "pct": (w / (w + l)) if w + l else None,
-            "seasons": n, "winning": winning, "wshare": winning / n, "trips": trips, "tshare": trips / n,
-            "titles": titles, "years": title_years, "deep": deep, "deepn": deepn,
-            "avg": sum(rk) / n, "adj": sum(adj) / n,
+            "seasons": n + live_n if flt.get("noas") else n, "winning": winning,
+            "wshare": winning / n if n else None, "trips": trips, "tshare": trips / n if n else None,
+            "titles": titles, "years": title_years, "deep": deep if n else 0, "deepn": deepn,
+            "avg": sum(rk) / n if n else None, "adj": sum(adj) / n if n else None,
             "gap": ((w / (w + l)) - (ow / (ow + ol))) if (w + l) and (ow + ol) else None}
 
 
@@ -218,7 +248,9 @@ def sort_key(board, sort, m):
 
 def compute(data, board, flt=None):
     """Ranked rows for a board: [(rank, tied, metrics)], plus the eligible population size."""
-    flt = flt or {}
+    flt = dict(flt or {})
+    if BOARDS[board].get("noas"):
+        flt["noas"] = 1
     sort = flt.get("sort") or next(iter(BOARDS[board]["sorts"]))
     if sort not in BOARDS[board]["sorts"]:
         sort = next(iter(BOARDS[board]["sorts"]))
@@ -228,7 +260,7 @@ def compute(data, board, flt=None):
         m = player_metrics(row, data["t"], flt)
         if not m or m["gp"] < mins["cg"]:
             continue
-        if m["seasons"] < mins.get("ms", 1):
+        if m["seasons"] < mins.get("ms", 0):
             continue
         if m["gp"] < mins.get("mp", 0) or m["gm"] < mins.get("mm", 0):
             continue

@@ -46,6 +46,12 @@ def build():
     pts = {pid: {int(y): v for y, v in p.get("accY", {}).items()} for pid, p in players.items()}
     aw = {pid: p.get("awY", {}) for pid, p in players.items()}
     matched = {pid for pid, v in d.ids.items() if v.get("rsName")}
+    # seasons whose honors are not in the awards file yet (2025-26 on 2026-11-18): every help
+    # score there is partial, never a real zero
+    have = set()
+    for v in aw.values():
+        have |= {int(y) for y in v}
+    missing_years = {sy for sy in range(FIRST_SEASON, LAST_COMPLETE + 1) if sy not in have}
     out = {}
     for (f, sy), roster in games.items():
         for pid, mine in roster.items():
@@ -66,6 +72,8 @@ def build():
                 if ps or pe:
                     mates.append([q, shared, round(ps, 3), round(pe, 3), aw.get(q, {}).get(str(sy), [])])
             mates.sort(key=lambda m: (-m[2], -m[3], -m[1]))
+            if sy in missing_years:
+                partial = True
             out.setdefault(pid, {})[f"{f}-{sy}"] = [round(same, 3), round(enter, 3), 1 if partial else 0, mates]
     # per-player averages: one team per season (the stint with most games)
     avg = {}
@@ -117,7 +125,7 @@ def build():
                 more.append((round(dist, 6) + 100, d.ids[q]["name"], q))     # +100: listed after real matches
             cand += sorted(more)[:3 - len(cand)]
         peers[pid] = [[q, dist] for dist, _, q in cand[:3]]
-    doc = {"season": out, "avg": {k: {kk: (round(vv, 4) if isinstance(vv, float) else vv) for kk, vv in v.items()}
+    doc = {"missing_years": sorted(missing_years), "season": out, "avg": {k: {kk: (round(vv, 4) if isinstance(vv, float) else vv) for kk, vv in v.items()}
                                   for k, v in avg.items()}, "peers": peers}
     changed = dump_json(os.path.join(DATA, "help.json"), doc)
     n_pairs = len({tuple(sorted((p, q))) for p, lst in peers.items() for q, _ in lst})

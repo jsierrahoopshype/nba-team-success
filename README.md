@@ -65,3 +65,16 @@ No keys or tokens are needed anywhere.
 ## Copy rules
 
 Every factual sentence is a template filled from data; the rules are in `docs/story-rules.md`.
+
+## Round 2 (Nov 2026)
+
+- Look: the Head-to-Head design system (nba-head-to-head `src/styles.css`): black links, tinted leader
+  cells, H2H faces (initials when there is no file) and H2H's logo rule (`assets/logos/`: the current
+  logo only for a current name, 8 historical files for exact old names, otherwise none). Search at the
+  top and the bottom of every page.
+- Data: career W-L, with/without and every career board count the season to date (`data/current.json`,
+  team records in `teams`); season counts and finishes use completed seasons. Boards have "Completed
+  seasons only". The nightly job runs the full `build_site.py` (about 40 seconds).
+- New board `lists/no-allstar-teammate.html`; `seasons/2026-27.html` (standings to date).
+- `assets/card/<slug>.json`, `assets/card/lists/<list>.json`, `assets/card/seasons/<season>.json`: data
+  for the hoopsmatic-og-card social cards.

@@ -61,7 +61,7 @@ def finish_chart(points, title_id):
     lab = {first, last} | {sy for sy in range(first, last + 1) if sy % 5 == 0 and last - first > 6}
     placed = []
     for sy in sorted(lab, key=lambda y: (y not in (first, last), y)):
-        if any(abs(x(sy) - x(o)) < 78 for o in placed):     # keep labels from colliding
+        if any(abs(x(sy) - x(o)) < (115 if o in (first, last) or sy in (first, last) else 80) for o in placed):
             continue
         placed.append(sy)
     for sy in sorted(placed):

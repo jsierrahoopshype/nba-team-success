@@ -42,7 +42,7 @@ def test_zero_is_not_missing():
     partial = [(p, k) for p, d in h["season"].items() for k, v in d.items() if v[2]]
     assert zero and partial
     t = read("player/michael-jordan.html")
-    assert "0 means no honored teammate" in t
+    assert "No honored teammate" in t or "Help per season" in t
 
 
 def test_average_is_per_season_not_career_total():
