@@ -28,12 +28,15 @@ python -m pytest tests/ -q             # sanity checks on the committed data
 
 ```
 python scripts/build_site.py           # every page (about 5 seconds); writes only files that changed
-python -m pytest tests/ -q             # data + page checks (canonical, footer, links, escaping...)
+python -m pytest tests/ -q             # data + page checks (canonical, footer, links, escaping, JS = Python ranks)
+node tests/layout.js                   # no horizontal scroll, every template, 320-1920 px (Playwright)
 ```
 
 Output is served from the repo root (GitHub Pages: main, / (root)), and will be served at
 https://hoopsmatic.com/team-success/ through the HoopsMatic Worker:
-`index.html` (hub), `player/<slug>.html`, `lists/<list>.html`, `players/<a-z>.html`,
+`index.html` (hub), `player/<slug>.html`, `lists/<list>.html` (incl. the eight career boards,
+filtered in the browser by `assets/boards.js` from `assets/board.json`), `seasons/<1997-98>.html`
+(every team ranked by final finish), `players/<a-z>.html`,
 `how-we-count.html`, `sitemap.xml`, `assets/` (CSS, fonts, headshots, share card, search).
 Internal links are relative; canonical, og:url, og:image and the sitemap use hoopsmatic.com.
 
@@ -53,3 +56,7 @@ Add the season to `data/team_standings.csv`, bump `LAST_COMPLETE` and `CURRENT_S
 `python scripts/build_site.py`, and the tests.
 
 No keys or tokens are needed anywhere.
+
+## Copy rules
+
+Every factual sentence is a template filled from data; the rules are in `docs/story-rules.md`.

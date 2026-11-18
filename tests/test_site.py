@@ -19,7 +19,7 @@ WORKER_MARKERS = ("<body", "</head", "</style", "</script", "<!--")
 
 def pages():
     out = []
-    for d in ("", "player", "lists", "players"):
+    for d in ("", "player", "lists", "players", "seasons"):
         base = os.path.join(ROOT, d)
         if os.path.isdir(base):
             out += [os.path.join(d, f) if d else f for f in sorted(os.listdir(base)) if f.endswith(".html")]
@@ -99,7 +99,7 @@ def test_worker_markers_not_inside_css_js(html):
         assert t.count("<body") == 1 and t.count("</head>") == 1, rel
         # the first "</head" in the file must be the real </head> (</header> comes later)
         assert t.index("</head") == t.index("</head>"), rel
-    for f in ("assets/ts.css", "assets/search.js"):
+    for f in ("assets/ts.css", "assets/search.js", "assets/ts.js", "assets/boards.js"):
         body = read(f)
         assert body.startswith(("/* (c) 2026 HoopsMatic", "// (c) 2026 HoopsMatic")), f
         for m in WORKER_MARKERS:
@@ -107,8 +107,10 @@ def test_worker_markers_not_inside_css_js(html):
 
 
 def test_no_unsafe_js():
-    js = read("assets/search.js")
-    assert "innerHTML" not in js and "eval(" not in js and "insertAdjacentHTML" not in js
+    for f in ("assets/search.js", "assets/ts.js", "assets/boards.js"):
+        js = read(f)
+        assert "innerHTML" not in js and "eval(" not in js and "insertAdjacentHTML" not in js, f
+        assert "http:" not in js and "https:" not in js, f      # nothing loaded from another site
 
 
 def test_names_are_escaped():
@@ -122,9 +124,10 @@ def test_internal_links_resolve_and_every_player_reachable(html):
     for rel, t in html.items():
         here = os.path.dirname(rel)
         outs = []
-        for href in re.findall(r'<a href="([^"#]+)"', t):
+        for href in re.findall(r'<a [^>]*?href="([^"#]+)', t):
             if href.startswith(("http:", "https:", "mailto:")):
                 continue
+            href = href.split("?", 1)[0]
             target = os.path.normpath(os.path.join(here, unquote(href)))
             assert os.path.exists(os.path.join(ROOT, target)), (rel, href)
             outs.append(target)
@@ -164,7 +167,8 @@ def test_sitemap_lists_every_page_with_stable_lastmod():
 
 def test_pre_rendered_content(html):
     t = html["player/michael-jordan.html"]
-    assert "706-366" in t          # career record is in the HTML, not built by JavaScript
+    assert "706\u2013366" in t     # career record is in the HTML, not built by JavaScript
+    assert "65.9%" in t and "+26.0 pp" in t
     t = html["lists/worst-team.html"]
     assert "John Block" in t and "Johnny Green" in t
 
