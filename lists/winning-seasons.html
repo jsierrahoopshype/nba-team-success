@@ -25,6 +25,9 @@
 </head>
 <body>
 <div class="wrap">
+<form class="finder top" role="search" data-mode="go" data-up="../" data-index="../assets/players.json" action="../players/a.html">
+<label for="pf" class="vh">Find a player</label><input id="pf" type="search" autocomplete="off" placeholder="Find a player, e.g. Bill Russell">
+<ul class="results"></ul></form>
 <header><h1>Winning seasons</h1><p class="subtitle">Seasons on a team that finished above .500 (the team he played the most games for that season), and their share of his seasons.</p></header>
 <form id="board-form" class="filters" action="winning-seasons.html" method="get">
 <label>Rank by<select name="sort"><option value="winning">Winning seasons</option><option value="wshare">Share</option></select></label>

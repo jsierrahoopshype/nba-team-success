@@ -47,7 +47,9 @@ Internal links are relative; canonical, og:url, og:image and the sitemap use hoo
 
 `.github/workflows/nightly.yml` runs at 11:15 UTC: `scripts/update_current.py` downloads only
 the 2026-27 season (Ramiro's Parquet files; nba-boxscores' season folder once it exists) into
-`data/current.json`, and if that changed, `scripts/build_site.py --current` rebuilds the hub, the
+`data/current.json`; `scripts/daily_story.py` writes the day's "Today in Team Success" story
+(`data/stories.json`, `stories/img/<date>.png`; tonight's schedule from cdn.nba.com, no key); if either
+changed, `scripts/build_site.py --current` rebuilds the hub, the stories, the
 two current-season boards, the active players' pages, A-Z, search and the sitemap. It commits
 only when something changed. `data/sitemap_lastmod.json` keeps each page's content hash, so a
 `<lastmod>` date moves only when that page's content changes.

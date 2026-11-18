@@ -25,6 +25,9 @@
 </head>
 <body>
 <div class="wrap">
+<form class="finder top" role="search" data-mode="go" data-up="../" data-index="../assets/players.json" action="../players/a.html">
+<label for="pf" class="vh">Find a player</label><input id="pf" type="search" autocomplete="off" placeholder="Find a player, e.g. Bill Russell">
+<ul class="results"></ul></form>
 <header><h1>Wins minus losses</h1><p class="subtitle">His teams&#x27; regular-season wins minus losses in the games he played, every NBA player since 1946-47. It rewards sustained winning and availability, so it favors long careers: switch to win % or filter by era.</p></header>
 <form id="board-form" class="filters" action="wins-minus-losses.html" method="get">
 <label>Rank by<select name="sort"><option value="wl">W − L</option><option value="pct">Win %</option></select></label>

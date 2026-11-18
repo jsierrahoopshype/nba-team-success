@@ -25,6 +25,9 @@
 </head>
 <body>
 <div class="wrap">
+<form class="finder top" role="search" data-mode="go" data-up="../" data-index="../assets/players.json" action="../players/a.html">
+<label for="pf" class="vh">Find a player</label><input id="pf" type="search" autocomplete="off" placeholder="Find a player, e.g. Bill Russell">
+<ul class="results"></ul></form>
 <header><h1>Average final NBA finish</h1><p class="subtitle">The average final NBA finish (1 = champion) of his teams, one team per season, minimum 5 seasons. The league-size-adjusted view puts every season on one scale, 0 = champion, 1 = last.</p></header>
 <form id="board-form" class="filters" action="average-finish.html" method="get">
 <label>Rank by<select name="sort"><option value="avg">Average finish</option><option value="adj">Adjusted</option></select></label>

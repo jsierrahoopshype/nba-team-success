@@ -5,6 +5,25 @@ stories, takeaways, titles, descriptions, alt text, share text) is a template fi
 chosen by the rules below. A template states only what its fields prove. No template says a player
 made, lifted, carried or dragged a team: it says what the record was.
 
+## Today in Team Success (`scripts/daily_story.py`, nightly)
+
+One story per date, written by the 11:15 UTC Action from the nightly data. Candidates are ranked by
+type first, then within type; the first is the lead, the best two of other types are the supporting
+links. Every story shows its date and the data cutoff (last game in the nightly data).
+
+| Priority | Type | When | Headline / body |
+|---|---|---|---|
+| 1 | pass | an active player's career W − L (completed seasons + this season) moved ahead of another player's since the previous run, and he is in the top 200 | "{P} passes {Q} on the career wins-minus-losses list" / his total split into completed seasons and this season, his rank counting this season |
+| 2 | matchup | tonight's schedule (cdn.nba.com) has an active player with 300+ games facing a franchise he has played 15+ regular-season games against with a win rate of .400 or lower (lowest first) | "Tonight: {P} and the {team} face the {opp}" / his record against that franchise, and "his lowest win rate against any franchise he has faced 15+ times" only when true |
+| 3 | climb | an active player has moved past players on the career W − L list this season (top-100 players first, by rank; otherwise the biggest climb) | "{P} moves past {Q} on the career wins-minus-losses list" / this season's W − L, career total and rank, how many he passed; {Q} is the passed player with the highest Accolade score |
+| 4 | absence | a team reached 10 wins in the games a player missed since the previous run, 8+ games each side | "The {team} reach 10 wins in the games {P} has missed" / both records with both samples |
+| 5 | compare | quiet day: a suggested peer pair (both 800+ games), rotating by date | "{A} and {B}: same era, similar teammate help" / both records, average finishes and help |
+| 6 | board | supporting only: the biggest win-rate gap this season with 8+ games each side (the board itself uses 5) | one line with both records |
+
+A five-game absence split never leads (stricter cutoff of 8 and a 10-win threshold). Permalinks
+(`stories/<date>.html`) are shareable with their own image and are noindex; the archive
+(`stories/index.html`) is indexed.
+
 ## Player page lead (`scripts/leads.py`)
 
 The first rule that applies writes the first sentence; sentences 2 and 3 follow.
