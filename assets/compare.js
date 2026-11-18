@@ -4,7 +4,7 @@
 //   assets/board.json and both players' assets/pg/<slug>.json; ?peer=<slug> keeps it in the URL
 //   (a noindex variant).
 // - "Download image" draws the share card on a canvas with this site's own fonts and headshots,
-//   and the same function pre-renders the PNGs of the suggested comparisons (scripts/render_cards.js).
+//   (the pages' social cards come from hoopsmatic-og-card; no PNGs are pre-rendered here).
 // Every value goes in through textContent; nothing is parsed as HTML.
 (function () {
   var EN = "–", MINUS = "−";
@@ -63,7 +63,7 @@
         x.fillStyle = "#1d1d1f"; fit(x, c.name, 34, "700", "DM Sans", 380); x.fillText(c.name, X + 132, Y + 50);
         x.fillStyle = "#6e6e73"; x.font = "500 22px 'DM Sans'"; x.fillText(c.span, X + 132, Y + 84);
         var lines = [wl(c.w, c.l) + " (" + pct1(c.pct) + ")", "W " + MINUS + " L " + signed(c.wl),
-          "Average finish " + c.avg.toFixed(1), c.titles + " titles, " + c.trips + " playoff trips",
+          "Average finish " + (c.adj30 !== undefined ? c.adj30.toFixed(1) + " of 30" : c.avg.toFixed(1)), c.titles + " titles, " + c.trips + " playoff trips",
           "Help " + (c.help === null || c.help === undefined ? "N/A" : c.help.toFixed(1)) + " per season"];
         x.fillStyle = "#1d1d1f";
         lines.forEach(function (t, k) { x.font = (k === 0 ? "700 32px" : "500 26px") + " 'JetBrains Mono'"; x.fillText(t, X, Y + 158 + k * 40); });
@@ -123,7 +123,7 @@
     var ul = el("ul", undefined, "takes");
     [ca, cb].forEach(function (c) {
       ul.appendChild(el("li", c.name + " (" + c.span + "): " + wl(c.w, c.l) + " (" + pct1(c.pct) + "), W " + MINUS + " L " + signed(c.wl) +
-        ", average final finish " + c.avg.toFixed(1) + ", " + c.trips + " playoff trips, " + c.titles + " titles, help " +
+        ", average final finish " + (c.adj30 !== undefined ? c.adj30.toFixed(1) + " of 30 (adjusted for league size)" : c.avg.toFixed(1)) + ", " + c.trips + " playoff trips, " + c.titles + " titles, help " +
         (c.help === null ? "N/A" : c.help.toFixed(1)) + " per season."));
     });
     box.appendChild(ul);

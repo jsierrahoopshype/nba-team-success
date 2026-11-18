@@ -344,3 +344,83 @@ details[open]>summary{margin-bottom:.35rem}
 .tt.board th:nth-child(2){text-align:left}
 .tt.board td:first-child,.tt.board th:first-child{width:3.2rem}
 .tt .tmn .hs{margin-right:.4rem}
+
+/* round 3 (Nov 2026) */
+/* team names: logo and name on one line, centred; a name wraps only between words, never inside one */
+.tmn{overflow-wrap:normal;word-break:normal;vertical-align:middle}
+.tmn .lg{align-self:center}
+.tmn>a,.tmn>.tn{overflow-wrap:normal;word-break:normal}
+.mchip .mn{overflow-wrap:normal;word-break:normal}
+/* latest completed seasons: one or two lines per card */
+.latest li{display:block}
+.latest .l1{display:flex;flex-wrap:wrap;align-items:center;gap:.1rem .3rem}
+.latest .it{display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap}
+.latest .it i{font-style:normal;color:var(--text-secondary)}
+.latest .l2{display:block;font-size:.76rem;color:var(--text-secondary);margin-top:.15rem}
+.latest .l2 .tmn a{color:var(--text-secondary)}
+/* teammate help: slim row when no teammate was honored */
+.helprows>li.slim{padding:.35rem .75rem}
+.helprows .hnote{grid-column:1/-1;font-size:.72rem;color:var(--text-secondary)}
+@media(min-width:760px){
+  .helprows>li.slim{grid-template-columns:4.4rem 13rem minmax(0,1fr)}
+  .helprows>li.slim .hnote{grid-column:auto}
+  .helprows>li.slim details{grid-column:3/-1}
+}
+/* season chips on the count lists: logo + two-digit year, one click for the games */
+.ychips summary{list-style:none;display:flex;flex-wrap:wrap;gap:.22rem;align-items:center;margin-top:.15rem}
+.ychips summary::-webkit-details-marker{display:none}
+.yc{display:inline-flex;align-items:center;font-family:var(--mono);font-size:.62rem;font-weight:600;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:.04rem .3rem .04rem .2rem;background:var(--surface);white-space:nowrap}
+.yc .lg{width:14px;height:14px;margin-right:.15rem;vertical-align:middle}
+.ymore{font-family:var(--mono);font-size:.58rem;color:var(--text-secondary);text-decoration:underline;text-decoration-color:var(--border);margin-left:.15rem}
+.ychips[open] .ymore{color:var(--text)}
+.yg{font-family:var(--mono);font-size:.62rem;color:var(--text-secondary);margin-top:.25rem}
+.lst .val .big{font-size:1.1rem}
+/* comparison scoreboard (H2H matchup style) */
+.sbhead{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--border);border-radius:12px 12px 0 0;padding:.75rem}
+.sbp{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.2rem;min-width:0}
+.sbp .hs.md{width:56px;height:56px;font-size:16px}
+.sbp.a .hs{box-shadow:0 0 0 3px var(--a)}.sbp.b .hs{box-shadow:0 0 0 3px var(--b)}
+.sbp b{font-size:.9rem;line-height:1.2;overflow-wrap:normal}
+.sbp small{font-family:var(--mono);font-size:.62rem;color:var(--text-secondary)}
+.sbhead .vs{font-family:var(--mono);font-size:.7rem;color:var(--text-secondary)}
+.sbt{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--border);border-top:0;border-radius:0 0 12px 12px;overflow:hidden;font-size:.78rem;table-layout:fixed}
+.sbt th,.sbt td{padding:.45rem .45rem;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle;overflow-wrap:normal}
+.sbt thead th{background:var(--surface-hover);font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-secondary)}
+.sbt thead th:nth-child(2){color:var(--a)}.sbt thead th:nth-child(3){color:var(--b)}
+.sbt th:first-child{width:40%;text-align:left}
+.sbt tbody th{font-weight:700;font-size:.74rem}
+.sbt tbody th small{display:block;font-weight:500;font-size:.58rem;color:var(--text-secondary)}
+.sbt td{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.sbt tr.txt td{font-family:'DM Sans',sans-serif;font-size:.74rem}
+.sbt td.la{background:var(--ta);font-weight:800}.sbt td.lb{background:var(--tb);font-weight:800}
+.sbt tbody tr:last-child>*{border-bottom:0}
+.tally{font-family:var(--mono);font-size:.78rem;font-weight:700;margin:.55rem 0 .2rem}
+@media(min-width:700px){.sbt{font-size:.86rem}.sbt th:first-child{width:34%}.sbt th,.sbt td{padding:.5rem .7rem}}
+/* season by season: a table on wide screens, one card per career season on phones */
+.cmpwide{display:none;overflow-x:auto}
+.cmpt{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;font-size:.74rem}
+.cmpt th{background:var(--surface-hover);color:var(--text-secondary);font-size:.58rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:.45rem .4rem;text-align:left;white-space:nowrap;border-bottom:1px solid var(--border);vertical-align:bottom}
+.cmpt th.ga{color:var(--a)}.cmpt th.gb{color:var(--b)}
+.cmpt td{padding:.38rem .4rem;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
+.cmpt td.po{white-space:normal;overflow-wrap:normal;min-width:6.5rem}
+.cmpt td.la{background:var(--ta);font-weight:800}.cmpt td.lb{background:var(--tb);font-weight:800}
+.cmpt td.none{color:var(--text-secondary)}
+.cmpt tbody tr:last-child td{border-bottom:0}
+.cmpt td.cs .tmn{margin-left:.25rem}
+.cmpcards{list-style:none;display:grid;gap:.45rem}
+.cmpcards>li{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.5rem .6rem}
+.cc-h{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.15rem .6rem;font-size:.74rem;margin-bottom:.35rem}
+.cc-h span{font-size:.6rem;color:var(--text-secondary)}
+.cc-g{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.4rem}
+.cc{display:flex;flex-direction:column;align-items:flex-start;gap:.08rem;font-size:.74rem;border:1px solid var(--line);border-radius:8px;padding:.35rem .45rem;min-width:0;overflow-wrap:normal}
+.cc-n{font-weight:700;font-size:.68rem}.cc.a .cc-n{color:var(--a)}.cc.b .cc-n{color:var(--b)}
+.cc .fin{border-radius:4px;padding:0 .2rem;margin-left:-.2rem}
+.cc.lead.a .fin{background:var(--ta);font-weight:800}.cc.lead.b .fin{background:var(--tb);font-weight:800}
+.cc.none{color:var(--text-secondary)}
+@media(min-width:1100px){.cmpwide{display:block}.cmpcards{display:none}}
+.sbt td small{display:block;font-size:.68rem;font-weight:500;color:var(--text-secondary)}
+.mchip{flex-wrap:wrap;row-gap:.15rem}
+.mchip .mn{white-space:nowrap}
+.mchip .gtog{white-space:nowrap}
+.latest .l2 .mono{color:var(--text)}
+@media(min-width:700px){.tmn>a[title],.tmn>.tn{white-space:nowrap}}

@@ -126,10 +126,47 @@ def test_no_allstar_board_sanity(data):
     top = {m["name"]: (m["w"], m["l"], m["seasons"]) for _, _, m in r[:3]}
     assert top["Dirk Nowitzki"] == (544, 422, 14)
     assert top["Andre Miller"][:2] == (529, 548)
-    assert top["Nikola Jokic"][:2] == (495, 315)
+    r4 = {m["name"]: (m["w"], m["l"]) for _, _, m in r[:4]}
+    assert r4["Nikola Jokic"] == (452, 293)          # 2025-26 (43-22) is left out: no honors data yet
     r, srt, _ = B.compute(data, "no-allstar-teammate", {"to": 2026, "sort": "pct"})
     assert [m["name"] for _, _, m in r[:3]] == ["Tim Duncan", "James Harden", "Rasheed Wallace"]
     assert (r[0][2]["w"], r[0][2]["l"]) == (360, 155)
+
+
+def test_no_allstar_board_leaves_out_seasons_without_honors(data, d):
+    """2025-26 and the season in progress have no honors rows yet: they are left out, not counted
+    as "no All-Star teammate", and the board says so. Seasons with no All-Star Game (1946-47 to
+    1949-50, 1998-99) still have honors, so they count."""
+    with open(os.path.join(ROOT, "data", "help.json"), encoding="utf-8") as fh:
+        h = json.load(fh)
+    miss = B.honors_missing(d, h)
+    assert 2026 in miss and 1947 not in miss and 1999 not in miss
+    for row in data["p"]:
+        for st in row[5]:
+            assert st[12] == (1 if st[0] in miss else 0)
+    a, _, _ = B.compute(data, "no-allstar-teammate", {})
+    b, _, _ = B.compute(data, "no-allstar-teammate", {"to": min(miss) - 1})
+    assert [(x[2]["slug"], x[2]["w"], x[2]["l"]) for x in a[:200]] == [(x[2]["slug"], x[2]["w"], x[2]["l"]) for x in b[:200]]
+    t = read("lists/no-allstar-teammate.html")
+    assert f"{season_label(min(miss))} onward not counted yet: honors missing from the awards data" in t
+
+
+def test_average_finish_defaults_to_league_size_adjusted(d):
+    t = read("lists/average-finish.html")
+    assert 'data-sort="adj" aria-sort="ascending"' in t
+    assert "1 + (rank − 1) / (teams − 1) × 29" in t
+    p = read("player/michael-jordan.html")
+    m = re.search(r'average-finish\.html\?hl=michael-jordan.*?<span class="big mono">([\d.]+) of 30</span>', p, re.S)
+    assert m
+    jordan = next(k for k, v in d.ids.items() if v["slug"] == "michael-jordan")
+    vals = []
+    for sy, (main, end, lst) in d.season_main(jordan).items():
+        tm = d.team(main["f"], sy)
+        n = sum(1 for x in d.teams.values() if x["s"] == sy)
+        vals.append((tm["rnk"] - 1) / (n - 1))
+    assert m.group(1) == f"{1 + 29 * sum(vals) / len(vals):.1f}"
+    assert "adjusted for league size" in p
+    assert "1 + adjusted × 29" in read("how-we-count.html")
 
 
 def test_gap_board_matches_card():

@@ -66,12 +66,11 @@ def test_compare_pages_are_noindex_and_out_of_sitemap():
         assert '<meta name="robots" content="noindex, follow">' in t, f
 
 
-def test_share_images_for_suggested_pairs():
-    imgs = set(os.listdir(os.path.join(ROOT, "compare", "img")))
-    pages = [f for f in os.listdir(os.path.join(ROOT, "compare")) if f.endswith(".html")]
-    assert {f[:-5] + ".png" for f in pages} <= imgs
+def test_compare_pages_use_og_cards_not_local_pngs():
+    assert not os.path.exists(os.path.join(ROOT, "compare", "img"))       # no pre-rendered PNGs in the repo
     t = read("compare/charles-barkley--michael-jordan.html")
-    assert 'og:image" content="https://hoopsmatic.com/team-success/compare/img/charles-barkley--michael-jordan.png"' in t
+    assert 'og:image" content="https://hoopsmatic.com/og/team-success/compare/charles-barkley--michael-jordan.png"' in t
+    assert 'id="card-dl"' in t                                            # the in-browser button stays
 
 
 def test_player_page_links_its_three_comparisons():
