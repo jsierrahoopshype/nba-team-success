@@ -1,0 +1,20 @@
+# (c) 2026 HoopsMatic. All rights reserved.
+# Runs the sanity tests on the committed data. No network, no secrets; about 20 seconds.
+name: Tests
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest==8.3.3
+      - run: python -m pytest tests/ -q
