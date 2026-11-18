@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://hoopsmatic.com/team-success/sitemap.xml

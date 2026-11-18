@@ -96,3 +96,261 @@ def playoff_result(d, s_end, lst):
             if t and (best is None or PO_DEPTH[t["po"]] > PO_DEPTH[best[0]["po"]]):
                 best = (t, s)
     return best
+
+
+# ---------------------------------------------------------------------------
+# Shared small helpers
+# ---------------------------------------------------------------------------
+def pct(w, l):
+    return w / (w + l) if (w + l) else None
+
+
+def net100(x):
+    """[pts for, poss for, pts against, poss against] -> net points per 100 possessions."""
+    if not x or x[1] <= 0 or x[3] <= 0:
+        return None
+    return 100 * (x[0] / x[1] - x[2] / x[3])
+
+
+def onoff(rm):
+    """On/off per 100: net with him on minus net with him off (same games)."""
+    if not rm:
+        return None
+    a, b = net100(rm["on"]), net100(rm["off"])
+    if a is None or b is None:
+        return None
+    return a - b
+
+
+def per82(t):
+    return 82 * win_pct(t)
+
+
+# ---------------------------------------------------------------------------
+# Player career summary
+# ---------------------------------------------------------------------------
+def summary(d, pid, min_games=1, era_from=1947):
+    seasons = d.season_main(pid, era_from, min_games)
+    w = l = ow = ol = 0
+    for s in d.stints(pid, era_from, min_games):
+        w += s["w"]
+        l += s["l"]
+        ow += s["ow"]
+        ol += s["ol"]
+    winning = trips = titles = 0
+    deepest = None
+    rnks = []
+    title_years = []
+    for sy, (main, end, lst) in sorted(seasons.items()):
+        t = d.team(main["f"], sy)
+        if win_pct(t) > 0.5:
+            winning += 1
+        if t["rnk"]:
+            rnks.append(t["rnk"])
+        pr = playoff_result(d, end, lst)
+        if pr and PO_DEPTH[pr[0]["po"]] >= 1:
+            trips += 1
+            if deepest is None or PO_DEPTH[pr[0]["po"]] > PO_DEPTH[deepest[0]["po"]]:
+                deepest = pr
+            if pr[0]["po"] == "Champion":
+                titles += 1
+                title_years.append(sy)
+    return {"w": w, "l": l, "ow": ow, "ol": ol, "seasons": len(seasons), "winning": winning,
+            "trips": trips, "titles": titles, "titleYears": title_years, "deepest": deepest,
+            "rnk": (sum(rnks) / len(rnks)) if rnks else None,
+            "gap": (pct(w, l) - pct(ow, ol)) if (w + l) and (ow + ol) else None}
+
+
+# ---------------------------------------------------------------------------
+# Lists. Each returns rows (dicts) already sorted; the page renders the top N.
+# ---------------------------------------------------------------------------
+def list_flag(d, flag, era_from, mg):
+    c, det = count_flag(d, flag, era_from, mg)
+    rows = [{"pid": k, "n": v, "seasons": sorted(det[k], key=lambda s: s["s"])} for k, v in c.items()]
+    rows.sort(key=lambda r: (-r["n"], d.ids[r["pid"]]["name"]))
+    return rows
+
+
+def list_sixty(d, era_from, mg):
+    c, det = count_sixty(d, era_from, mg)
+    rows = [{"pid": k, "n": v, "seasons": sorted(det[k], key=lambda s: s["s"])} for k, v in c.items() if v]
+    rows.sort(key=lambda r: (-r["n"], d.ids[r["pid"]]["name"]))
+    return rows
+
+
+def list_never500(d, era_from, mg, min_seasons=5):
+    rows = []
+    for pid in d.players:
+        st = list(d.stints(pid, era_from, mg))
+        seasons = {s["s"] for s in st}
+        if len(seasons) < min_seasons:
+            continue
+        if all(win_pct(d.team(s["f"], s["s"])) < 0.5 for s in st):
+            best = max(st, key=lambda s: win_pct(d.team(s["f"], s["s"])))
+            rows.append({"pid": pid, "n": len(seasons), "best": best,
+                         "g": sum(s["g"] for s in st)})
+    rows.sort(key=lambda r: (-r["n"], -r["g"]))
+    return rows
+
+
+def _streak(seq):
+    """Longest run of True in [(season, bool)] (seasons he played, in order)."""
+    best = (0, None, None)
+    cur = 0
+    start = None
+    for sy, ok in seq:
+        if ok:
+            if cur == 0:
+                start = sy
+            cur += 1
+            if cur > best[0]:
+                best = (cur, start, sy)
+        else:
+            cur = 0
+    return best
+
+
+def list_winning_streak(d, era_from, mg):
+    rows = []
+    for pid in d.players:
+        seasons = d.season_main(pid, era_from, mg)
+        seq = [(sy, win_pct(d.team(m["f"], sy)) > 0.5) for sy, (m, e, lst) in sorted(seasons.items())]
+        n, a, b = _streak(seq)
+        if n:
+            rows.append({"pid": pid, "n": n, "from": a, "to": b})
+    rows.sort(key=lambda r: (-r["n"], r["from"]))
+    return rows
+
+
+def list_drought(d, era_from, mg):
+    rows = []
+    last = {}
+    for pid in d.players:
+        seasons = d.season_main(pid, era_from, mg)
+        seq = []
+        for sy, (m, e, lst) in sorted(seasons.items()):
+            pr = playoff_result(d, e, lst)
+            seq.append((sy, not (pr and PO_DEPTH[pr[0]["po"]] >= 1)))
+        n, a, b = _streak(seq)
+        if n:
+            rows.append({"pid": pid, "n": n, "from": a, "to": b})
+            last[pid] = seq[-1][0] if seq else None
+    rows.sort(key=lambda r: (-r["n"], r["from"]))
+    return rows
+
+
+def list_franchise(d, era_from, mg, min_games=200, top=3):
+    by = defaultdict(lambda: defaultdict(lambda: [0, 0]))
+    for pid in d.players:
+        for s in d.stints(pid, era_from, mg):
+            x = by[s["f"]][pid]
+            x[0] += s["w"]
+            x[1] += s["l"]
+    out = {}
+    for f, ps in by.items():
+        rows = [{"pid": pid, "w": v[0], "l": v[1]} for pid, v in ps.items() if v[0] + v[1] >= min_games]
+        rows.sort(key=lambda r: (-r["w"], r["l"]))
+        if rows:
+            out[f] = rows[:top]
+    return out
+
+
+def list_gap_season(d, era_from, mg, min_each=20):
+    rows = []
+    for pid in d.players:
+        for s in d.stints(pid, era_from, max(mg, min_each)):
+            if s["ow"] + s["ol"] < min_each:
+                continue
+            rows.append({"pid": pid, "s": s, "gap": pct(s["w"], s["l"]) - pct(s["ow"], s["ol"])})
+    rows.sort(key=lambda r: -r["gap"])
+    return rows
+
+
+def list_gap_career(d, era_from, mg, min_with=200, min_without=50):
+    rows = []
+    for pid in d.players:
+        w = l = ow = ol = 0
+        for s in d.stints(pid, era_from, mg):
+            w, l, ow, ol = w + s["w"], l + s["l"], ow + s["ow"], ol + s["ol"]
+        if w + l >= min_with and ow + ol >= min_without:
+            rows.append({"pid": pid, "w": w, "l": l, "ow": ow, "ol": ol,
+                         "gap": pct(w, l) - pct(ow, ol)})
+    rows.sort(key=lambda r: -r["gap"])
+    return rows
+
+
+def avg_team_pct(d, pid, era_from, mg):
+    """Games-weighted average win % of his teams (each stint weighted by his games)."""
+    num = den = 0
+    for s in d.stints(pid, era_from, mg):
+        num += s["g"] * win_pct(d.team(s["f"], s["s"]))
+        den += s["g"]
+    return num / den if den else None
+
+
+def accolades(d, pid, era_from):
+    return sum(v for y, v in d.players[pid].get("accY", {}).items() if int(y) >= era_from)
+
+
+def list_bad_luck(d, era_from, mg, min_seasons=5):
+    rows = []
+    for pid in d.players:
+        seasons = {s["s"] for s in d.stints(pid, era_from, mg)}
+        if len(seasons) < min_seasons:
+            continue
+        acc = accolades(d, pid, era_from)
+        avg = avg_team_pct(d, pid, era_from, mg)
+        if acc <= 0 or avg is None or avg >= 0.5:
+            continue
+        rows.append({"pid": pid, "acc": acc, "avg": avg, "idx": acc * (0.5 - avg) * 10,
+                     "n": len(seasons)})
+    rows.sort(key=lambda r: -r["idx"])
+    return rows
+
+
+def title_seasons(d, pid, era_from, mg):
+    """[(season, stint on the champion)] where his season ended with a title."""
+    out = []
+    for sy, (main, end, lst) in sorted(d.season_main(pid, era_from, mg).items()):
+        pr = playoff_result(d, end, lst)
+        if pr and pr[0]["po"] == "Champion":
+            out.append((sy, pr[1]))
+    return out
+
+
+def team_top_scorers(d):
+    best = {}
+    for pid, p in d.players.items():
+        for s in p["seasons"]:
+            k = (s["f"], s["s"])
+            if s.get("pts", 0) > best.get(k, (0, None))[0]:
+                best[k] = (s["pts"], pid)
+    return {k: v[1] for k, v in best.items()}
+
+
+def list_ring_chasers(d, era_from, mg, min_titles=2, max_ppg=6.0):
+    rows = []
+    for pid in d.players:
+        ts = title_seasons(d, pid, era_from, mg)
+        if len(ts) < min_titles:
+            continue
+        g = sum(s["g"] for _, s in ts)
+        pts = sum(s.get("pts", 0) for _, s in ts)
+        ppg = pts / g if g else 0
+        if ppg > max_ppg:
+            continue
+        rows.append({"pid": pid, "n": len(ts), "ppg": ppg, "years": [y for y, _ in ts]})
+    rows.sort(key=lambda r: (-r["n"], r["ppg"]))
+    return rows
+
+
+def list_carriers(d, era_from, mg, top_scorers=None):
+    top_scorers = top_scorers or team_top_scorers(d)
+    rows = []
+    for pid in d.players:
+        ts = title_seasons(d, pid, era_from, mg)
+        led = [y for y, s in ts if top_scorers.get((s["f"], y)) == pid]
+        if led:
+            rows.append({"pid": pid, "n": len(led), "years": led, "titles": len(ts)})
+    rows.sort(key=lambda r: (-r["n"], -r["titles"]))
+    return rows
