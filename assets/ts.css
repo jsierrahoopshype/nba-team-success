@@ -237,3 +237,13 @@ a.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .finder .results li.none{cursor:default;color:var(--text-secondary)}
 #cmp:not(:empty){margin-top:.8rem}
 .hero .help .card{margin-top:.4rem}
+/* PR E: persistent finder, Today in Team Success */
+.finder.top{margin:.2rem 0 .9rem}
+.finder.top input{font-size:.95rem;padding:.5rem .75rem}
+.today{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.2rem 1rem .8rem;margin:.6rem 0}
+.story-head{font-size:1.2rem;font-weight:700;line-height:1.3;margin:.2rem 0 .3rem;max-width:46rem}
+.story-body{font-size:.95rem;max-width:46rem;margin:0 0 .3rem}
+.story-links{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;font-size:.88rem;margin:.4rem 0}
+.storyimg{width:100%;max-width:600px;height:auto;border-radius:12px;border:1px solid var(--border)}
+.tt tr[hidden]{display:none}
+.today h2{margin-top:.8rem}

@@ -279,6 +279,9 @@ def page(rel, title, desc, body, up, robots=None, og=None):
 </head>
 <body>
 <div class="wrap">
+<form class="finder top" role="search" data-mode="go" data-up="{up}" data-index="{up}assets/players.json" action="{up}players/a.html">
+<label for="pf" class="vh">Find a player</label><input id="pf" type="search" autocomplete="off" placeholder="Find a player, e.g. Bill Russell">
+<ul class="results"></ul></form>
 {body}
 <nav class="crumbs" aria-label="Team Success"><a href="{up}index.html">Team Success home</a> <a href="{up}how-we-count.html">How we count</a> <a href="{up}players/a.html">Players A-Z</a></nav>
 <p class="terms"><a href="{TERMS}">Terms</a></p>
@@ -1675,7 +1678,7 @@ def current_rows(s):
     for pid, sts in s.cur["players"].items():
         st = [x for x in sts if x.get("endTeam")] or sts[-1:]
         st = st[0]
-        if st["g"] >= 5 and st["ow"] + st["ol"] >= 5:
+        if st["g"] >= 3 and st["ow"] + st["ol"] >= 3:
             gaps.append((A.pct(st["w"], st["l"]) - A.pct(st["ow"], st["ol"]), pid, st))
         pre_on = [st["on"][i] - st["on30"][i] for i in range(4)]
         if pre_on[1] >= 300:
@@ -1728,38 +1731,117 @@ def mover_items(s, rows, up, baseline):
              f'{base:+.1f} {lab}') for ch, pid, st, now, base in rows]
 
 
+def gap_table(s, rows, up, cap, desc_first=True):
+    """Current-season with/without rows with both samples; filtered in the page by separate
+    minimums for games played and missed (data-gp / data-gm), default 5 and 5."""
+    trs = []
+    for g, pid, st in rows:
+        gm = st["ow"] + st["ol"]
+        hid = " hidden" if st["g"] < 5 or gm < 5 else ""        # default minimums, 5 and 5
+        trs.append(f'<tr data-gp="{st["g"]}" data-gm="{gm}"{hid}>' + "".join([
+            td("Player", s.pic(pid, up, "sm") + " " + s.plink(pid, up), s.ids[pid]["name"]),
+            td("Team", s.tlink(st["f"], CURRENT_SEASON), st["f"]),
+            td("Gap", pp(g), fval(g), f"mono {cls_gap(g)}"),
+            td("Games he played", f'{wl(st["w"], st["l"])} <span class="sub">{pct1(A.pct(st["w"], st["l"]))}, {st["g"]} g</span>', st["g"]),
+            td("Games he missed", f'{wl(st["ow"], st["ol"])} <span class="sub">{pct1(A.pct(st["ow"], st["ol"]))}, {gm} g</span>', gm),
+        ]) + "</tr>")
+    heads = [th("Player", "text"), th("Team", "text"), th("Gap", sort="descending" if desc_first else "ascending",
+             first="descending" if desc_first else "ascending"), th("Games he played"), th("Games he missed")]
+    return sortable(cap, "", heads, trs, "minfilter")
+
+
 def board_page(s, key):
     up = "../"
     gaps, movers, baseline = current_rows(s)
-    through = s.cur["through"] if s.cur else "n/a"
+    through = s.cur["through"] if s.cur else None
     if key == "without-him":
         rel = "lists/winning-without-him.html"
         title = f"{season_label(CURRENT_SEASON)} with and without: team win rate in games he played vs missed"
-        desc = (f"Every active player's {season_label(CURRENT_SEASON)} team record with him and without him "
-                f"(at least 5 games each side), sorted by the gap. Updated every morning; games through {nice_date(through) if s.cur else through}.")
+        desc = (f"Every active player's {season_label(CURRENT_SEASON)} team record in the games he played and the games he "
+                f"missed, with both samples and separate minimums. Updated every morning; games through "
+                f"{nice_date(through) if through else 'N/A'}.")
+        pos = [x for x in gaps if x[0] > 0]
+        neg = sorted([x for x in gaps if x[0] < 0], key=lambda x: x[0])
         body = f"""<header><h1>{e(title)}</h1><p class="subtitle">{e(desc)}</p></header>
-<section><h2>Higher win rate in games he played</h2>{rows_html(s, gap_items(s, gaps[:TOP_N], up), up)}</section>
-<section><h2>Higher win rate in games he missed</h2>{rows_html(s, gap_items(s, gaps[::-1][:TOP_N], up), up)}</section>"""
+<form class="filters" id="minf"><label>Min games played<input name="mp" type="number" min="1" value="5" inputmode="numeric"></label>
+<label>Min games missed<input name="mm" type="number" min="1" value="5" inputmode="numeric"></label>
+<span class="note">Rows below both minimums are hidden. The homepage uses 8 and 8.</span></form>
+<p class="note">Gap = team win % in games he played minus in games he missed, in percentage points (pp). This is a different unit from on/off per 100 possessions (<a href="on-off-movers.html">last 30 days board</a>). It is a team record: it does not say what he caused.</p>
+<section><h2 id="cap-up">Higher win rate in games he played</h2>{gap_table(s, pos, up, "cap-up")}</section>
+<section><h2 id="cap-down">Higher win rate in games he missed</h2>{gap_table(s, neg, up, "cap-down", False)}</section>"""
     else:
         rel = "lists/on-off-movers.html"
         lab = "the rest of the season" if baseline == "earlier" else "2025-26"
         title = f"Last 30 days movers: on/off per 100, {season_label(CURRENT_SEASON)}"
         desc = (f"Biggest change in on/off per 100 possessions over the last 30 days compared with {lab}. "
-                f"From Ramiro's lineup data, updated every morning; games through {nice_date(through) if s.cur else through}.")
+                f"From Ramiro's lineup data, updated every morning; games through {nice_date(through) if through else 'N/A'}.")
         note = ("" if baseline == "earlier" else
                 "<p class=\"note\">Early in the season the last 30 days are the whole season, so the comparison is "
                 "with his 2025-26 on/off (any team). It switches to the earlier part of this season once enough "
                 "games are played.</p>")
         body = f"""<header><h1>{e(title)}</h1><p class="subtitle">{e(desc)}</p></header>{note}
-<p class="note">On/off = team net points per 100 possessions with him on the floor minus with him off, in the games he played. Minimum 250 on-court possessions in the last 30 days.</p>
+<p class="note">On/off = team net points per 100 possessions with him on the floor minus with him off, in the games he played: possession-based, a different unit from the win-rate gaps in pp on the <a href="winning-without-him.html">with and without board</a>. Minimum 250 on-court possessions in the last 30 days.</p>
 <section><h2>Biggest risers</h2>{rows_html(s, mover_items(s, movers[:TOP_N], up, baseline), up)}</section>
 <section><h2>Biggest fallers</h2>{rows_html(s, mover_items(s, movers[::-1][:TOP_N], up, baseline), up)}</section>"""
     return rel, page(rel, f"{title} | HoopsMatic", desc, body, up)
 
 
 # ---------------------------------------------------------------------------
-# Hub, A-Z, How we count
+# Today in Team Success: daily lead, permalinks (noindex) and archive (indexed)
 # ---------------------------------------------------------------------------
+def stories(s):
+    return load_json(os.path.join(DATA, "stories.json"), {"stories": []})["stories"]
+
+
+def story_html(s, st, up, heading_level=2, permalink=True):
+    """The story block: headline as normal text under the section heading (no kicker)."""
+    if not st:
+        return ""
+    body = " ".join(e(x) for x in st["body"])
+    links = [f'<a class="next" href="{up}{e(st["link"]["href"])}">{e(st["link"]["text"])}</a>']
+    if st.get("more"):
+        links.append(f'<a href="{up}{e(st["more"]["href"])}">{e(st["more"]["text"])}</a>')
+    sup = "".join(f'<li><a href="{up}{e(x["href"])}">{e(x["text"])}</a></li>' for x in st.get("supporting", []))
+    perma = (f' · <a href="{up}stories/{st["date"]}.html">Permalink and share image</a>' if permalink else "")
+    return f"""<p class="story-head">{e(st['headline'])}</p>
+<p class="story-body">{body}</p>
+<p class="note">{e(nice_date(st['date']))}. Data through {e(nice_date(st['cutoff']))} (last game in the nightly data){perma}.</p>
+<p class="story-links">{' '.join(links)}</p>
+{('<ul class="takes">' + sup + '</ul>') if sup else ''}"""
+
+
+def story_pages(s):
+    out = []
+    all_st = stories(s)
+    for i, st in enumerate(all_st):
+        up = "../"
+        rel = f"stories/{st['date']}.html"
+        nav = []
+        if i + 1 < len(all_st):
+            nav.append(f'<a href="{all_st[i + 1]["date"]}.html">Previous story</a>')
+        nav.append('<a href="index.html">All stories</a>')
+        if i > 0:
+            nav.append(f'<a href="{all_st[i - 1]["date"]}.html">Next story</a>')
+        img = st.get("img")
+        og = BASE + img if img and os.path.exists(os.path.join(ROOT, img)) else None
+        body = f"""<header><h1>Today in Team Success: {e(nice_date(st['date']))}</h1></header>
+{story_html(s, st, up, permalink=False)}
+{('<p><img class="storyimg" src="' + up + e(img) + '" alt="' + e(st['headline']) + '" width="1200" height="630" loading="lazy"></p>') if og else ''}
+<p class="seasonnav">{' · '.join(nav)}</p>"""
+        out.append((rel, page(rel, f"{st['headline']} ({nice_date(st['date'])}) | HoopsMatic",
+                              " ".join(st["body"])[:300], body, up, robots="noindex, follow", og=og)))
+    items = "".join(f'<li><a href="{x["date"]}.html"><strong>{e(x["headline"])}</strong></a>'
+                    f'<span class="det">{e(nice_date(x["date"]))}. Data through {e(nice_date(x["cutoff"]))}.</span></li>'
+                    for x in all_st)
+    body = f"""<header><h1>Today in Team Success: every story</h1>
+<p class="subtitle">One dated story each morning from the nightly data, newest first. Each is built from templates; the rules are published with the methodology.</p></header>
+<ul class="lists seasons">{items or '<li>No stories yet.</li>'}</ul>"""
+    out.append(("stories/index.html", page("stories/index.html", "Today in Team Success: story archive | HoopsMatic",
+                                           "Every daily Team Success story: career milestones, tonight's matchups, team "
+                                           "records during absences and historical comparisons, with the data cutoff.", body, "../")))
+    return out
+
+
 def hub(s):
     up = ""
     gaps, movers, baseline = current_rows(s)
@@ -1771,37 +1853,33 @@ def hub(s):
             continue
         sm = A.summary(s.d, pid)
         feat.append(f"""<li>{s.pic(pid, up, 'md')}<div><strong>{s.plink(pid, up)}</strong>
-<span class="det"><span class="mono">{sm['w']}-{sm['l']}</span> with him, <span class="mono">{sm['ow']}-{sm['ol']}</span> without, {sm['titles']} titles</span></div></li>""")
+<span class="det"><span class="mono">{wl(sm['w'], sm['l'])}</span> in his games, {sm['titles']} titles, average finish {sm['rnk']:.1f}</span></div></li>""")
     lists = "".join(f'<li><a href="lists/{k}.html"><strong>{e(t)}</strong></a><span class="det">{e(d)}</span></li>'
                     for k, t, d, _ in LISTS)
-    through = s.cur["through"] if s.cur else "n/a"
+    through = s.cur["through"] if s.cur else None
     az = " ".join(f'<a href="players/{c}.html">{c.upper()}</a>' for c in "abcdefghijklmnopqrstuvwxyz")
+    st = stories(s)
+    today = story_html(s, st[0], up) if st else '<p class="note">The first story appears after the next nightly update.</p>'
+    n_gap = len([x for x in gaps if x[2]["g"] >= 5 and x[2]["ow"] + x[2]["ol"] >= 5])
     body = f"""<header><h1>Team Success</h1>
-<p class="subtitle">How every NBA player's teams did with him and without him, every season since 1946-47: records, playoff runs, on/off from 1996-97, best duos and the all-time lists.</p></header>
-<section class="search"><h2>Find a player</h2>
-<form id="ts-search" role="search" action="players/a.html"><label for="q" class="vh">Player name</label>
-<input id="q" name="q" type="search" autocomplete="off" placeholder="Type a name, e.g. Bill Russell" data-index="assets/players.json"></form>
-<ul id="results" class="results" aria-live="polite"></ul>
-<p class="az">Browse A-Z: {az}</p></section>
-<section><h2>{season_label(CURRENT_SEASON)}: with and without</h2>
-<p class="note">Team record with him and without him this season, at least 5 games each side. {season_label(CURRENT_SEASON)} games through {e(nice_date(through) if s.cur else through)}; career pages cover completed seasons through {season_label(LAST_COMPLETE)}. <a href="lists/winning-without-him.html">Full board</a></p>
-<div class="two"><div><h3>Higher win rate in games he played</h3>{rows_html(s, gap_items(s, gaps[:8], up), up)}</div>
-<div><h3>Higher win rate in games he missed</h3>{rows_html(s, gap_items(s, gaps[::-1][:8], up), up)}</div></div></section>
-<section><h2>Last 30 days movers</h2>
-<p class="note">Change in on/off per 100 possessions, last 30 days vs {'earlier this season' if baseline == 'earlier' else '2025-26'}. <a href="lists/on-off-movers.html">Full board</a></p>
-<div class="two"><div><h3>Risers</h3>{rows_html(s, mover_items(s, movers[:8], up, baseline), up)}</div>
-<div><h3>Fallers</h3>{rows_html(s, mover_items(s, movers[::-1][:8], up, baseline), up)}</div></div></section>
-<section><h2>Career boards</h2><ul class="lists">{''.join(f'<li><a href="lists/{k}.html"><strong>{e(B.BOARDS[k]["h1"])}</strong></a><span class="det">{e(B.BOARDS[k]["desc"])}</span></li>' for k in B.BOARDS)}
+<p class="subtitle">How much every NBA player won, and how much help he had: his teams' records in his games, final NBA finishes, teammate help and every opponent, since 1946-47.</p></header>
+<section class="today"><h2>Today in Team Success</h2>
+{today}
+<p class="note"><a href="stories/index.html">Earlier stories</a></p></section>
+<section><h2>This season</h2><ul class="lists">
+<li><a href="lists/winning-without-him.html"><strong>{season_label(CURRENT_SEASON)} with and without</strong></a><span class="det">Team win rate in games each player played vs missed, both samples shown, separate minimums ({n_gap} players with 5+ each side). Gaps in percentage points. Games through {e(nice_date(through) if through else 'N/A')}.</span></li>
+<li><a href="lists/on-off-movers.html"><strong>Last 30 days on/off movers</strong></a><span class="det">Change in on/off per 100 possessions, last 30 days vs {'earlier this season' if baseline == 'earlier' else '2025-26'}: a possession-based measure, a different unit.</span></li></ul></section>
+<section><h2>Career boards</h2><ul class="lists">{''.join(f'<li><a href="lists/{k}.html"><strong>{e(B.BOARDS[k]["h1"])}</strong></a><span class="det">{e(B.BOARDS[k]["desc"])}</span></li>' for k in B.BOARDS)}</ul></section>
+<section><h2>Winning in context</h2><ul class="lists">
 <li><a href="lists/low-help-all-stars.html"><strong>Best finishes among low-help All-Stars</strong></a><span class="det">All-Stars whose teammates were honored least, by average final finish.</span></li>
 <li><a href="lists/same-help-different-results.html"><strong>Same help, different results</strong></a><span class="det">Same-era players with nearly equal teammate help and the furthest-apart finishes.</span></li>
-<li><a href="seasons/index.html"><strong>Final standings, every season</strong></a><span class="det">All teams ranked by final NBA finish, {season_label(1947)} to {season_label(LAST_COMPLETE)}.</span></li></ul></section>
-<section><h2>The lists</h2><ul class="lists">{lists}
-<li><a href="lists/winning-without-him.html"><strong>{season_label(CURRENT_SEASON)} with and without</strong></a><span class="det">Updated every morning.</span></li>
-<li><a href="lists/on-off-movers.html"><strong>Last 30 days movers</strong></a><span class="det">On/off per 100, updated every morning.</span></li></ul></section>
+<li><a href="seasons/index.html"><strong>Final standings, every season</strong></a><span class="det">All teams ranked by final NBA finish, {season_label(1947)} to {season_label(LAST_COMPLETE)}.</span></li>
+<li><a href="comparison-rules.html"><strong>How help and peers work</strong></a><span class="det">The rules behind teammate help and the comparisons.</span></li></ul></section>
+<section><h2>The lists</h2><ul class="lists">{lists}</ul></section>
 <section><h2>Featured players</h2><ul class="feat">{''.join(feat)}</ul></section>
-<script src="assets/search.js" defer></script>"""
-    desc = ("Every NBA player's team record with him and without him since 1946-47: worst and best teams, "
-            "60-win seasons, playoff droughts, on/off, best duos and a daily current-season board.")
+<p class="az">Players A-Z: {az}</p>"""
+    desc = ("How much every NBA player won and how much help he had: team records in his games, final NBA finishes, "
+            "teammate help, every opponent and a daily story, since 1946-47.")
     return "index.html", page("index.html", "Team Success: NBA team records with and without every player | HoopsMatic",
                               desc, body, up)
 
@@ -2012,6 +2090,8 @@ def sitemap(pages_rel):
     lm = load_json(path, {})
     today = dt.date.today().isoformat()
     urls = []
+    # noindex pages stay out of the sitemap: daily story permalinks (stories/<date>.html)
+    pages_rel = [r for r in pages_rel if not re.match(r"stories/\d{4}-\d{2}-\d{2}\.html$", r)]
     for rel in sorted(pages_rel):
         full = os.path.join(ROOT, rel)
         with open(full, "rb") as fh:
@@ -2032,7 +2112,7 @@ def sitemap(pages_rel):
 
 def all_page_paths():
     out = []
-    for d in ("", "player", "lists", "players", "seasons"):
+    for d in ("", "player", "lists", "players", "seasons", "stories"):
         base = os.path.join(ROOT, d)
         if not os.path.isdir(base):
             continue
@@ -2075,6 +2155,8 @@ def main():
                     write(*compare_page(s, pid, q, dist))
     write("assets/board.json", json.dumps(s.board_data, ensure_ascii=False, separators=(",", ":")))
     write(*hub(s))
+    for rel, txt in story_pages(s):
+        write(rel, txt)
     for rel, txt in az_pages(s):
         write(rel, txt)
     write(*search_index(s))

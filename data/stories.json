@@ -1,0 +1,39 @@
+{
+ "stories": [
+  {
+   "body": [
+    "His teams are +2 in his 2026-27 games, which takes his career total to +342: #29 all time counting this season, up from #30 at the end of 2025-26.",
+    "He has passed 2 players this season; the most decorated of them is Michael Jordan (+340)."
+   ],
+   "cutoff": "2026-11-16",
+   "date": "2026-11-18",
+   "headline": "Kawhi Leonard moves past Michael Jordan on the career wins-minus-losses list",
+   "img": "stories/img/2026-11-18.png",
+   "line": "Kawhi Leonard has passed 2 players on the career W − L list this season.",
+   "link": {
+    "href": "player/kawhi-leonard.html",
+    "text": "Kawhi Leonard's page"
+   },
+   "more": {
+    "href": "lists/wins-minus-losses.html?hl=kawhi-leonard#p-kawhi-leonard",
+    "text": "Career W − L board (completed seasons)"
+   },
+   "players": [
+    "kawhi-leonard",
+    "michael-jordan"
+   ],
+   "rule": "climb",
+   "schedule": null,
+   "supporting": [
+    {
+     "href": "compare/james-worthy--kevin-mchale.html",
+     "text": "Kevin McHale vs James Worthy: 674–297 vs 622–304."
+    },
+    {
+     "href": "compare/kevin-mchale--maurice-cheeks.html",
+     "text": "Kevin McHale vs Maurice Cheeks: 674–297 vs 673–428."
+    }
+   ]
+  }
+ ]
+}

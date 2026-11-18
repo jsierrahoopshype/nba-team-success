@@ -16,7 +16,7 @@ const PAGES = [
   'lists/career-wins.html', 'lists/wins-minus-losses.html?hl=michael-jordan&sort=pct',
   'lists/winning-seasons.html', 'lists/playoff-trips.html', 'lists/deepest-run.html', 'lists/titles.html',
   'lists/average-finish.html?sort=adj', 'lists/gap-career.html?from=1990&ts=20',
-  'seasons/index.html', 'comparison-rules.html', 'lists/low-help-all-stars.html', 'lists/same-help-different-results.html', 'compare/charles-barkley--michael-jordan.html', 'player/michael-jordan.html?peer=kobe-bryant', 'seasons/1946-47.html', 'seasons/1997-98.html#t-CHI', 'seasons/2025-26.html',
+  'seasons/index.html', 'stories/index.html', 'stories/2026-11-18.html', 'lists/winning-without-him.html?mp=8&mm=8', 'comparison-rules.html', 'lists/low-help-all-stars.html', 'lists/same-help-different-results.html', 'compare/charles-barkley--michael-jordan.html', 'player/michael-jordan.html?peer=kobe-bryant', 'seasons/1946-47.html', 'seasons/1997-98.html#t-CHI', 'seasons/2025-26.html',
 ];
 const extra = (process.env.TS_LAYOUT_EXTRA || '').split(',').filter(Boolean);
 const WIDTHS = [320, 375, 414, 768, 1024, 1280, 1440, 1920];

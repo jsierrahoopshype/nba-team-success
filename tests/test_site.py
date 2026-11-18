@@ -19,7 +19,7 @@ WORKER_MARKERS = ("<body", "</head", "</style", "</script", "<!--")
 
 def pages():
     out = []
-    for d in ("", "player", "lists", "players", "seasons"):
+    for d in ("", "player", "lists", "players", "seasons", "stories"):
         base = os.path.join(ROOT, d)
         if os.path.isdir(base):
             out += [os.path.join(d, f) if d else f for f in sorted(os.listdir(base)) if f.endswith(".html")]
@@ -51,7 +51,10 @@ def test_canonical_and_og_url(html):
         want = BASE + ("" if rel == "index.html" else rel)
         assert f'<link rel="canonical" href="{want}">' in t, rel
         assert f'<meta property="og:url" content="{want}">' in t, rel
-        assert f'<meta property="og:image" content="{BASE}assets/og-team-success.png">' in t, rel
+        if rel.startswith("stories/") and rel != "stories/index.html":
+            assert f'<meta property="og:image" content="{BASE}stories/img/' in t, rel     # its own share image
+        else:
+            assert f'<meta property="og:image" content="{BASE}assets/og-team-success.png">' in t, rel
 
 
 def test_no_github_io_or_third_party(html):
@@ -163,10 +166,12 @@ def test_sitemap_lists_every_page_with_stable_lastmod():
     xml = read("sitemap.xml")
     locs = re.findall(r"<loc>(.*?)</loc><lastmod>(\d{4}-\d{2}-\d{2})</lastmod>", xml)
     got = {u for u, _ in locs}
-    want = {BASE + ("" if p == "index.html" else p) for p in PAGES}
+    # noindex pages (daily story permalinks) are never in the sitemap
+    indexed = [p for p in PAGES if 'name="robots" content="noindex' not in read(p)]
+    want = {BASE + ("" if p == "index.html" else p) for p in indexed}
     assert got == want
     lm = json.load(open(os.path.join(ROOT, "data", "sitemap_lastmod.json")))
-    assert set(lm) == set(PAGES)
+    assert set(lm) == set(indexed)
 
 
 def test_pre_rendered_content(html):
@@ -180,3 +185,22 @@ def test_pre_rendered_content(html):
 def test_no_popups_or_overlays():
     css = read("assets/ts.css")
     assert "position:fixed" not in css and "<dialog" not in read("index.html")
+
+
+def test_finder_on_every_page(html):
+    for rel, t in html.items():
+        assert 'class="finder top"' in t, rel
+
+
+def test_noindex_pages():
+    for f in os.listdir(os.path.join(ROOT, "stories")):
+        if f.endswith(".html") and f != "index.html":
+            assert '<meta name="robots" content="noindex, follow">' in read("stories/" + f), f
+    assert "noindex" not in read("stories/index.html")
+    assert "noindex" not in read("index.html") and "noindex" not in read("player/michael-jordan.html")
+
+
+def test_today_on_hub():
+    t = read("index.html")
+    assert "<h2>Today in Team Success</h2>" in t and '<p class="story-head">' in t
+    assert "Data through" in t

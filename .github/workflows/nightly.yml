@@ -1,8 +1,9 @@
 # (c) 2026 HoopsMatic. All rights reserved.
 # Team Success nightly refresh, hm-ts-7f3a91c2-nightly.
 # 11:15 UTC, after US games end and the data repos update. Pulls ONLY the current season
-# (Ramiro's 2026-27 Parquet files; nba-boxscores' season folder once it exists), rebuilds only
-# the pages it touches, and commits only if something changed. No secrets needed.
+# (Ramiro's 2026-27 Parquet files; nba-boxscores' season folder once it exists), writes the day's
+# "Today in Team Success" story (tonight's schedule from cdn.nba.com, public JSON), rebuilds only
+# the pages they touch, and commits only if something changed. No secrets, no tokens.
 name: Nightly current season
 on:
   schedule:
@@ -33,18 +34,24 @@ jobs:
           out=$(python scripts/update_current.py)
           echo "$out"
           if echo "$out" | grep -q '^CHANGED'; then echo "changed=yes" >> "$GITHUB_OUTPUT"; fi
+      - name: Today in Team Success
+        id: story
+        run: |
+          out=$(python scripts/daily_story.py)
+          echo "$out"
+          if echo "$out" | grep -q '^CHANGED'; then echo "changed=yes" >> "$GITHUB_OUTPUT"; fi
       - name: Rebuild touched pages
-        if: steps.update.outputs.changed == 'yes'
+        if: steps.update.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes'
         run: python scripts/build_site.py --current
       - name: Tests
-        if: steps.update.outputs.changed == 'yes'
+        if: steps.update.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes'
         run: python -m pytest tests/ -q
       - name: Commit if changed
-        if: steps.update.outputs.changed == 'yes'
+        if: steps.update.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes'
         run: |
           git config user.name "team-success-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add -A data assets player players lists index.html sitemap.xml
+          git add -A data assets player players lists stories index.html sitemap.xml
           if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
           git commit -q -m "Nightly: current season through $(python -c "import json;print(json.load(open('data/current.json'))['through'])")"
           for i in 1 2 3; do git push && exit 0; git pull --rebase -q; done

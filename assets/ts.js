@@ -132,12 +132,21 @@
       var q = fold(input.value);
       clear();
       if (q.length < 2) return;
-      var words = q.split(" ");
-      for (var i = 0; i < index.length && hits.length < 8; i++) {
-        var ok = true;
-        for (var j = 0; j < words.length; j++) if (index[i].f.indexOf(words[j]) === -1) { ok = false; break; }
-        if (ok) hits.push(index[i]);
+      var words = q.split(" "), found = [];
+      for (var i = 0; i < index.length; i++) {
+        var f = index[i].f, ok = true, starts = 0;
+        for (var j = 0; j < words.length; j++) {
+          var at = f.indexOf(words[j]);
+          if (at === -1) { ok = false; break; }
+          if (at === 0 || f.charAt(at - 1) === " " || (" " + f).indexOf(" " + words[j]) >= 0) starts++;
+        }
+        if (!ok) continue;
+        // rank: full name starts with the query, every word starts a name part, longer careers first
+        var span = index[i].a ? (+index[i].b.slice(0, 4) - +index[i].a.slice(0, 4)) : 0;
+        found.push({ h: index[i], k: (f.indexOf(q) === 0 ? 2 : 0) + (starts === words.length ? 1 : 0), span: span });
       }
+      found.sort(function (x, y) { return (y.k - x.k) || (y.span - x.span) || (x.h.n < y.h.n ? -1 : 1); });
+      hits = found.slice(0, 8).map(function (x) { return x.h; });
       if (!hits.length) {
         var none = document.createElement("li");
         none.className = "none"; none.textContent = "No player found.";
@@ -177,4 +186,30 @@
     var form = box.closest("form");
     if (form) form.addEventListener("submit", function (ev) { ev.preventDefault(); });
   });
+})();
+
+// 4) Separate minimums for games played and missed (current with/without board). Rows carry
+//    data-gp / data-gm; rows below either minimum are hidden. State is kept in the URL.
+(function () {
+  var f = document.getElementById("minf");
+  if (!f) return;
+  var q = new URLSearchParams(location.search);
+  ["mp", "mm"].forEach(function (k) { if (q.get(k)) f.querySelector('[name="' + k + '"]').value = q.get(k); });
+  function apply() {
+    var mp = +f.querySelector('[name="mp"]').value || 1, mm = +f.querySelector('[name="mm"]').value || 1;
+    var rows = document.querySelectorAll("table.minfilter tbody tr");
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      r.hidden = (+r.getAttribute("data-gp") < mp) || (+r.getAttribute("data-gm") < mm);
+    }
+    var p = new URLSearchParams(location.search);
+    p.set("mp", mp); p.set("mm", mm);
+    history.replaceState(null, "", location.pathname + "?" + p.toString());
+  }
+  f.addEventListener("input", apply);
+  f.addEventListener("submit", function (ev) { ev.preventDefault(); apply(); });
+  if (q.get("mp") || q.get("mm")) apply(); else {
+    var rows = document.querySelectorAll("table.minfilter tbody tr");
+    for (var i = 0; i < rows.length; i++) rows[i].hidden = (+rows[i].getAttribute("data-gp") < 5) || (+rows[i].getAttribute("data-gm") < 5);
+  }
 })();
