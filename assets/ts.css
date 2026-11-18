@@ -347,9 +347,9 @@ details[open]>summary{margin-bottom:.35rem}
 
 /* round 3 (Nov 2026) */
 /* team names: logo and name on one line, centred; a name wraps only between words, never inside one */
-.tmn{overflow-wrap:normal;word-break:normal;vertical-align:middle}
+.tmn{vertical-align:middle}
 .tmn .lg{align-self:center}
-.tmn>a,.tmn>.tn{overflow-wrap:normal;word-break:normal}
+.tmn>a[title],.tmn>.tn{overflow-wrap:normal;word-break:normal}
 .mchip .mn{overflow-wrap:normal;word-break:normal}
 /* latest completed seasons: one or two lines per card */
 .latest li{display:block}
