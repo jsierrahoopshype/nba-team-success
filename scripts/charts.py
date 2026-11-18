@@ -59,9 +59,12 @@ def finish_chart(points, title_id):
             run = []
     # x labels: first, last and every 5th season in between
     lab = {first, last} | {sy for sy in range(first, last + 1) if sy % 5 == 0 and last - first > 6}
-    for sy in sorted(lab):
-        if sy != first and sy != last and (sy - first < 3 or last - sy < 3):
+    placed = []
+    for sy in sorted(lab, key=lambda y: (y not in (first, last), y)):
+        if any(abs(x(sy) - x(o)) < 78 for o in placed):     # keep labels from colliding
             continue
+        placed.append(sy)
+    for sy in sorted(placed):
         anchor = "start" if sy == first else ("end" if sy == last else "middle")
         out.append(f'<text class="ax" x="{x(sy):.1f}" y="{H - 12}" text-anchor="{anchor}">{season_label(sy)}</text>')
     for p in sorted(points, key=lambda p: p["sy"]):

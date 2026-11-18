@@ -221,3 +221,19 @@ a.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .glist li.w::before{content:"\25CF  ";color:var(--green)}.glist li.l::before{content:"\25CF  ";color:var(--red)}
 @media(min-width:900px){.glist{columns:2}}
 @media(min-width:1100px){.tt.opp tr.detail td{display:table-cell}}
+/* teammate help, peers, finder (inline suggestions, no pop-up) */
+.help{margin:.4rem 0}
+.help h2{margin-top:.6rem}
+.help .card{display:flex;flex-direction:column;gap:.15rem}
+.help .card .big{font-size:1.5rem}
+.mates{list-style:none;font-size:.88rem}.mates li{padding:.15rem 0}
+.peers li{align-items:flex-start}
+.finder{margin:.6rem 0}
+.finder label{display:block;font-size:.85rem;font-weight:600;margin-bottom:.25rem}
+.finder input{width:100%;font:inherit;font-size:1rem;padding:.6rem .8rem;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text)}
+.finder .results{list-style:none;margin:.3rem 0 0}
+.finder .results li{display:flex;align-items:center;gap:.6rem;padding:.4rem .5rem;border-radius:10px;cursor:pointer}
+.finder .results li[aria-selected="true"],.finder .results li:hover{background:var(--accent-dim)}
+.finder .results li.none{cursor:default;color:var(--text-secondary)}
+#cmp:not(:empty){margin-top:.8rem}
+.hero .help .card{margin-top:.4rem}

@@ -76,3 +76,105 @@
   window.TS = window.TS || {};
   window.TS.sortTable = sortTable;
 })();
+
+// 3) Player finder (combobox + listbox, WAI-ARIA pattern). The suggestions render IN THE PAGE
+//    FLOW under the input (they push content down; no pop-up, no floating dropdown). Arrow keys
+//    move, Enter opens, Esc clears. Headshots and years/teams tell same-name players apart.
+//    data-mode="go" opens the player page; data-mode="peer" hands the slug to the comparison.
+(function () {
+  var boxes = document.querySelectorAll(".finder");
+  if (!boxes.length) return;
+  var index = null, waiting = [];
+  function fold(s) {
+    return s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase()
+      .replace(/['’.]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  }
+  function load(src, cb) {
+    if (index) return cb();
+    waiting.push(cb);
+    if (waiting.length > 1) return;
+    fetch(src, { credentials: "same-origin" }).then(function (r) { return r.json(); }).then(function (rows) {
+      index = rows.map(function (r) { return { n: r[0], s: r[1], a: r[2], b: r[3], h: r[4] || "", t: r[5] || "", f: fold(r[0]) }; });
+      var w = waiting; waiting = []; w.forEach(function (f) { f(); });
+    });
+  }
+  Array.prototype.forEach.call(boxes, function (box, k) {
+    var input = box.querySelector("input");
+    var list = box.querySelector("ul");
+    var up = box.getAttribute("data-up") || "";
+    var mode = box.getAttribute("data-mode") || "go";
+    var active = -1, hits = [];
+    list.id = list.id || "finder-list-" + k;
+    input.setAttribute("role", "combobox");
+    input.setAttribute("aria-autocomplete", "list");
+    input.setAttribute("aria-controls", list.id);
+    input.setAttribute("aria-expanded", "false");
+    list.setAttribute("role", "listbox");
+    function choose(h) {
+      if (!h) return;
+      if (mode === "peer" && window.TSCompare) { window.TSCompare.pick(h.s); clear(); return; }
+      location.href = up + "player/" + encodeURIComponent(h.s) + ".html";
+    }
+    function clear() {
+      while (list.firstChild) list.removeChild(list.firstChild);
+      hits = []; active = -1;
+      input.setAttribute("aria-expanded", "false");
+      input.removeAttribute("aria-activedescendant");
+    }
+    function mark() {
+      Array.prototype.forEach.call(list.children, function (li, i) {
+        li.setAttribute("aria-selected", i === active ? "true" : "false");
+      });
+      if (active >= 0 && list.children[active]) input.setAttribute("aria-activedescendant", list.children[active].id);
+      else input.removeAttribute("aria-activedescendant");
+    }
+    function render() {
+      var q = fold(input.value);
+      clear();
+      if (q.length < 2) return;
+      var words = q.split(" ");
+      for (var i = 0; i < index.length && hits.length < 8; i++) {
+        var ok = true;
+        for (var j = 0; j < words.length; j++) if (index[i].f.indexOf(words[j]) === -1) { ok = false; break; }
+        if (ok) hits.push(index[i]);
+      }
+      if (!hits.length) {
+        var none = document.createElement("li");
+        none.className = "none"; none.textContent = "No player found.";
+        list.appendChild(none);
+        return;
+      }
+      hits.forEach(function (h, i) {
+        var li = document.createElement("li");
+        li.id = list.id + "-o" + i;
+        li.setAttribute("role", "option");
+        var pic = h.h ? document.createElement("img") : document.createElement("span");
+        pic.className = "hs sm" + (h.h ? "" : " nohs");
+        if (h.h) { pic.src = up + "assets/hs/" + h.h; pic.alt = ""; pic.width = 36; pic.height = 36; pic.loading = "lazy"; }
+        li.appendChild(pic);
+        var txt = document.createElement("span");
+        var nm = document.createElement("strong"); nm.textContent = h.n;
+        var ctx = document.createElement("span"); ctx.className = "sub blk";
+        ctx.textContent = (h.a ? h.a + (h.b && h.b !== h.a ? " to " + h.b : "") : "") + (h.t ? " · " + h.t : "");
+        txt.appendChild(nm); txt.appendChild(ctx);
+        li.appendChild(txt);
+        li.addEventListener("click", function () { choose(h); });
+        list.appendChild(li);
+      });
+      input.setAttribute("aria-expanded", "true");
+    }
+    input.addEventListener("input", function () { load(box.getAttribute("data-index"), render); });
+    input.addEventListener("keydown", function (ev) {
+      if (ev.key === "ArrowDown" && hits.length) { active = (active + 1) % hits.length; mark(); ev.preventDefault(); }
+      else if (ev.key === "ArrowUp" && hits.length) { active = (active - 1 + hits.length) % hits.length; mark(); ev.preventDefault(); }
+      else if (ev.key === "Enter") {
+        if (ev.isComposing) return;
+        ev.preventDefault();
+        load(box.getAttribute("data-index"), function () { if (!hits.length) render(); choose(hits[active >= 0 ? active : 0]); });
+      }
+      else if (ev.key === "Escape") { input.value = ""; clear(); }
+    });
+    var form = box.closest("form");
+    if (form) form.addEventListener("submit", function (ev) { ev.preventDefault(); });
+  });
+})();
