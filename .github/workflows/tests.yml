@@ -1,5 +1,6 @@
 # (c) 2026 HoopsMatic. All rights reserved.
-# Runs the sanity tests on the committed data. No network, no secrets; about 20 seconds.
+# Runs the sanity tests on the committed data and pages, then the no-horizontal-scroll check on
+# every page template (320 to 1920 px). No secrets.
 name: Tests
 on:
   pull_request:
@@ -16,5 +17,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - run: pip install pytest==8.3.3
       - run: python -m pytest tests/ -q
+  layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install --no-save --no-package-lock playwright@1.48.2
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/layout.js

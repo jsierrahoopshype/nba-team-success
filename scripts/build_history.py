@@ -55,6 +55,7 @@ ROUND_ORDER = {"": 0, "Play-In": 0.5, "First Round": 1, "Conf Semis": 2,
 
 step0 = {}
 ZERO_MIN = set()     # (pid, gid, franchise): 0-minute rows in games where minutes were kept
+AWARDS_BY_YEAR = {}  # (RS-Stats name, season) -> [awards with a Teammates Score weight]
 
 
 def log(*a):
@@ -456,6 +457,7 @@ def load_awards():
     allnba = {"All-NBA First Team", "All-NBA Second Team", "All-NBA Third Team"}
     alldef = {"All-Defensive First Team", "All-Defensive Second Team"}
     by = defaultdict(lambda: defaultdict(list))
+    allstar = defaultdict(set)
     with open(os.path.join(PDATA, "Awards.csv"), encoding="utf-8-sig") as fh:
         for r in csv.DictReader(fh):
             a = (r.get("AWARD") or "").strip()
@@ -463,6 +465,12 @@ def load_awards():
             y = (r.get("YEAR") or "").strip()
             if p and a in scores and y.isdigit():
                 by[p][int(y)].append(a)
+            if p and a == "All-Star" and y.isdigit():
+                allstar[p].add(int(y))
+    AWARDS_BY_YEAR.clear()
+    for p, years in by.items():
+        for y, aws in years.items():
+            AWARDS_BY_YEAR[(p, y)] = list(aws)
     out = {}
     for p, years in by.items():
         total = 0.0
@@ -482,7 +490,8 @@ def load_awards():
                 per_year[y] = per_year.get(y, 0) + pts
                 counts[a] += 1
         out[p] = {"score": round(total, 3), "counts": dict(counts),
-                  "byYear": {str(y): round(v, 3) for y, v in sorted(per_year.items()) if v}}
+                  "byYear": {str(y): round(v, 3) for y, v in sorted(per_year.items()) if v},
+                  "allstar": sorted(allstar.get(p, ()))}
     return scores, out
 
 
@@ -1004,11 +1013,12 @@ def build():
         if not info:
             continue
         d = sorted(duos.get(pid, []), key=lambda x: (-(x[2] / x[1]), -x[1], x[0]))[:10]
-        aw = awards.get(info["rsName"] or info["name"], {"score": 0, "counts": {}, "byYear": {}})
+        aw = awards.get(info["rsName"] or info["name"], {"score": 0, "counts": {}, "byYear": {}, "allstar": []})
         seas = sorted(p["seasons"], key=lambda x: (x["s"], x.get("first") or "9999"))
         out_players[str(pid)] = {"seasons": seas,
                                  "duos": [[a, g, w] for a, g, w in d],
-                                 "acc": aw["score"], "accY": aw["byYear"], "awards": aw["counts"]}
+                                 "acc": aw["score"], "accY": aw["byYear"], "awards": aw["counts"],
+                                 "as": aw.get("allstar", [])}
     dump_json(os.path.join(DATA, "players.json"), out_players)
     write_gamelogs(games, rows)
     ts_out = {f"{f}-{s}": r for (f, s), r in sorted(tseasons.items())}
