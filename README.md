@@ -31,8 +31,6 @@ python -m pytest tests/ -q             # sanity checks on the committed data
 python scripts/build_site.py           # every page (about 5 seconds); writes only files that changed
 python -m pytest tests/ -q             # data + page checks (canonical, footer, links, escaping, JS = Python ranks)
 node tests/layout.js                   # no horizontal scroll, every template, 320-1920 px (Playwright)
-node scripts/render_cards.js           # share PNGs of the suggested comparisons (compare/img/), local only
-python scripts/quantize_cards.py       # shrink them to a 64-colour palette (~30 KB each)
 ```
 
 Output is served from the repo root (GitHub Pages: main, / (root)), and will be served at
@@ -78,3 +76,18 @@ Every factual sentence is a template filled from data; the rules are in `docs/st
 - New board `lists/no-allstar-teammate.html`; `seasons/2026-27.html` (standings to date).
 - `assets/card/<slug>.json`, `assets/card/lists/<list>.json`, `assets/card/seasons/<season>.json`: data
   for the hoopsmatic-og-card social cards.
+
+## Round 3 (Nov 2026)
+
+- Share cards: og:image / twitter:image point at hoopsmatic-og-card (`https://hoopsmatic.com/og/team-success/`):
+  `player/<slug>.png` (players with a completed season), `list/<list>.png` (the 9 career boards),
+  `season/<season>.png` (completed seasons), `compare/<a>--<b>.png`. Everything else keeps
+  `assets/og-team-success.png`. The pre-rendered `compare/img/` PNGs and their scripts are gone; the
+  in-browser "Download image" button stays.
+- No-All-Star board: team-seasons with no honors rows in the awards data (or no `data/help.json` rows)
+  are left out, not counted as "no All-Star" (`boards.honors_missing`); they return on the next full
+  rebuild once nba-player-data has them.
+- Average finish: league-size-adjusted by default, shown as a 30-team equivalent (1 + adjusted x 29).
+- Tables and cards name teams by city that season (`city_of`); headings, titles and prose keep full names.
+- `tests/layout.js` also fails on a lone ":" "," or "·" line in tables/cards and on a team name that wraps
+  inside a word (390 and 1366 px).

@@ -31,7 +31,7 @@
     var active = row[3], allstar = row[4], stints = row[5];
     var inc = stints.filter(function (s) { return lo <= s[0] && s[0] <= hi && s[2] >= ts && (!team || s[1] === team); });
     if (f.noas) {                                    // winning without an All-Star teammate
-      inc = inc.filter(function (s) { return s[10]; });
+      inc = inc.filter(function (s) { return s[10] && !s[12]; });   // seasons with no honors data are left out
       if (f.self === "yes") inc = inc.filter(function (s) { return s[11]; });
       else if (f.self === "no") inc = inc.filter(function (s) { return !s[11]; });
     }
@@ -173,7 +173,7 @@
       case "titles": return [m.titles, String(m.titles)];
       case "years": return [m.years.length, m.years.map(label).join(", ") || "N/A"];
       case "avg": return [m.avg, m.avg === null ? "N/A" : m.avg.toFixed(1)];
-      case "adj": return [m.adj, m.adj === null ? "N/A" : m.adj.toFixed(3)];
+      case "adj": return [m.adj, m.adj === null ? "N/A" : (1 + 29 * m.adj).toFixed(1)];   // 30-team scale
       case "gap": return [m.gap, pp(m.gap)];
       case "with": return [m.pct, wl(m.w, m.l) + ", " + pct1(m.pct)];
       case "without": return [m.gm ? m.ow / m.gm : null, wl(m.ow, m.ol) + ", " + pct1(m.gm ? m.ow / m.gm : null)];

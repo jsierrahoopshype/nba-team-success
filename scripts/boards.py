@@ -74,12 +74,14 @@ BOARDS = {
         "cols": ["titles", "seasons", "years"],
     },
     "average-finish": {
-        "title": "Best average final NBA finish: career leaderboard",
+        "title": "Best average final NBA finish, adjusted for league size: career leaderboard",
         "h1": "Average final NBA finish",
-        "desc": "The average final NBA finish (1 = champion) of his teams, one team per season, minimum 5 seasons. The league-size-adjusted view puts every season on one scale, 0 = champion, 1 = last.",
+        "desc": "The average final NBA finish (1 = champion) of his teams, one team per season, minimum 5 seasons, adjusted for league size and shown on a 30-team scale: 3rd of 9 teams in 1964-65 counts as 8.25 of 30. The raw average is the second view.",
         "card": "Average final finish",
-        "sorts": {"avg": ("Average finish", "asc", {"ms": 5}), "adj": ("Adjusted", "asc", {"ms": 5})},
-        "cols": ["avg", "adj", "seasons"],
+        "explain": "Adjusted = each season's finish put on a 30-team scale, 1 + (rank − 1) / (teams − 1) × 29, then averaged: 3rd of 9 counts as 8.25 of 30. Raw = the plain average of the ranks.",
+        "sorts": {"adj": ("Average finish, adjusted for league size", "asc", {"ms": 5}),
+                  "avg": ("Raw average finish", "asc", {"ms": 5})},
+        "cols": ["adj", "avg", "seasons"],
     },
     "no-allstar-teammate": {
         "title": "Winning without an All-Star teammate: NBA career leaderboard",
@@ -102,8 +104,8 @@ BOARDS = {
 COL_LABEL = {"w": "Wins", "l": "Losses", "pct": "Win %", "gp": "Games", "wl": "W − L",
              "rec": "W–L", "winning": "Winning seasons", "seasons": "Seasons", "wshare": "Share",
              "trips": "Playoff trips", "tshare": "Share", "deep": "Deepest run", "deepn": "Times",
-             "titles": "Titles", "years": "Title seasons", "avg": "Average finish",
-             "adj": "Adjusted (0 = champion)", "gap": "Gap (points)", "with": "With him", "without": "Without him",
+             "titles": "Titles", "years": "Title seasons", "avg": "Raw average",
+             "adj": "Adjusted (of 30)", "gap": "Gap (points)", "with": "With him", "without": "Without him",
              "gm": "Missed"}
 
 
@@ -111,7 +113,11 @@ def compact(d, cur, help_doc=None, partial_years=()):
     """Build assets/board.json: team table + one row per player, completed seasons plus the live
     season (team entries with live = 1: in W-L totals, never in season counts).
     Stint: [season, franchise, g, w, l, ow, ol, endTeam, played playoffs, last date,
-            no All-Star teammate (1/0), he was an All-Star (1/0), honors partial (1/0)]."""
+            no All-Star teammate (1/0), he was an All-Star (1/0), honors missing (1/0)].
+    "Honors missing" = that season has no honors rows at all in the awards data, or no teammate-help rows yet
+    (2025-26 and the season in progress on 2026-11-18). The no-All-Star board leaves those team-seasons
+    out instead of counting them as "no All-Star"; they come back on their own once the awards file
+    (nba-player-data) and data/help.json have the season."""
     teams = {}
     size = defaultdict(int)
     for t in d.teams.values():
@@ -119,6 +125,7 @@ def compact(d, cur, help_doc=None, partial_years=()):
     for k, t in d.teams.items():
         teams[k] = [t["w"], t["l"], t["rnk"], size[t["s"]], PO.index(t["po"]), 1 if t.get("live") else 0]
     hs = (help_doc or {}).get("season", {})
+    known = honors_known(d, help_doc)
     active = set(cur["players"]) if cur else set()
     rows = []
     for pid, p in d.players.items():
@@ -135,7 +142,7 @@ def compact(d, cur, help_doc=None, partial_years=()):
             noas = 0 if any("All-Star" in m[4] for m in mates) else 1
             st.append([s["s"], s["f"], s["g"], s["w"], s["l"], s["ow"], s["ol"],
                        1 if s.get("endTeam") else 0, 1 if (s.get("po") and s["po"]["g"] > 0) else 0, last,
-                       noas, 1 if s["s"] in allstar else 0, 1 if (s["s"] in partial_years or s.get("live")) else 0])
+                       noas, 1 if s["s"] in allstar else 0, 0 if s["s"] in known else 1])
         if not st:
             continue
         face = v.get("hs") if v.get("hs") and os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "hs", v["hs"])) else ""
@@ -145,6 +152,20 @@ def compact(d, cur, help_doc=None, partial_years=()):
             "through": d.through}
 
 
+def honors_known(d, help_doc):
+    """Seasons with any honors rows in the awards data (seasons with no All-Star Game, 1946-47 to
+    1949-50 and 1998-99, still have other honors) and with teammate help built (data/help.json)."""
+    as_years = {int(y) for p in d.players.values() for y in p.get("awY", {})}
+    help_years = {int(k.rsplit("-", 1)[1]) for v in (help_doc or {}).get("season", {}).values() for k in v}
+    return as_years & help_years
+
+
+def honors_missing(d, help_doc):
+    """Seasons 1947..CURRENT_SEASON the no-All-Star board cannot count yet."""
+    known = honors_known(d, help_doc)
+    return [sy for sy in range(1947, CURRENT_SEASON + 1) if sy not in known]
+
+
 def player_metrics(row, teams, flt):
     """Everything any board needs for one player under one filter. None if no stint qualifies."""
     pid, slug, name, active, allstar, stints = row[:6]
@@ -152,7 +173,7 @@ def player_metrics(row, teams, flt):
     ts, team = flt.get("ts", 1), flt.get("team", "")
     inc = [s for s in stints if lo <= s[0] <= hi and s[2] >= ts and (not team or s[1] == team)]
     if flt.get("noas"):                               # winning without an All-Star teammate
-        inc = [s for s in inc if s[10]]
+        inc = [s for s in inc if s[10] and not s[12]]   # leave out seasons with no honors data
         if flt.get("self") == "yes":
             inc = [s for s in inc if s[11]]
         elif flt.get("self") == "no":

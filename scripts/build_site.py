@@ -31,6 +31,11 @@ BASE = "https://hoopsmatic.com/team-success/"
 CM_TEAM = "https://hoopsmatic.com/nba-career-map/team/{}.html"
 CM_PLAYER = "https://hoopsmatic.com/nba-career-map/player/{}.html"
 TERMS = "https://hoopsmatic.com/terms"
+# Social cards drawn by hoopsmatic-og-card (live Nov 2026). Only patterns that answered 200 image/png
+# when checked are used; everything else keeps assets/og-team-success.png.
+OG = "https://hoopsmatic.com/og/team-success/"
+OG_LISTS = {"average-finish", "career-wins", "deepest-run", "gap-career", "no-allstar-teammate", "playoff-trips",
+            "titles", "winning-seasons", "wins-minus-losses"}
 FINGERPRINT = "hm-ts-7f3a91c2"
 TEAM_SLUG = {
     "ATL": "atlanta-hawks", "BOS": "boston-celtics", "BKN": "brooklyn-nets", "CHA": "charlotte-hornets",
@@ -157,10 +162,31 @@ def nice_date(iso):
     return f"{mon} {d}, {y}"
 
 
+def eq30(adj):
+    """League-size-adjusted finish (0 = champion, 1 = last) as a 30-team equivalent: 1 + adj x 29."""
+    return 1 + 29 * adj
+
+
 def cls_gap(g):
     if g is None:
         return "flat"
     return "up" if g > 0.0005 else ("down" if g < -0.0005 else "flat")
+
+
+TWO_WORD_NICK = ("Trail Blazers", "Red Skins")
+
+
+def city_of(name):
+    """'Cleveland Cavaliers' -> 'Cleveland'; 'Kansas City-Omaha Kings' -> 'Kansas City-Omaha'.
+    Los Angeles is always 'LA Lakers' / 'LA Clippers' (two teams share the city)."""
+    if name in ("Los Angeles Lakers",):
+        return "LA Lakers"
+    if name in ("Los Angeles Clippers", "LA Clippers"):
+        return "LA Clippers"
+    for nick in TWO_WORD_NICK:
+        if name.endswith(" " + nick):
+            return name[:-len(nick) - 1]
+    return name.rsplit(" ", 1)[0] if " " in name else name
 
 
 # ---------------------------------------------------------------------------
@@ -186,6 +212,13 @@ class Site:
         self.sizes = defaultdict(int)
         for t in self.d.teams.values():
             self.sizes[t["s"]] += 1
+        # tables and cards name a team by its city that season; two teams in one city that season
+        # (1976-77 New York Knicks and New York Nets) keep city + nickname for both
+        per = defaultdict(int)
+        for t in self.d.teams.values():
+            per[(t["s"], city_of(t["name"]))] += 1
+        self.cities = {(t["s"], t["name"]): (t["name"] if per[(t["s"], city_of(t["name"]))] > 1 else city_of(t["name"]))
+                       for t in self.d.teams.values()}
         # career leaderboards: one compact data set, default ranks for the career cards
         self.help = load_json(os.path.join(DATA, "help.json"), {"season": {}, "avg": {}, "peers": {}})
         self.partial_years = set(self.help.get("missing_years", []))
@@ -248,16 +281,24 @@ class Site:
             return e(v["name"])
         return f'<a href="{up}player/{e(v["slug"])}.html">{e(v["name"])}</a>'
 
-    def tlink(self, f, sy, name=None):
+    def city(self, f, sy, name=None):
+        """The name tables and cards show: the team's city that season (see city_of)."""
+        t = self.d.team(f, sy)
+        nm = name or (t["name"] if t else None) or franchise_name(f, sy) or f
+        return self.cities.get((sy, nm)) or city_of(nm)
+
+    def tlink(self, f, sy, name=None, full=False):
+        """Logo + name on one line. Tables and cards show the city (full=False); headings and prose
+        keep the full name. The full name is always the link's title."""
         t = self.d.team(f, sy)
         nm = name or (t["name"] if t else None)
         if not nm:
-            from common import franchise_name
             nm = franchise_name(f, sy) or f
         lg = self.logo(f, sy, getattr(self, "_up", "../"), nm)
+        shown = nm if full else self.city(f, sy, nm)
         if f in TEAM_SLUG:
-            return f'<span class="tmn">{lg}<a href="{CM_TEAM.format(TEAM_SLUG[f])}">{e(nm)}</a></span>'
-        return f'<span class="tmn">{lg}{e(nm)}</span>'
+            return f'<span class="tmn">{lg}<a href="{CM_TEAM.format(TEAM_SLUG[f])}" title="{e(nm)}">{e(shown)}</a></span>'
+        return f'<span class="tmn">{lg}<span class="tn" title="{e(nm)}">{e(shown)}</span></span>'
 
     def logo(self, f, sy, up, name=None):
         """H2H rule (nba-head-to-head src/core.js logoKey): the current logo only when the team's name
@@ -384,7 +425,8 @@ def playoff_text(s, t, up):
 
 
 PO_SHORT = {"Champion": "Title", "Finalist": "Lost Finals", "Conf Finalist": "Lost conf finals",
-            "Conf Semis": "Lost conf semis", "First Round": "Lost 1st round", "Play-In": "Lost play-in", "": "Missed"}
+            "Conf Semis": "Lost conf semis", "First Round": "Lost 1st round", "Play-In": "Lost in the play-in",
+            "": "Missed the playoffs"}
 
 
 def era_code(f, sy):
@@ -451,7 +493,43 @@ def td(label, inner, value=None, cls=""):
     return f'<td data-l="{e(label)}"{c}{v}>{inner}</td>'
 
 
+CELL_RE = re.compile(r"<td\b[^>]*>.*?</td>", re.S)
+ROW_RE = re.compile(r"(<tr\b[^>]*>)(.*)(</tr>)$", re.S)
+
+
+def cell_text(c):
+    return html.unescape(re.sub(r"<[^>]+>", "", c)).strip()
+
+
+def na_columns(heads, rows):
+    """Indexes of the columns whose every cell reads N/A (nothing to show)."""
+    parsed = []
+    for r in rows:
+        m = ROW_RE.match(r)
+        if not m:
+            return []
+        parsed.append(CELL_RE.findall(m.group(2)))
+    if not parsed or any(len(c) != len(heads) for c in parsed):
+        return []
+    return [i for i in range(len(heads)) if all(cell_text(c[i]) == "N/A" for c in parsed)]
+
+
+def drop_columns(heads, rows, drop):
+    if not drop:
+        return heads, rows
+    out = []
+    for r in rows:
+        m = ROW_RE.match(r)
+        cells = CELL_RE.findall(m.group(2))
+        out.append(m.group(1) + "".join(c for i, c in enumerate(cells) if i not in drop) + m.group(3))
+    return [h for i, h in enumerate(heads) if i not in drop], out
+
+
 def sortable(cap_id, caption, heads, rows, extra_cls=""):
+    # a column with nothing but N/A is left out (the opponents table is redrawn by opp.js with
+    # every column, so it keeps them)
+    if "opp" not in extra_cls.split():
+        heads, rows = drop_columns(heads, rows, na_columns(heads, rows))
     return (f'<div class="tblwrap"><table class="tt sortable {extra_cls}" aria-labelledby="{cap_id}">'
             f'<thead><tr>{"".join(heads)}</tr></thead><tbody>{"".join(rows)}</tbody></table>'
             f'<p class="vh sort-status" role="status"></p></div>')
@@ -555,7 +633,7 @@ def summary_cards(s, pid, up):
     if deep:
         t = deep[0]
         deep_txt = A.PO_LABEL[t["po"]]
-        deep_sub = f'Best: {season_label(t["s"])}, {e(t["name"])}'
+        deep_sub = f'Best: {season_label(t["s"])}, {e(s.city(t["f"], t["s"]))}'
     else:
         deep_txt, deep_sub = "Missed the playoffs", "in every season"
     gap = sm["gap"]
@@ -565,8 +643,8 @@ def summary_cards(s, pid, up):
     hero = [
         ("career-wins", "Career record in his games", f'{w}{EN}{l}', f"{pct1(A.pct(w, l))} · {w + l:,} games · {thru}"),
         ("wins-minus-losses", "Wins minus losses", signed(w - l), f"{w:,} W · {l:,} L · {thru}"),
-        ("average-finish", "Average final NBA finish", f'{sm["rnk"]:.1f}',
-         f"{sm['seasons']} completed seasons · adjusted {adj:.3f}"),
+        ("average-finish", "Average final NBA finish", f'{eq30(adj):.1f} of 30',
+         f"adjusted for league size · raw average {sm['rnk']:.1f} · {sm['seasons']} completed seasons"),
     ]
     small = [
         ("winning-seasons", "Winning seasons", str(sm["winning"]), f'of {sm["seasons"]} ({pct1(sm["winning"] / sm["seasons"])})'),
@@ -622,15 +700,43 @@ def player_facts(s, pid):
             "best": best, "avg": sm["rnk"] or 0, "jump": jump}, pts
 
 
+ROUND_WORDS = {"First Round": "first round", "Conf Semis": "conference semifinals",
+               "Conf Finalist": "conference finals", "Finalist": "NBA Finals"}
+
+
+def result_words(s, t, up):
+    """The season's playoff result in full words: 'Missed the playoffs', 'Lost in the play-in',
+    'Lost in the first round 1–4 to [logo] Minnesota', 'Won the title 4–2 over [logo] Utah'."""
+    po = t["po"]
+    if po == "":
+        return "Missed the playoffs"
+    if po == "Play-In":
+        return "Lost in the play-in"
+    if po == "Champion":
+        fin = t["series"][-1] if t["series"] else None
+        if not fin:
+            return "Won the title"
+        return (f'Won the title <span class="mono">{fin["w"]}{EN}{fin["l"]}</span> over '
+                f'{s.tlink(fin["opp"], t["s"])}')
+    rnd = ROUND_WORDS.get(po, po)
+    el = t.get("elim")
+    if not el:
+        return f"Lost in the {rnd}"
+    return f'Lost in the {rnd} <span class="mono">{el["w"]}{EN}{el["l"]}</span> to {s.tlink(el["opp"], t["s"])}'
+
+
 def latest_seasons(s, pid, up, pts):
+    """One compact card per season: season · logo + city · #23 of 30, then 26–56 · the result."""
     if not pts:
         return ""
     items = []
     for p in sorted(pts, key=lambda p: -p["sy"])[:3]:
         t = s.d.team(p["f"], p["sy"])
-        items.append(f'<li><a class="mono" href="{board_link(up, p["sy"], p["f"])}">{season_label(p["sy"])}</a> '
-                     f'{s.tlink(p["f"], p["sy"])}: <strong class="mono">#{p["rnk"]} of {p["size"]}</strong>, '
-                     f'<span class="mono">{t["w"]}{EN}{t["l"]}</span> · {playoff_short(s, t, up)}</li>')
+        # each separator travels with the item after it, so no line can start or end with a lone "·"
+        items.append(f'<li><span class="l1"><a class="mono" href="{board_link(up, p["sy"], p["f"])}">{season_label(p["sy"])}</a>'
+                     f'<span class="it"><i>·</i>{s.tlink(p["f"], p["sy"])}</span>'
+                     f'<span class="it"><i>·</i><strong class="mono">#{p["rnk"]} of {p["size"]}</strong></span></span>'
+                     f'<span class="l2"><span class="mono">{t["w"]}{EN}{t["l"]}</span> · {result_words(s, t, up)}</span></li>')
     return '<ul class="latest">' + "".join(items) + "</ul>"
 
 
@@ -736,7 +842,7 @@ def playoff_table(s, pid, up):
         gap = (A.pct(po["w"], po["l"]) - A.pct(po["ow"], po["ol"])) if po["ow"] + po["ol"] and po["g"] else None
         rows.append("<tr>" + "".join([
             td("Season", season_label(st["s"]), st["s"], "mono"), td("Team", s.tlink(st["f"], st["s"]), t["name"]),
-            td("Result", playoff_text(s, t, up), A.PO_DEPTH[t["po"]]),
+            td("Result", result_words(s, t, up), A.PO_DEPTH[t["po"]]),
             td("Final NBA finish", finish_cell(s, t, up), t["rnk"]),
             td("His games", f'{po["g"]} of {po["g"] + po["ow"] + po["ol"]}', po["g"], "mono"),
             td("With him", rec_cell(po["w"], po["l"]), fval(A.pct(po["w"], po["l"]))),
@@ -746,7 +852,10 @@ def playoff_table(s, pid, up):
         return ""
     heads = [th("Season", sort="descending"), th("Team", "text"), th("Result"), th("Final NBA finish", first="ascending"),
              th("His games"), th("With him"), th("Without him"), th("Gap")]
-    return ('<section><h2 id="cap-po">Playoffs, with and without him</h2>' + sortable("cap-po", "", heads, rows) + "</section>")
+    na = na_columns(heads, rows)
+    note = ('<p class="note">He played every playoff game for these teams, so there is no "without him" record.</p>'
+            if 6 in na else "")
+    return ('<section><h2 id="cap-po">Playoffs, with and without him</h2>' + sortable("cap-po", "", heads, rows) + note + "</section>")
 
 
 def current_block(s, pid, up):
@@ -802,11 +911,7 @@ def latest_name(s, f):
 
 
 def team_link_latest(s, f):
-    nm = latest_name(s, f)
-    lg = s.logo(f, s._latest[f][0], "../", nm)
-    if f in TEAM_SLUG:
-        return f'<span class="tmn">{lg}<a href="{CM_TEAM.format(TEAM_SLUG[f])}">{e(nm)}</a></span>'
-    return f'<span class="tmn">{lg}{e(nm)}</span>'
+    return s.tlink(f, s._latest[f][0], latest_name(s, f))
 
 
 def opp_rows(s, pid, kind="2"):
@@ -817,7 +922,7 @@ def opp_rows(s, pid, kind="2"):
             continue
         r = out[o]
         r["w" if ts > os_ else "l"] += 1
-        r["names"].add(s.d.team(o, sy)["name"] if s.d.team(o, sy) else o)
+        r["names"].add(s.city(o, sy))
         r["first"] = min(r["first"], sy)
         r["last"] = max(r["last"], sy)
     return out
@@ -890,7 +995,8 @@ def opponents_section(s, pid, up):
     for f in sorted(rs, key=lambda f: (-(rs[f]["w"] + rs[f]["l"]), latest_name(s, f))):
         r = rs[f]
         g = r["w"] + r["l"]
-        names = sorted(r["names"] - {latest_name(s, f)})
+        ln = latest_name(s, f)
+        names = sorted(r["names"] - {s.city(f, s._latest[f][0], ln)})
         sub = f'<span class="sub blk">as {e(", ".join(names))}</span>' if names else ""
         sw, sl = ser.get(f, [0, 0])
         p = po.get(f)
@@ -965,11 +1071,12 @@ def player_games_json(s, pid):
 
 
 def team_names_json(s):
-    names = {f"{t['f']}-{t['s']}": t["name"] for t in s.d.teams.values()}
+    # display names for the browser tables (opp.js, compare.js): the city that season (rule 5)
+    names = {f"{t['f']}-{t['s']}": s.city(t["f"], t["s"]) for t in s.d.teams.values()}
     latest = {}
     for t in s.d.teams.values():
         if t["f"] not in latest or t["s"] > latest[t["f"]][0]:
-            latest[t["f"]] = (t["s"], t["name"])
+            latest[t["f"]] = (t["s"], s.city(t["f"], t["s"]))
     return "assets/teamnames.json", json.dumps({"season": names, "latest": {f: v[1] for f, v in latest.items()},
                                                 "cm": TEAM_SLUG}, ensure_ascii=False, sort_keys=True,
                                                separators=(",", ":"))
@@ -1039,7 +1146,7 @@ def help_panel(s, pid, up):
     rank = f'<span class="rk">#{rk[0]:,} of {rk[1]:,} (300+ games, most help = #1)</span>' if rk else ""
     return f"""<section class="help"><h2>Teammate help</h2>
 <div class="cards"><div class="card"><span class="lbl">Help per season</span><span class="big">{a['help']:.1f}</span><span class="sub">same-season honors of teammates</span>{rank}</div>
-<div class="card"><span class="lbl">Entering the season</span><span class="big">{a['enter']:.1f}</span><span class="sub">their honors the year before</span></div></div>
+<div class="card"><span class="lbl">Help coming in</span><span class="big">{a['enter']:.1f}</span><span class="sub">teammates' honors the season before</span></div></div>
 {('<div class="box" style="margin-top:.45rem"><div class="boxhead">Most of it came from <a href="#cap-help">by season</a></div><ul class="rows">' + tops + '</ul></div>') if tops else '<p class="note">No honored teammate in any season: help 0.</p>'}
 {sim}
 </section>"""
@@ -1075,35 +1182,48 @@ def help_table(s, pid, up):
     vals = [hs.get(f"{st['f']}-{st['s']}", [0])[0] for st in sts]
     top = max(vals + [1])
     items = []
+
+    def who(q):
+        return s.plink(q, up) if q in s.ids else e(q)
     for st in sts:
         h = hs.get(f"{st['f']}-{st['s']}")
         if not h:
             continue
         same, enter, partial, mates = h
         honored = [m for m in mates if m[2]]
+        prev = [m for m in mates if m[3] and not m[2]]
+        head = (f'<span class="hs-y">{season_label(st["s"])}</span>'
+                f'<span class="hs-t">{s.tlink(st["f"], st["s"])}</span>')
+        coming = (f'<p class="more">Help coming in (teammates\' honors the season before): '
+                  f'<strong class="mono">{hfmt(enter, partial)}</strong>'
+                  + (" · from " + ", ".join(f'{who(q)} ({pe:.1f})' for q, shared, ps, pe, aws in prev[:4]) if prev else "")
+                  + "</p>")
+        if st["s"] in s.partial_years:
+            # honors for this season are not in the awards file yet: say so, no bar
+            items.append(f'<li class="slim">{head}<span class="hnote">Honors not in the data yet</span></li>')
+            continue
+        if not honored:
+            # one slim row; a toggle only when last season's honors give something to show
+            more = (f'<details><summary>More: last season\'s honors</summary>{coming}</details>' if prev else "")
+            items.append(f'<li class="slim">{head}<span class="hnote">No honored teammate'
+                         f'{" <span class=\"aw\">partial</span>" if partial else ""}</span>{more}</li>')
+            continue
         chips = "".join(
-            f'<span class="mchip">{s.pic(q, up, "sm")}{s.plink(q, up) if q in s.ids else e(q)} {award_badges(aws)}'
+            f'<span class="mchip">{s.pic(q, up, "sm")}<span class="mn">{who(q)}</span> {award_badges(aws)}'
             f'<span class="gtog">{shared} g</span></span>'
             for q, shared, ps, pe, aws in honored)
         allm = stint_mates(s, pid, st["f"], st["s"])
         hon = {m[0] for m in honored}
         rest = sorted(((g, q) for q, g in allm.items() if q not in hon), reverse=True)
-        prev = [m for m in mates if m[3] and not m[2]]
-        extra = (f'<p class="more">Entering the season: {hfmt(enter, partial)}'
-                 + (" · from " + ", ".join(f'{s.plink(q, up) if q in s.ids else e(q)} ({pe:.1f})' for q, shared, ps, pe, aws in prev[:4]) if prev else "")
-                 + "</p>"
-                 + (f'<p class="more">No honors that season: ' + ", ".join(
-                     f'{s.plink(q, up) if q in s.ids else e(q)} {g} g' for g, q in rest[:14])
-                    + (f" and {len(rest) - 14} more" if len(rest) > 14 else "") + "</p>" if rest else ""))
-        w = 0 if not same else max(0.2, round(6 * same / top, 2))
-        if st["s"] in s.partial_years:
-            val = '<span class="aw">honors not in the data yet</span>'
-        else:
-            val = hfmt(same, partial) + (' <span class="aw">partial</span>' if partial else "")
-        items.append(f"""<li><span class="hs-y">{season_label(st['s'])}</span><span class="hs-t">{s.tlink(st['f'], st['s'])}</span>
-<span class="hbar"><i class="{'zero' if not same else ''}" style="width:{w}rem"></i>{val}</span>
-<span class="chipsrow">{chips or '<span class="flat">No honored teammate</span>'}</span>
-<details><summary>Entering help and the other teammates</summary>{extra}</details></li>""")
+        others = ((f'<p class="more">Other teammates (no honors that season): ' + ", ".join(
+            f'{who(q)} {g} g' for g, q in rest[:14]) + (f" and {len(rest) - 14} more" if len(rest) > 14 else "") + "</p>")
+            if rest else "")
+        w = max(0.2, round(6 * same / top, 2))
+        val = hfmt(same, partial) + (' <span class="aw">partial</span>' if partial else "")
+        items.append(f"""<li>{head}
+<span class="hbar"><i style="width:{w}rem"></i>{val}</span>
+<span class="chipsrow">{chips}</span>
+<details><summary>More: last season's honors and other teammates</summary>{coming}{others}</details></li>""")
     return (f'<section><h2 id="cap-help">Teammate help by season</h2>'
             f'<p class="note">Help = Teammates Score points for honors won that season by teammates who shared a game with him. '
             f'<a href="../comparison-rules.html">How help works</a>.</p><ul class="helprows">{"".join(items)}</ul></section>')
@@ -1148,16 +1268,82 @@ def peer_section(s, pid, up):
 def compare_summary(s, pid):
     sm = A.summary(s.d, pid)
     a = s.help["avg"].get(pid, {})
+    rows = career_rows(s, pid)
+    deep = max((A.PO_DEPTH[r["po"]] for r in rows), default=0)
+    deep_po = next((r["po"] for r in rows if A.PO_DEPTH[r["po"]] == deep), "")
     return {"name": s.ids[pid]["name"], "slug": s.ids[pid]["slug"], "hs": s.ids[pid].get("hs") or "",
             "w": sm["w"], "l": sm["l"], "wl": sm["w"] - sm["l"], "pct": A.pct(sm["w"], sm["l"]),
-            "avg": sm["rnk"], "titles": sm["titles"], "trips": sm["trips"], "seasons": sm["seasons"],
+            "avg": sm["rnk"], "adj30": round(eq30(s.adj_avg(pid)), 4), "titles": sm["titles"], "trips": sm["trips"],
+            "seasons": sm["seasons"], "deep": deep, "deepLabel": A.PO_LABEL[deep_po] if deep else "Missed the playoffs",
+            "gap": round(sm["gap"], 4) if sm["gap"] is not None else None,
             "help": a.get("help"), "enter": a.get("enter"),
-            "span": season_label(min(r["sy"] for r in career_rows(s, pid))) + " to " +
-                    season_label(max(r["sy"] for r in career_rows(s, pid)))}
+            "span": season_label(min(r["sy"] for r in rows)) + " to " + season_label(max(r["sy"] for r in rows))}
+
+
+def short_name(name, other):
+    """Last name for the scoreboard columns ('Malone'); the full name when both share it."""
+    def last(n):
+        w = [x for x in n.split() if x.lower().strip(".,") not in ("jr", "sr", "ii", "iii", "iv")]
+        return w[-1] if w else n
+    return name if last(name) == last(other) else last(name)
+
+
+def scoreboard(s, a, b, ca, cb, up):
+    """H2H-style scoreboard: one row per category, the leader's cell tinted, a tally line.
+    Records and finishes only; 'leads' means the larger number, or the smaller one where it says so."""
+    na, nb = short_name(ca["name"], cb["name"]), short_name(cb["name"], ca["name"])
+
+    def gap_txt(g):
+        return "N/A" if g is None else pp(g)
+    # (label, how it counts, value A, value B, text A, text B, lower leads)
+    cats = [
+        ("Career record", "win % in his games", round(ca["pct"] or 0, 3), round(cb["pct"] or 0, 3),
+         f'{wl(ca["w"], ca["l"])}<small>{pct1(ca["pct"])}</small>', f'{wl(cb["w"], cb["l"])}<small>{pct1(cb["pct"])}</small>', False),
+        ("W \u2212 L", "", ca["wl"], cb["wl"], signed(ca["wl"]), signed(cb["wl"]), False),
+        ("Titles", "", ca["titles"], cb["titles"], str(ca["titles"]), str(cb["titles"]), False),
+        ("Playoff trips", "", ca["trips"], cb["trips"], str(ca["trips"]), str(cb["trips"]), False),
+        ("Deepest run", "", ca["deep"], cb["deep"], e(ca["deepLabel"]), e(cb["deepLabel"]), False),
+        ("Average finish", "adjusted for league size, lower leads", round(ca["adj30"], 1), round(cb["adj30"], 1),
+         f'{ca["adj30"]:.1f} of 30', f'{cb["adj30"]:.1f} of 30', True),
+        ("With vs without", "win-rate gap in points", None if ca["gap"] is None else round(100 * ca["gap"], 1),
+         None if cb["gap"] is None else round(100 * cb["gap"], 1), gap_txt(ca["gap"]), gap_txt(cb["gap"]), False),
+        ("Help per season", "teammates' honors, less help leads", None if ca["help"] is None else round(ca["help"], 1),
+         None if cb["help"] is None else round(cb["help"], 1), hfmt(ca["help"]), hfmt(cb["help"]), True),
+    ]
+    rows = []
+    la = lb = even = 0
+    for lab, how, va, vb, ta, tb, low in cats:
+        if va is None or vb is None or va == vb:
+            ka = kb = ""
+            even += 1
+        elif (va < vb) == low:
+            ka, kb = ' class="la"', ""
+            la += 1
+        else:
+            ka, kb = "", ' class="lb"'
+            lb += 1
+        rows.append(f'<tr{" class=\"txt\"" if lab == "Deepest run" else ""}><th scope="row">{e(lab)}{("<small>" + e(how) + "</small>") if how else ""}</th>'
+                    f'<td{ka}>{ta}</td><td{kb}>{tb}</td></tr>')
+    n = len(cats)
+    tally = f"{e(na)} leads {la} of {n} · {e(nb)} leads {lb} of {n}" + (f" · {even} even" if even else "")
+    help_line = ""
+    if ca["help"] is not None and cb["help"] is not None and round(ca["help"], 1) != round(cb["help"], 1):
+        lo, hi = (ca, cb) if ca["help"] < cb["help"] else (cb, ca)
+        help_line = (f'<p class="note">Less help: {e(short_name(lo["name"], hi["name"]))} '
+                     f'({lo["help"]:.1f} per season vs {hi["help"]:.1f}). Help is the Teammates Score of the '
+                     f'teammates he shared games with; the smaller number is tinted.</p>')
+    return f"""<section class="sboard"><h2 id="cap-sb">Head to head</h2>
+<div class="sbhead"><div class="sbp a">{s.pic(a, up, 'md')}<b>{e(ca['name'])}</b><small>{e(ca['span'])}</small></div>
+<span class="vs">vs</span><div class="sbp b">{s.pic(b, up, 'md')}<b>{e(cb['name'])}</b><small>{e(cb['span'])}</small></div></div>
+<table class="sbt" aria-labelledby="cap-sb"><thead><tr><th scope="col">Category</th><th scope="col">{e(na)}</th><th scope="col">{e(nb)}</th></tr></thead>
+<tbody>{''.join(rows)}</tbody></table>
+<p class="tally">{tally}</p>
+{help_line}<p class="note">The leader's cell is tinted: the larger number, except average finish and help, where the smaller one leads. These are team records and finishes, not a measure of who was better.</p>
+</section>"""
 
 
 def compare_page(s, a, b, dist):
-    """Static comparison for a suggested pair: noindex, not in the sitemap, own share image."""
+    """Static comparison for a suggested pair: noindex, not in the sitemap, own share card."""
     up = "../"
     sa, sb = s.ids[a]["slug"], s.ids[b]["slug"]
     if sb < sa:
@@ -1166,57 +1352,66 @@ def compare_page(s, a, b, dist):
     ra, rb = career_rows(s, a), career_rows(s, b)
     ca, cb = compare_summary(s, a), compare_summary(s, b)
     na, nb = ca["name"], cb["name"]
+    sna, snb = short_name(na, nb), short_name(nb, na)
     n = max(len(ra), len(rb))
-    rows = []
-    swing = None
+
+    def adj(r):
+        return (r["rnk"] - 1) / (r["size"] - 1) if r["size"] > 1 else 0.0
+    trs, cards = [], []
+    ta = tb = 0
     for k in range(n):
         x = ra[k] if k < len(ra) else None
         y = rb[k] if k < len(rb) else None
+        lead = None
+        if x and y and abs(adj(x) - adj(y)) > 1e-9:
+            lead = "a" if adj(x) < adj(y) else "b"
+            ta += lead == "a"
+            tb += lead == "b"
+        tally = f"{ta}{EN}{tb}" if (x and y) else ""
 
-        def side(r, lab):
+        def cells(r, side):
             if not r:
-                return [td(f"{lab} season", "N/A"), td(f"{lab} final finish", "N/A"), td(f"{lab} W–L", "N/A"),
-                        td(f"{lab} playoffs", "N/A"), td(f"{lab} help", "N/A")]
-            return [td(f"{lab} season", f'{season_label(r["sy"])} {s.tlink(r["f"], r["sy"])}', r["sy"]),
-                    td(f"{lab} final finish", f'<a class="mono" href="{board_link(up, r["sy"], r["f"])}">#{r["rnk"]} of {r["size"]}</a>', r["rnk"]),
-                    td(f"{lab} W–L", wl(r["w"], r["l"]), r["w"] - r["l"], "mono"),
-                    td(f"{lab} playoffs", A.PO_LABEL[r["po"]] if r["po"] else "Missed the playoffs", A.PO_DEPTH[r["po"]]),
-                    td(f"{lab} help", hfmt(r["help"], r["partial"]), r["help"], "mono")]
-        if x and y:
-            dv = (x["w"] - x["l"]) - (y["w"] - y["l"])
-            if swing is None or abs(dv) > abs(swing[0]):
-                swing = (dv, k, x, y)
-        rows.append("<tr>" + td("Career season", str(k + 1), k + 1, "mono") + "".join(side(x, na)) + "".join(side(y, nb)) + "</tr>")
-    heads = [th("Career season", sort="ascending", first="ascending")]
-    for lab in (na, nb):
-        heads += [th(f"{e(lab)}: season"), th("Final finish", first="ascending"), th("W–L"), th("Playoffs"), th("Help")]
-    div = ""
-    if swing:
-        dv, k, x, y = swing
-        div = (f"<p>The biggest gap in one season came in career season {k + 1}: {e(na)}'s {season_label(x['sy'])} "
-               f"{e(x['team'])} went {wl(x['w'], x['l'])} in his games (#{x['rnk']} of {x['size']}); {e(nb)}'s "
-               f"{season_label(y['sy'])} {e(y['team'])} went {wl(y['w'], y['l'])} (#{y['rnk']} of {y['size']}).</p>")
+                return '<td colspan="5" class="none">No season</td>'
+            tint = f' class="l{side}"' if lead == side else ""
+            return (f'<td class="cs"><span class="mono">{season_label(r["sy"])}</span> {s.tlink(r["f"], r["sy"])}</td>'
+                    f'<td{tint}><a class="mono" href="{board_link(up, r["sy"], r["f"])}">#{r["rnk"]} of {r["size"]}</a></td>'
+                    f'<td class="mono">{wl(r["w"], r["l"])}</td>'
+                    f'<td class="po">{e(A.PO_LABEL[r["po"]])}</td>'
+                    f'<td class="mono">{hfmt(r["help"], r["partial"])}</td>')
 
-    def summ(c):
-        return (f"<li><strong>{e(c['name'])}</strong> ({e(c['span'])}): {wl(c['w'], c['l'])} ({pct1(c['pct'])}), "
-                f"W − L {signed(c['wl'])}, average final finish {c['avg']:.1f}, {c['trips']} playoff trips, "
-                f"{c['titles']} titles, help {c['help']:.1f} per season ({c['enter']:.1f} entering).</li>")
-    img = f"compare/img/{sa}--{sb}.png"
-    og = BASE + img if os.path.exists(os.path.join(ROOT, img)) else None
-    card = json.dumps([ca, cb], ensure_ascii=False, separators=(",", ":"))
+        def card(r, side, nm):
+            if not r:
+                return f'<div class="cc {side} none"><span class="cc-n">{e(nm)}</span><span>No season</span></div>'
+            tint = " lead" if lead == side else ""
+            return (f'<div class="cc {side}{tint}"><span class="cc-n">{e(nm)}</span>'
+                    f'<span class="mono">{season_label(r["sy"])}</span>{s.tlink(r["f"], r["sy"])}'
+                    f'<a class="mono fin" href="{board_link(up, r["sy"], r["f"])}">#{r["rnk"]} of {r["size"]}</a>'
+                    f'<span class="mono">{wl(r["w"], r["l"])}</span><span>{e(A.PO_LABEL[r["po"]])}</span>'
+                    f'<span class="mono">Help {hfmt(r["help"], r["partial"])}</span></div>')
+        trs.append(f'<tr><td class="mono">{k + 1}</td>{cells(x, "a")}{cells(y, "b")}<td class="mono">{tally}</td></tr>')
+        cards.append(f'<li><div class="cc-h"><b>Career season {k + 1}</b>'
+                     + (f'<span class="mono">better finish so far: {e(sna)} {ta}{EN}{tb} {e(snb)}</span>' if tally else "")
+                     + f'</div><div class="cc-g">{card(x, "a", sna)}{card(y, "b", snb)}</div></li>')
+    sub = "<th scope=\"col\">Season</th><th scope=\"col\">Finish</th><th scope=\"col\">W\u2013L</th><th scope=\"col\">Playoffs</th><th scope=\"col\">Help</th>"
+    table = (f'<div class="cmpwide"><table class="cmpt" aria-labelledby="cap-cmp"><thead>'
+             f'<tr><th scope="col" rowspan="2">#</th><th scope="colgroup" colspan="5" class="ga">{e(na)}</th>'
+             f'<th scope="colgroup" colspan="5" class="gb">{e(nb)}</th><th scope="col" rowspan="2">Better finish<br>{e(sna)}{EN}{e(snb)}</th></tr>'
+             f'<tr>{sub}{sub}</tr></thead><tbody>{"".join(trs)}</tbody></table></div>'
+             f'<ol class="cmpcards">{"".join(cards)}</ol>')
+    card_data = json.dumps([ca, cb], ensure_ascii=False, separators=(",", ":"))
     body = f"""<header class="ent">{s.pic(a, up, 'md')}{s.pic(b, up, 'md')}<div><h1>{e(na)} vs {e(nb)}</h1>
 <p class="subtitle">Team success, aligned by career season: final NBA finish, record in his games, playoffs and teammate help.</p></div></header>
-<p class="lead">{e(peer_reason(s, a, b, dist))}</p>
-<ul class="takes">{summ(ca)}{summ(cb)}</ul>
-<div class="prose">{div}</div>
-<p><button type="button" class="more-btn" id="card-dl" data-card="{e(card)}" data-up="{up}">Download image</button> <span class="note">Share this page's link; the image states the comparison and its scope.</span></p>
+{scoreboard(s, a, b, ca, cb, up)}
+<p><button type="button" class="more-btn" id="card-dl" data-card="{e(card_data)}" data-up="{up}">Download image</button> <span class="note">Share this page's link; the image states the comparison and its scope.</span></p>
 <section><h2 id="cap-cmp">Season by season</h2>
-<p class="note">Each player's season is the team he played the most games for; W–L is his teams' record in his games that season. Help counts honors won that season by teammates who shared a game with him. <a href="../comparison-rules.html">Comparison rules</a>.</p>
-{sortable("cap-cmp", "", heads, rows, "cmp")}</section>
+<p class="note">Career season 1 next to career season 1. Each player's season is the team he played the most games for; W–L is his teams' record in his games that season. The tinted finish is the team that finished higher that season, on the league-size-adjusted scale; the last column keeps the running count. Help counts honors won that season by teammates who shared a game with him. <a href="../comparison-rules.html">Comparison rules</a>.</p>
+{table}</section>
+<p class="note">Why these two: {e(peer_reason(s, a, b, dist))}</p>
 <p class="more">{s.plink(a, up)} · {s.plink(b, up)} · <a href="../lists/same-help-different-results.html">Same help, different results</a></p>
 <script src="../assets/compare.js" defer></script>"""
     desc = (f"{na} and {nb} compared: {wl(ca['w'], ca['l'])} vs {wl(cb['w'], cb['l'])} in their games, average final finish "
-            f"{ca['avg']:.1f} vs {cb['avg']:.1f}, help {ca['help']:.1f} vs {cb['help']:.1f} points per season.")
+            f"{ca['adj30']:.1f} vs {cb['adj30']:.1f} of 30 (adjusted for league size), help {ca['help']:.1f} vs {cb['help']:.1f} points per season.")
+    og = f"{OG}compare/{sa}--{sb}.png"
     return rel, page(rel, f"{na} vs {nb}: team success compared | HoopsMatic", desc, body, up,
                      robots="noindex, follow", og=og)
 
@@ -1241,7 +1436,7 @@ def comparison_rules_page(s):
 <li>On every player page: his best and worst final finish among the seasons with help within 25% of his median.</li>
 </ul>
 <h2>Share images</h2>
-<p>Each player's three suggested comparisons (players with 300+ games) have their own page and share image. Any other comparison is drawn in your browser: the "Download image" button builds the card from the page's data, with this site's fonts and headshots.</p>
+<p>Each player's three suggested comparisons (players with 300+ games) have their own page and social card. On any comparison, the "Download image" button builds a card in your browser from the page's data, with this site's fonts and headshots.</p>
 </section>"""
     rel = "comparison-rules.html"
     return rel, page(rel, "How teammate help and peer comparisons work | HoopsMatic",
@@ -1405,7 +1600,7 @@ def player_page(s, pid):
         facts, pts = player_facts(s, pid)
         desc = (f"{name}'s teams went {sm['w']}{EN}{sm['l']} ({pct1(A.pct(sm['w'], sm['l']))}) in his games, {span}: "
                 f"{sm['winning']} winning seasons, {sm['trips']} playoff trips, {sm['titles']} titles, average final "
-                f"finish {sm['rnk']:.1f}. Every season ranked, playoffs, with and without him.")
+                f"finish {eq30(s.adj_avg(pid)):.1f} of 30 (adjusted for league size). Every season ranked, playoffs, with and without him.")
     else:
         sm = None
         span = season_label(CURRENT_SEASON)
@@ -1445,7 +1640,7 @@ def player_page(s, pid):
 <div class="hero">
 <section class="tl"><h2 id="chart-t">Final NBA finish, season by season</h2>
 {chart}
-<p class="note legend"><span class="key title"></span>Title <span class="key finals"></span>Finals <span class="key playoffs"></span>Other playoffs <span class="key missed"></span>Missed. #1 = champion; the dashed line is last place that season. Each point opens that season's final standings.</p>
+<p class="note legend"><span class="key title"></span>Title <span class="key finals"></span>Finals <span class="key playoffs"></span>Other playoffs <span class="key missed"></span>Missed the playoffs. #1 = champion; the dashed line is last place that season. Each point opens that season's final standings.</p>
 {nxt}</section>
 {help_panel(s, pid, up)}
 </div>
@@ -1474,15 +1669,22 @@ def player_page(s, pid):
             parts.append('<section><h2>Lists he is on</h2><ul class="badges">' + "".join(
                 f'<li><a class="badge" href="../lists/{e(k)}.html">{e(t)}</a></li>' for k, t in b) + "</ul></section>")
     body = "\n".join(p for p in parts if p)
-    return rel, page(rel, title, desc, body, up)
+    # the card needs assets/card/<slug>.json, written for players with a completed season
+    og = f"{OG}player/{v['slug']}.png" if has_hist else None
+    return rel, page(rel, title, desc, body, up, og=og)
 
 
 # ---------------------------------------------------------------------------
 # Lists
 # ---------------------------------------------------------------------------
 def season_chips(s, seasons, up):
-    return ", ".join(f'{season_label(x["s"])} {s.tlink(x["f"], x["s"])} <span class="sub">{x["g"]} g</span>'
-                     for x in seasons)
+    """One line of chips, logo + two-digit year ('71 = 1970-71); his games per season behind one click."""
+    chips = "".join(
+        f'<span class="yc" title="{season_label(x["s"])} {e((s.d.team(x["f"], x["s"]) or {}).get("name", x["f"]))}">'
+        f'{s.logo(x["f"], x["s"], up)}\u2019{x["s"] % 100:02d}</span>' for x in seasons)
+    games = ", ".join(f'{season_label(x["s"])} {e(s.city(x["f"], x["s"]))} {x["g"]} g' for x in seasons)
+    return (f'<details class="ychips"><summary><span class="vh">Seasons: </span>{chips}'
+            f'<span class="ymore">games</span></summary><p class="yg">{games}</p></details>')
 
 
 LISTS = [
@@ -1606,7 +1808,7 @@ def list_page(s, key, title, desc, value_label, cache):
                 items = [(r["pid"], f'<span class="big mono">{r["w"]}</span>',
                           f'<span class="mono">{r["w"]}-{r["l"]}</span> in his games, {fpct(A.pct(r["w"], r["l"]))}')
                          for r in res[f]]
-                blocks.append(f'<h2 class="fr">{s.tlink(f, last_season)}</h2>' + rows_html(s, items, up))
+                blocks.append(f'<h2 class="fr">{s.tlink(f, last_season, full=True)}</h2>' + rows_html(s, items, up))
             return "".join(blocks)
         body_panels = panels(s, key, up, fr)
         first_rows = [{"pid": r[0]["pid"]} for r in A.list_franchise(s.d, 1947, 1, top=1).values()]
@@ -1642,11 +1844,13 @@ def list_page(s, key, title, desc, value_label, cache):
             pid = r["pid"]
             if (key, title) not in s.badges[pid]:
                 s.badges[pid].append((key, title))
+    chip_note = (" Each chip is one season: the team's logo and the year the season ended (\u201971 = 1970-71). "
+                 "Tap a row's chips for his games with each team." if key in ("worst-team", "best-team", "sixty-win-pace") else "")
     body = f"""<header><h1>{e(title)}</h1><p class="subtitle">{e(desc)}</p></header>
 {toggles(True, 'l')}
 {extra}
 {body_panels}
-<p class="note">Regular season, 1946-47 through 2025-26. A player was on a team-season if he played at least one game for it; "Only team-seasons where he played 20+ games" drops the others before counting. The number next to each season is his games for that team. <a href="../how-we-count.html">How we count</a>.</p>
+<p class="note">Regular season, 1946-47 through 2025-26. A player was on a team-season if he played at least one game for it; "Only team-seasons where he played 20+ games" drops the others before counting.{chip_note} <a href="../how-we-count.html">How we count</a>.</p>
 <p class="more">More lists: {' · '.join(f'<a href="{k}.html">{e(t)}</a>' for k, t, _, _ in LISTS if k != key)}</p>
 <p class="more">Career boards: {' · '.join(f'<a href="{k}.html">{e(B.BOARDS[k]["h1"])}</a>' for k in B.BOARDS)}</p>"""
     pdesc = f"{title}: {desc} All-time, since 1976-77 and since 1996-97, with every player's team and games."
@@ -1703,7 +1907,8 @@ def season_page(s, sy):
 """
     desc = (f"Every team in {lab} ranked by final NBA finish: {champ['name']} #1"
             + (f", {runner['name']} #2" if runner else "") + f", all {n} teams with records, playoff series and each team's most-used players.")
-    return rel, page(rel, f"{lab} NBA final standings: all {n} teams ranked | HoopsMatic", desc, body, up)
+    return rel, page(rel, f"{lab} NBA final standings: all {n} teams ranked | HoopsMatic", desc, body, up,
+                     og=f"{OG}season/{lab}.png")
 
 
 def seasons_index(s):
@@ -1716,7 +1921,7 @@ def seasons_index(s):
             continue
         champ = min(ts, key=lambda t: t["rnk"])
         items.append(f'<li><a href="{season_label(sy)}.html"><strong class="mono">{season_label(sy)}</strong></a> '
-                     f'<span class="det">{len(ts)} teams. #1 {e(champ["name"])} ({champ["w"]}{EN}{champ["l"]})</span></li>')
+                     f'<span class="det">{len(ts)} teams. #1 {e(s.city(champ["f"], sy))} ({champ["w"]}{EN}{champ["l"]})</span></li>')
     body = f"""<header><h1>NBA final standings, every season</h1>
 <p class="subtitle">Every season from {season_label(1947)} to {season_label(LAST_COMPLETE)}, all teams ranked by final NBA finish (champion first, then playoff round, then win %).</p></header>
 <ul class="lists seasons">{''.join(items)}</ul>"""
@@ -1755,7 +1960,7 @@ def board_cell(col, m):
     if col == "avg":
         return m["avg"], f"{m['avg']:.1f}"
     if col == "adj":
-        return m["adj"], f"{m['adj']:.3f}"
+        return m["adj"], ("N/A" if m["adj"] is None else f"{eq30(m['adj']):.1f}")
     if col == "gap":
         return m["gap"], pp(m["gap"])
     if col == "with":
@@ -1811,6 +2016,19 @@ def board_form(s, key):
 <p class="note">Scope: "Games in a team-season" drops the team-seasons where he played fewer games, before anything is counted. "Career games" sets who qualifies, after. "One season" and "All-Star in the selected season" work together. Filters run in your browser; the URL keeps them, so a filtered view can be shared.</p>"""
 
 
+def noas_note(s):
+    """The seasons the no-All-Star board leaves out, worked out from the data on every build."""
+    miss = B.honors_missing(s.d, s.help)
+    if not miss:
+        return ""
+    if miss == list(range(miss[0], CURRENT_SEASON + 1)):
+        what = f"{season_label(miss[0])} onward"
+    else:
+        what = ", ".join(season_label(y) for y in miss)
+    return (f'<p class="note"><strong>{what} not counted yet: honors missing from the awards data.</strong> '
+            'Those team-seasons are left out (not counted as "no All-Star teammate") until the awards file has them.</p>')
+
+
 def career_board_page(s, key):
     up = "../"
     rel = f"lists/{key}.html"
@@ -1842,16 +2060,18 @@ def career_board_page(s, key):
     body = f"""<header><h1>{e(dfn['h1'])}</h1><p class="subtitle">{e(dfn['desc'])}</p></header>
 {board_form(s, key)}
 <p id="board-pop" class="pop" aria-live="polite">{e(pop)}</p>
+{('<p class="note">' + e(dfn['explain']) + '</p>') if dfn.get('explain') else ''}
+{noas_note(s) if dfn.get("noas") else ''}
 <div class="tblwrap"><table id="board" class="tt board" data-board="{key}" data-up="{up}" data-def="{e(defjs)}" aria-labelledby="board-pop">
 <thead><tr>{''.join(heads)}</tr></thead><tbody>{''.join(rows)}</tbody></table>
 <p id="board-status" class="vh" role="status"></p></div>
 <p><button type="button" id="board-more" class="more-btn"{' hidden' if len(ranked) <= 100 else ''}>Show 100 more</button></p>
-{('<p class="note">All-Star selections for ' + ', '.join(season_label(y) for y in sorted(s.partial_years | {CURRENT_SEASON})) + ' are not in the awards data yet, so those seasons count as "no All-Star teammate". Pick "Completed seasons only" or a season range to leave them out.</p>') if dfn.get("noas") else ''}
 <p class="note">Regular seasons {season_label(1947)} to {season_label(CURRENT_SEASON)}, games he played through {e(nice_date(s.through))}; "Completed seasons only" stops at {season_label(LAST_COMPLETE)}. One team per season for season counts (the team he played the most games for); a playoff trip or title also counts the team he finished the season with. <a href="../how-we-count.html">How we count</a>.</p>
 <p class="more">Other career boards: {others}</p>
 <script src="../assets/boards.js" defer></script>"""
     desc = dfn["desc"]
-    return rel, page(rel, f"{dfn['title']} | HoopsMatic", desc, body, up)
+    og = f"{OG}list/{key}.png" if key in OG_LISTS else None
+    return rel, page(rel, f"{dfn['title']} | HoopsMatic", desc, body, up, og=og)
 
 
 # ---------------------------------------------------------------------------
@@ -2077,7 +2297,7 @@ def featured_pair(s, up, date):
     cells = "".join([
         cell("Record in his games", ca["pct"], cb["pct"], wl(ca["w"], ca["l"]), wl(cb["w"], cb["l"])),
         cell("Win %", ca["pct"], cb["pct"], pct1(ca["pct"]), pct1(cb["pct"])),
-        cell("Average finish", ca["avg"], cb["avg"], f"{ca['avg']:.1f}", f"{cb['avg']:.1f}", low=True),
+        cell("Average finish (of 30)", round(ca["adj30"], 1), round(cb["adj30"], 1), f"{ca['adj30']:.1f}", f"{cb['adj30']:.1f}", low=True),
         cell("Titles", ca["titles"], cb["titles"], str(ca["titles"]), str(cb["titles"])),
         cell("Help per season", ca["help"] or 0, cb["help"] or 0, f"{ca['help']:.1f}", f"{cb['help']:.1f}", low=True),
     ])
@@ -2275,7 +2495,7 @@ def how_page(s):
     for (pid, f, _), dates in sorted(grp.items(), key=lambda kv: (min(kv[1]), kv[0])):
         sy = int(min(dates)[:4]) + (1 if int(min(dates)[5:7]) >= 8 else 0)
         nm = s.plink(pid, "") if pid in s.ids else e(pid)
-        items.append(f"<li>{nm}, {season_label(sy)}, {s.tlink(f, sy)}: {len(dates)} "
+        items.append(f"<li>{nm}, {season_label(sy)}, {s.tlink(f, sy, full=True)}: {len(dates)} "
                      f"{'game' if len(dates) == 1 else 'games'} ({', '.join(e(nice_date(d)) for d in sorted(dates))})</li>")
     # the two player-seasons with the most removed rows, named from the data
     bys = defaultdict(lambda: defaultdict(int))
@@ -2287,7 +2507,7 @@ def how_page(s):
     for (pid, sy), fs in top:
         if pid not in s.ids:
             continue
-        teams = " and ".join(s.tlink(f, sy) for f in sorted(fs, key=lambda f: -fs[f]))
+        teams = " and ".join(s.tlink(f, sy, full=True) for f in sorted(fs, key=lambda f: -fs[f]))
         ex.append(f"{season_label(sy)} rows that put {s.plink(pid, '')} on the {teams}")
     examples_html = (" (for example, " + "; ".join(ex) + ")") if ex else ""
     removed_html = (f'<details><summary>{dropped} removed appearances, by player</summary><ul>{"".join(items)}</ul></details>'
@@ -2302,7 +2522,7 @@ def how_page(s):
 <p>Records use an en dash (706{EN}366). Win rates read 65.9%. With and without is shown as the two win rates, "65.9% with him · 39.9% without", and the gap as "26.0 points higher": the difference between the two win percentages (percentage points), worked out from the unrounded rates. It is not a relative change: +26.0 does not mean 26% more wins. Possession-based on/off is in points per 100 possessions, a different unit, and is always labeled that way. An empty sample (no games) shows N/A, never 0.0%.</p>
 <h2>Final NBA finish</h2>
 <p>Each team-season's final finish is the RNK column of our standings table. The champion is #1 and the runner-up #2; the other teams follow by playoff round reached, then by regular-season win %. Teams with the same round and win % share a rank. We re-derived every RNK from that rule: {len(rk.get('mismatches', [])) if rk else 'N/A'} of {sum(sizes.values()):,} team-seasons differ, and {rk.get('tied_rows', 0):,} share a rank.</p>
-<p>A finish always comes with that season's league size: "#8 of 30". League sizes changed a lot ({e(size_txt)}; 30 since 2004-05), so the league-size-adjusted finish puts every season on one scale: (rank {MINUS} 1) / (teams {MINUS} 1), where 0 is the champion and 1 is last. Live standings and conference seeds are labeled as such and never mixed with the final finish.</p>
+<p>A finish always comes with that season's league size: "#8 of 30". League sizes changed a lot ({e(size_txt)}; 30 since 2004-05), so the league-size-adjusted finish puts every season on one scale: (rank {MINUS} 1) / (teams {MINUS} 1), where 0 is the champion and 1 is last. <strong>Average final finish</strong> is shown on that scale by default, as a 30-team equivalent: 1 + adjusted × 29, one decimal ("4.1 of 30, adjusted for league size"), so 3rd of 9 teams in 1964-65 counts as 8.25 of 30, not 3rd. The raw average of the ranks is the second view on the board and the small line on the player card. Live standings and conference seeds are labeled as such and never mixed with the final finish.</p>
 <h2>Was he on that team?</h2>
 <p>A player was on a team-season if he played at least one regular-season game for it. "Played" means he logged minutes or any stat. Minutes were not kept from {season_label(1947)} to {season_label(1951)} and only in some games until {season_label(1976)}; in a game without minutes, being in the box score counts as playing. From {season_label(RAMIRO_FIRST)}, a 0-minute row with no stats counts when the lineup data puts him on the floor (a seconds-long appearance, not a DNP).</p>
 <p>We removed {dropped} appearances a player could not have made: source box scores that file one player's line under another player's ID, or on the wrong team{examples_html}. The rule flags games for one team that sit between two games he played for another team with no game of that team missed in between, appearances for two teams on the same day, and stints made only of 0-minute rows in games where minutes were kept. Among the flagged rows, the 0-minute ones go; when there are none (seasons without minutes), the rows of the team he played fewer games for that season go. Every removed row is listed below.</p>

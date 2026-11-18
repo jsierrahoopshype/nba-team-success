@@ -14,6 +14,9 @@ FOOTER = ('<footer class="hm-site-footer">\n'
           '<p>Anything wrong? Email us at <a href="mailto:hoopsmatic@hoopsmatic.com">hoopsmatic@hoopsmatic.com</a></p>\n'
           '<p>For any other inquiry, contact us at <a href="mailto:ads@hoopsmatic.com">ads@hoopsmatic.com</a></p>\n'
           '</footer>')
+OG = "https://hoopsmatic.com/og/team-success/"
+OG_LISTS = {"average-finish", "career-wins", "deepest-run", "gap-career", "no-allstar-teammate", "playoff-trips",
+            "titles", "winning-seasons", "wins-minus-losses"}
 WORKER_MARKERS = ("<body", "</head", "</style", "</script", "<!--")
 
 
@@ -51,10 +54,21 @@ def test_canonical_and_og_url(html):
         want = BASE + ("" if rel == "index.html" else rel)
         assert f'<link rel="canonical" href="{want}">' in t, rel
         assert f'<meta property="og:url" content="{want}">' in t, rel
+        og = re.search(r'<meta property="og:image" content="([^"]+)">', t).group(1)
+        assert f'<meta name="twitter:image" content="{og}">' in t, rel
+        assert '<meta property="og:image:width" content="1200">' in t, rel
+        assert '<meta property="og:image:height" content="630">' in t, rel
+        name = rel.rsplit("/", 1)[-1][:-5]
         if rel.startswith("stories/") and rel != "stories/index.html":
-            assert f'<meta property="og:image" content="{BASE}stories/img/' in t, rel     # its own share image
+            assert og.startswith(f"{BASE}stories/img/"), rel                          # its own share image
+        elif rel.startswith("player/") and os.path.exists(os.path.join(ROOT, "assets", "card", name + ".json")):
+            assert og == f"{OG}player/{name}.png", rel                               # hoopsmatic-og-card
+        elif rel.startswith("lists/") and name in OG_LISTS:
+            assert og == f"{OG}list/{name}.png", rel
+        elif rel.startswith("seasons/") and re.match(r"\d{4}-\d{2}$", name) and name != "2026-27":
+            assert og == f"{OG}season/{name}.png", rel
         else:
-            assert f'<meta property="og:image" content="{BASE}assets/og-team-success.png">' in t, rel
+            assert og == f"{BASE}assets/og-team-success.png", rel
 
 
 def test_no_github_io_or_third_party(html):
@@ -148,7 +162,9 @@ def test_internal_links_resolve_and_every_player_reachable(html):
 
 def test_team_links_go_to_career_map(html):
     t = html["player/michael-jordan.html"]
-    assert '<a href="https://hoopsmatic.com/nba-career-map/team/chicago-bulls.html">Chicago Bulls</a>' in t
+    # tables show the city that season; the full name is the link title
+    assert ('<a href="https://hoopsmatic.com/nba-career-map/team/chicago-bulls.html" title="Chicago Bulls">'
+            'Chicago</a>') in t
     t = html["player/bill-russell.html"]
     assert "Boston Celtics" in t
 
@@ -156,10 +172,44 @@ def test_team_links_go_to_career_map(html):
 def test_era_names_on_old_seasons(html):
     t = html["player/oscar-robertson.html"]
     seasons = t[t.index('id="cap-seasons"'):t.index('<section id="opp">')]
-    assert "Cincinnati Royals" in seasons and ">Sacramento Kings<" not in seasons
-    # the opponent table groups by franchise (named as today) and keeps the era names
+    assert 'title="Cincinnati Royals">Cincinnati<' in seasons and ">Sacramento<" not in seasons
+    # the opponent table groups by franchise (named as today) and keeps the era cities
     opp = t[t.index('<section id="opp">'):]
-    assert "as Cincinnati Royals" in opp or "Cincinnati Royals" in opp
+    assert "as Cincinnati" in opp
+
+
+def test_city_names_rule(html):
+    t = html["seasons/1976-77.html"]
+    assert ">New York Knicks<" in t and ">New York Nets<" in t        # two teams in one city that season
+    assert ">Kansas City-Omaha<" in html["seasons/1974-75.html"]
+    t = html["player/lebron-james.html"]
+    assert ">LA Lakers<" in t and ">Cleveland<" in t and ">Miami<" in t
+    assert "<h1>LeBron James</h1>" in t
+    assert "Boston Celtics</a></span></h2>" in html["lists/franchise-winningest.html"]   # headings: full name
+
+
+def test_no_bare_missed(html):
+    for rel in ("player/michael-jordan.html", "player/lebron-james.html", "seasons/2025-26.html"):
+        body = re.sub(r"<[^>]+>", " ", html[rel].split("<body", 1)[1])
+        assert not re.search(r"\bMissed\b(?! the playoffs)", body), rel
+
+
+def test_compare_scoreboard():
+    t = read("compare/karl-malone--michael-jordan.html")
+    assert '<table class="sbt"' in t and "Malone leads " in t and "Jordan leads " in t
+    assert "Less help: Jordan (2.2 per season vs 3.4)" in t
+    assert '<ul class="takes">' not in t                                   # the old text boxes are gone
+    assert "Better finish" in t and 'class="cmpcards"' in t
+    for bad in ("carried", "because of", "thanks to", "better player"):
+        assert bad not in t
+
+
+def test_playoff_na_columns_hidden():
+    t = read("player/lebron-james.html")
+    po = t[t.index('id="cap-po"'):]
+    po = po[:po.index("</section>")]
+    assert ">Without him<" not in po and ">Gap<" not in po
+    assert "He played every playoff game for these teams" in po
 
 
 def test_sitemap_lists_every_page_with_stable_lastmod():
