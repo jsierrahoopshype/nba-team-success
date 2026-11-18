@@ -170,6 +170,8 @@ class Site:
             self.ranks[key] = {m["pid"]: (r, tied) for r, tied, m in ranked}
             self.rank_n[key] = len(ranked)
         self.lead_rules = {}
+        self.opp_take = {}
+        self.pgames = None
         # who played for each team-season, most games first (season boards)
         self.roster = defaultdict(list)
         for pid, p in self.d.players.items():
@@ -658,6 +660,207 @@ def current_block(s, pid, up):
             + "".join(rows) + "</tbody></table></section>")
 
 
+# ---------------------------------------------------------------------------
+# Record against each opponent (PR C). Games load on demand from assets/pg/<slug>.json;
+# no per-opponent pages (no N x N URL sets).
+# ---------------------------------------------------------------------------
+def load_games(s):
+    """pid -> [(sy, date, team, opp, home, team score, opp score, type, gid, side)] (completed seasons)."""
+    if getattr(s, "pgames", None) is not None:
+        return
+    s.pgames = defaultdict(list)
+    s.app = {}
+    for sy in range(1947, LAST_COMPLETE + 1):
+        lg = load_json(os.path.join(DATA, "gamelog", f"{sy}.json"), None)
+        if not lg:
+            continue
+        for gid, date, h, a, hc, ac, hs, as_ in lg["games"]:
+            hp, ap = lg["app"].get(gid, [[], []])
+            s.app[gid] = (hp, ap)
+            t = gid[2]
+            for pid in hp:
+                s.pgames[str(pid)].append((sy, date, h, a, 1, hs, as_, t, gid, 0))
+            for pid in ap:
+                s.pgames[str(pid)].append((sy, date, a, h, 0, as_, hs, t, gid, 1))
+
+
+def latest_name(s, f):
+    if not hasattr(s, "_latest"):
+        s._latest = {}
+        for t in s.d.teams.values():
+            if t["f"] not in s._latest or t["s"] > s._latest[t["f"]][0]:
+                s._latest[t["f"]] = (t["s"], t["name"])
+    return s._latest[f][1]
+
+
+def team_link_latest(s, f):
+    nm = latest_name(s, f)
+    if f in TEAM_SLUG:
+        return f'<a href="{CM_TEAM.format(TEAM_SLUG[f])}">{e(nm)}</a>'
+    return e(nm)
+
+
+def opp_rows(s, pid, kind="2"):
+    """franchise -> dict of counts for one game type."""
+    out = defaultdict(lambda: {"w": 0, "l": 0, "names": set(), "first": 9999, "last": 0})
+    for sy, date, f, o, home, ts, os_, t, gid, side in s.pgames.get(pid, []):
+        if t != kind:
+            continue
+        r = out[o]
+        r["w" if ts > os_ else "l"] += 1
+        r["names"].add(s.d.team(o, sy)["name"] if s.d.team(o, sy) else o)
+        r["first"] = min(r["first"], sy)
+        r["last"] = max(r["last"], sy)
+    return out
+
+
+def opp_series(s, pid):
+    """franchise -> [won, lost] playoff series he played in (pairs decided by a series only)."""
+    out = defaultdict(lambda: [0, 0])
+    seen = set()
+    for sy, date, f, o, home, ts, os_, t, gid, side in s.pgames.get(pid, []):
+        if t != "4" or (sy, o) in seen:
+            continue
+        seen.add((sy, o))
+        tm = s.d.team(f, sy)
+        for sr in (tm["series"] if tm else []):
+            if sr["opp"] == o and sr["w"] != sr["l"]:
+                out[o][0 if sr["won"] else 1] += 1
+    return out
+
+
+def rival(s, pid, opp):
+    """The opposing player he shared the most regular-season games with, against that franchise."""
+    c = defaultdict(int)
+    for sy, date, f, o, home, ts, os_, t, gid, side in s.pgames.get(pid, []):
+        if o != opp or t != "2":
+            continue
+        for q in s.app[gid][1 - side]:
+            c[q] += 1
+    if not c:
+        return None
+    q, n = max(c.items(), key=lambda kv: (kv[1], -kv[0]))
+    return str(q), n
+
+
+def opponent_takeaways(s, pid, rs, ser, up):
+    """Template takeaways (docs/story-rules.md, 'Opponents'). Only when the sample supports them."""
+    out = []
+    big = [(f, r) for f, r in rs.items() if r["w"] + r["l"] >= 20]
+    if len(big) >= 3:
+        best = max(big, key=lambda x: (x[1]["w"] / (x[1]["w"] + x[1]["l"]), x[1]["w"] + x[1]["l"]))
+        worst = min(big, key=lambda x: (x[1]["w"] / (x[1]["w"] + x[1]["l"]), -(x[1]["w"] + x[1]["l"])))
+        for lab, (f, r) in (("Best regular-season record against one franchise", best),
+                            ("Toughest regular-season record against one franchise", worst)):
+            g = r["w"] + r["l"]
+            txt = (f'{lab}: <a href="?vs={e(f)}#vs-{e(f)}">{wl(r["w"], r["l"])} ({pct1(r["w"] / g)}) against the '
+                   f'{e(latest_name(s, f))}</a> in {g} games.')
+            out.append(("best" if lab.startswith("Best") else "worst", f, txt))
+    if ser:
+        f, (sw, sl) = max(ser.items(), key=lambda kv: (kv[1][0] + kv[1][1], kv[1][0], kv[0]))
+        if sw + sl >= 2:
+            po = opp_rows(s, pid, "4")[f]
+            out.append(("rivalry", f, f'Most playoff series against one franchise: <a href="?vs={e(f)}&amp;k=4#vs-{e(f)}">'
+                        f'{sw + sl} against the {e(latest_name(s, f))}</a>, {sw}{EN}{sl} in series and '
+                        f'{wl(po["w"], po["l"])} in games.'))
+    return out
+
+
+def opponents_section(s, pid, up):
+    load_games(s)
+    rs = opp_rows(s, pid, "2")
+    if not rs:
+        return ""
+    po = opp_rows(s, pid, "4")
+    ser = opp_series(s, pid)
+    slug = s.ids[pid]["slug"]
+    rows = []
+    for f in sorted(rs, key=lambda f: (-(rs[f]["w"] + rs[f]["l"]), latest_name(s, f))):
+        r = rs[f]
+        g = r["w"] + r["l"]
+        names = sorted(r["names"] - {latest_name(s, f)})
+        sub = f'<span class="sub blk">as {e(", ".join(names))}</span>' if names else ""
+        sw, sl = ser.get(f, [0, 0])
+        p = po.get(f)
+        series_txt = (f'{sw}{EN}{sl} <span class="sub">({wl(p["w"], p["l"])} in games)</span>'
+                      if (sw + sl) else ("N/A" if not p else f'<span class="sub">{wl(p["w"], p["l"])} in games</span>'))
+        rv = rival(s, pid, f)
+        h2h = ""
+        if rv and rv[0] in s.ids:
+            h2h = (f'<span class="sub blk">Most-faced: {s.plink(rv[0], up)} ({rv[1]} games) · '
+                   f'<a href="https://hoopsmatic.com/head-to-head/?a={e(pid)}&amp;b={e(rv[0])}">Head-to-Head</a></span>')
+        rows.append(f'<tr id="vs-{e(f)}" data-opp="{e(f)}">' + "".join([
+            td("Opponent", team_link_latest(s, f) + sub + h2h, latest_name(s, f)),
+            td("Games", f"{g:,}", g, "mono"),
+            td("W–L", wl(r["w"], r["l"]), r["w"], "mono"),
+            td("Win %", pct1(r["w"] / g), fval(r["w"] / g), "mono"),
+            td("W − L", signed(r["w"] - r["l"]), r["w"] - r["l"], f"mono {cls_gap(r['w'] - r['l'])}"),
+            td("Playoff series", series_txt, sw - sl if (sw + sl) else None),
+            td("Seasons", f'{season_label(r["first"])} to {season_label(r["last"])}' if r["first"] != r["last"] else season_label(r["first"]), r["first"], "mono"),
+            f'<td data-l="Games list"><button type="button" class="opp-open" aria-expanded="false" aria-controls="games-{e(f)}">Show games</button></td>',
+        ]) + "</tr>")
+    heads = [th("Opponent", "text"), th("Games", sort="descending"), th("W–L"), th("Win %"), th("W − L"),
+             th("Playoff series"), th("Seasons", first="ascending"), '<th scope="col">Games list</th>']
+    tk = opponent_takeaways(s, pid, rs, ser, up)
+    s.opp_take[pid] = tk
+    takes = ("<ul class=\"takes\">" + "".join(f"<li>{t}</li>" for _, _, t in tk) + "</ul>") if tk else ""
+    stints = sorted({st["f"] for st in s.d.stints(pid)})
+    team_opts = "".join(f'<option value="{e(f)}">{e(latest_name(s, f))}</option>' for f in stints)
+    yrs = sorted({st["s"] for st in s.d.stints(pid)} | {x[0] for x in s.pgames.get(pid, [])})
+    yo = "".join(f'<option value="{y}">{season_label(y)}</option>' for y in yrs)
+    tg = sum(r["w"] + r["l"] for r in rs.values())
+    tw = sum(r["w"] for r in rs.values())
+    return f"""<section id="opp"><h2 id="cap-opp">Record against each opponent</h2>
+{takes}
+<form id="opp-form" class="filters" data-src="{up}assets/pg/{e(slug)}.json" data-names="{up}assets/teamnames.json" data-up="{up}">
+<label>Games<select name="k"><option value="2">Regular season</option><option value="4">Playoffs</option><option value="b">Both</option></select></label>
+<label>From<select name="from"><option value="">First season</option>{yo}</select></label>
+<label>To<select name="to"><option value="">Last season</option>{yo}</select></label>
+<label>His team<select name="team"><option value="">Any</option>{team_opts}</select></label>
+<label>Where<select name="ha"><option value="">Home and away</option><option value="h">Home</option><option value="a">Away</option></select></label>
+<label>Min games<input name="min" type="number" min="1" inputmode="numeric" placeholder="1"></label>
+<a href="#opp" class="opp-reset">Reset</a>
+</form>
+<p class="pop" id="opp-pop">Regular season, completed seasons: {tg:,} games, {wl(tw, tg - tw)}, against {len(rs)} franchises. Grouped by franchise (named as today); game lists keep each team's name that season.</p>
+{sortable("cap-opp", "", heads, rows, "opp")}
+<p class="note">Rows add up to his career record in his games. A playoff series counts when he played in it; early round-robin games show as games only. <a href="../how-we-count.html">How we count</a>.</p>
+<script src="{up}assets/opp.js" defer></script>
+</section>"""
+
+
+def player_games_json(s, pid):
+    """assets/pg/<slug>.json: {season: [[team, [[mmdd, opp, home, team pts, opp pts, type], ...]], ...]}"""
+    load_games(s)
+    by = defaultdict(lambda: defaultdict(list))
+    for sy, date, f, o, home, ts, os_, t, gid, side in sorted(s.pgames.get(pid, [])):
+        by[sy][f].append([int(date[5:7] + date[8:10]), o, home, ts, os_, int(t)])
+    # playoff series he played in: [opp, won 1/0, series wins, series losses] (best-of series only)
+    ps = defaultdict(list)
+    seen = set()
+    for sy, date, f, o, home, ts, os_, t, gid, side in s.pgames.get(pid, []):
+        if t != "4" or (sy, o) in seen:
+            continue
+        seen.add((sy, o))
+        tm = s.d.team(f, sy)
+        for sr in (tm["series"] if tm else []):
+            if sr["opp"] == o and sr["w"] != sr["l"]:
+                ps[str(sy)].append([o, 1 if sr["won"] else 0, sr["w"], sr["l"], f])
+    doc = {"v": 1, "s": {str(sy): [[f, g] for f, g in teams.items()] for sy, teams in sorted(by.items())},
+           "ps": dict(ps)}
+    return f"assets/pg/{s.ids[pid]['slug']}.json", json.dumps(doc, separators=(",", ":"))
+
+
+def team_names_json(s):
+    names = {f"{t['f']}-{t['s']}": t["name"] for t in s.d.teams.values()}
+    latest = {}
+    for t in s.d.teams.values():
+        if t["f"] not in latest or t["s"] > latest[t["f"]][0]:
+            latest[t["f"]] = (t["s"], t["name"])
+    return "assets/teamnames.json", json.dumps({"season": names, "latest": {f: v[1] for f, v in latest.items()},
+                                                "cm": TEAM_SLUG}, ensure_ascii=False, sort_keys=True,
+                                               separators=(",", ":"))
+
+
 def player_page(s, pid):
     up = "../"
     v = s.ids[pid]
@@ -728,6 +931,7 @@ def player_page(s, pid):
             parts.append(f"""<section><h2 id="cap-lineup">On/off, starts and close games</h2>
 <p class="note">From the lineup data, {season_label(RAMIRO_FIRST)} on. On/off is net points per 100 possessions with him on the floor minus off, a different unit from the win-rate gaps. Started and off the bench are team records in those games; close games are those within 5 points in the last 5 minutes with him on the floor.</p>
 {sortable("cap-lineup", "", LINEUP_HEADS, lineup)}</section>""")
+        parts.append(opponents_section(s, pid, up))
         parts.append(playoff_table(s, pid, up))
         parts.append(arrival_departure(s, pid, up))
         parts.append(trades(s, pid, up))
@@ -1508,6 +1712,9 @@ def main():
         targets = [p for p in s.ids if s.has_page(p)]
     for pid in targets:
         write(*player_page(s, pid))
+        if s.has_hist(pid):
+            write(*player_games_json(s, pid))
+    write(*team_names_json(s))
     # robots + sitemap
     write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {BASE}sitemap.xml\n")
     write(".nojekyll", "")

@@ -9,7 +9,7 @@ const { chromium } = require('playwright');
 const ROOT = path.resolve(__dirname, '..');
 const PAGES = [
   'index.html', 'how-we-count.html', 'players/a.html',
-  'player/michael-jordan.html', 'player/james-harden.html', 'player/george-mikan.html',
+  'player/michael-jordan.html', 'player/michael-jordan.html?vs=DET&k=4', 'player/james-harden.html', 'player/george-mikan.html',
   'player/bill-russell.html', 'player/lebron-james.html', 'player/aaron-gordon.html',
   'lists/worst-team.html', 'lists/bad-luck.html', 'lists/franchise-winningest.html',
   'lists/winning-without-him.html', 'lists/on-off-movers.html',
