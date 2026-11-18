@@ -448,11 +448,11 @@
  },
  "identity": {
   "career_map_pages": 5074,
-  "matched": 28558,
+  "matched": 28557,
   "no_rs_name": 47,
-  "player_team_seasons": 28817,
+  "player_team_seasons": 28803,
   "players": 5103,
-  "rate": 0.991,
+  "rate": 0.9915,
   "slug_suffixed": [
    "bob-duffy-1922",
    "bob-duffy-1940",
@@ -1102,7 +1102,7 @@
     "team": "MEM"
    }
   ],
-  "unmatched_total": 259
+  "unmatched_total": 246
  },
  "identity_no_name_20plus": [
   {
@@ -1139,6 +1139,1520 @@
    "games": 23,
    "name": "Alijah Martin",
    "personId": 1642918
+  }
+ ],
+ "impossible_rows_dropped": [
+  {
+   "date": "1946-11-07",
+   "gameId": "0024600010",
+   "personId": 77671,
+   "team": "GSW"
+  },
+  {
+   "date": "1946-11-14",
+   "gameId": "0024600023",
+   "personId": 77671,
+   "team": "GSW"
+  },
+  {
+   "date": "1946-11-26",
+   "gameId": "0024600052",
+   "personId": 77671,
+   "team": "GSW"
+  },
+  {
+   "date": "1946-11-28",
+   "gameId": "0024600060",
+   "personId": 77671,
+   "team": "GSW"
+  },
+  {
+   "date": "1946-12-05",
+   "gameId": "0024600076",
+   "personId": 77671,
+   "team": "GSW"
+  },
+  {
+   "date": "1946-12-07",
+   "gameId": "0024600081",
+   "personId": 77671,
+   "team": "GSW"
+  },
+  {
+   "date": "1946-12-10",
+   "gameId": "0024600085",
+   "personId": 77671,
+   "team": "GSW"
+  },
+  {
+   "date": "1946-12-12",
+   "gameId": "0024600092",
+   "personId": 77671,
+   "team": "GSW"
+  },
+  {
+   "date": "1946-12-14",
+   "gameId": "0024600095",
+   "personId": 77671,
+   "team": "GSW"
+  },
+  {
+   "date": "1947-01-11",
+   "gameId": "0024600151",
+   "personId": 77734,
+   "team": "TOH"
+  },
+  {
+   "date": "1947-02-16",
+   "gameId": "0024600234",
+   "personId": 76720,
+   "team": "NYK"
+  },
+  {
+   "date": "1947-02-19",
+   "gameId": "0024600238",
+   "personId": 76720,
+   "team": "NYK"
+  },
+  {
+   "date": "1947-02-21",
+   "gameId": "0024600246",
+   "personId": 76720,
+   "team": "NYK"
+  },
+  {
+   "date": "1947-12-03",
+   "gameId": "0024700037",
+   "personId": 78153,
+   "team": "BAL"
+  },
+  {
+   "date": "1948-01-08",
+   "gameId": "0024700084",
+   "personId": 78023,
+   "team": "WSC"
+  },
+  {
+   "date": "1949-01-21",
+   "gameId": "0024800206",
+   "personId": 78123,
+   "team": "BOS"
+  },
+  {
+   "date": "1949-01-22",
+   "gameId": "0024800209",
+   "personId": 78123,
+   "team": "BOS"
+  },
+  {
+   "date": "1949-12-13",
+   "gameId": "0024900171",
+   "personId": 77779,
+   "team": "ATL"
+  },
+  {
+   "date": "1950-01-15",
+   "gameId": "0024900299",
+   "personId": 77779,
+   "team": "ATL"
+  },
+  {
+   "date": "1950-02-05",
+   "gameId": "0024900387",
+   "personId": 78071,
+   "team": "DET"
+  },
+  {
+   "date": "1950-02-26",
+   "gameId": "0024900474",
+   "personId": 77999,
+   "team": "DET"
+  },
+  {
+   "date": "1950-03-08",
+   "gameId": "0024900515",
+   "personId": 77249,
+   "team": "ATL"
+  },
+  {
+   "date": "1950-10-31",
+   "gameId": "0025000003",
+   "personId": 600012,
+   "team": "SAC"
+  },
+  {
+   "date": "1950-11-04",
+   "gameId": "0025000012",
+   "personId": 600012,
+   "team": "SAC"
+  },
+  {
+   "date": "1950-11-11",
+   "gameId": "0025000027",
+   "personId": 600012,
+   "team": "SAC"
+  },
+  {
+   "date": "1950-11-12",
+   "gameId": "0025000029",
+   "personId": 600012,
+   "team": "SAC"
+  },
+  {
+   "date": "1950-11-15",
+   "gameId": "0025000037",
+   "personId": 600012,
+   "team": "SAC"
+  },
+  {
+   "date": "1950-11-21",
+   "gameId": "0025000056",
+   "personId": 600012,
+   "team": "SAC"
+  },
+  {
+   "date": "1950-11-22",
+   "gameId": "0025000059",
+   "personId": 77752,
+   "team": "BAL"
+  },
+  {
+   "date": "1950-11-23",
+   "gameId": "0025000065",
+   "personId": 600012,
+   "team": "SAC"
+  },
+  {
+   "date": "1950-11-25",
+   "gameId": "0025000067",
+   "personId": 600012,
+   "team": "SAC"
+  },
+  {
+   "date": "1950-11-25",
+   "gameId": "0025000068",
+   "personId": 77752,
+   "team": "BAL"
+  },
+  {
+   "date": "1950-11-26",
+   "gameId": "0025000073",
+   "personId": 77752,
+   "team": "BAL"
+  },
+  {
+   "date": "1950-11-30",
+   "gameId": "0025000082",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1950-12-02",
+   "gameId": "0025000087",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1950-12-06",
+   "gameId": "0025000095",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1950-12-09",
+   "gameId": "0025000103",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1950-12-10",
+   "gameId": "0025000109",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1950-12-13",
+   "gameId": "0025000115",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1950-12-16",
+   "gameId": "0025000121",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1950-12-20",
+   "gameId": "0025000135",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1950-12-23",
+   "gameId": "0025000139",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1950-12-26",
+   "gameId": "0025000147",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1950-12-28",
+   "gameId": "0025000152",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1950-12-30",
+   "gameId": "0025000156",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1951-01-01",
+   "gameId": "0025000164",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1951-01-03",
+   "gameId": "0025000168",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1951-01-06",
+   "gameId": "0025000175",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1951-01-07",
+   "gameId": "0025000178",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1951-01-09",
+   "gameId": "0025000183",
+   "personId": 600012,
+   "team": "WSC"
+  },
+  {
+   "date": "1951-11-22",
+   "gameId": "0025100051",
+   "personId": 77169,
+   "team": "PHI"
+  },
+  {
+   "date": "1951-12-17",
+   "gameId": "0025100113",
+   "personId": 600003,
+   "team": "BAL"
+  },
+  {
+   "date": "1958-12-06",
+   "gameId": "0025800078",
+   "personId": 77799,
+   "team": "ATL"
+  },
+  {
+   "date": "1958-12-10",
+   "gameId": "0025800087",
+   "personId": 77799,
+   "team": "ATL"
+  },
+  {
+   "date": "1958-12-25",
+   "gameId": "0025800110",
+   "personId": 76800,
+   "team": "NYK"
+  },
+  {
+   "date": "1960-02-09",
+   "gameId": "0025900226",
+   "personId": 76774,
+   "team": "SAC"
+  },
+  {
+   "date": "1960-02-10",
+   "gameId": "0025900231",
+   "personId": 76774,
+   "team": "SAC"
+  },
+  {
+   "date": "1960-02-18",
+   "gameId": "0025900249",
+   "personId": 76160,
+   "team": "GSW"
+  },
+  {
+   "date": "1960-02-20",
+   "gameId": "0025900253",
+   "personId": 76783,
+   "team": "PHI"
+  },
+  {
+   "date": "1961-03-01",
+   "gameId": "0026000288",
+   "personId": 77210,
+   "team": "SAC"
+  },
+  {
+   "date": "1962-11-02",
+   "gameId": "0026200028",
+   "personId": 77693,
+   "team": "GSW"
+  },
+  {
+   "date": "1965-12-29",
+   "gameId": "0026500157",
+   "personId": 78335,
+   "team": "DET"
+  },
+  {
+   "date": "1966-03-17",
+   "gameId": "0026500348",
+   "personId": 76105,
+   "team": "NYK"
+  },
+  {
+   "date": "1966-03-18",
+   "gameId": "0026500351",
+   "personId": 76105,
+   "team": "WAS"
+  },
+  {
+   "date": "1971-02-12",
+   "gameId": "0027000523",
+   "personId": 78574,
+   "team": "BOS"
+  },
+  {
+   "date": "1971-02-20",
+   "gameId": "0027000567",
+   "personId": 78574,
+   "team": "SAC"
+  },
+  {
+   "date": "1971-02-20",
+   "gameId": "0027000780",
+   "personId": 78574,
+   "team": "BOS"
+  },
+  {
+   "date": "1972-12-17",
+   "gameId": "0027203017",
+   "personId": 78220,
+   "team": "CLE"
+  },
+  {
+   "date": "1972-12-20",
+   "gameId": "0027200255",
+   "personId": 78220,
+   "team": "PHI"
+  },
+  {
+   "date": "1974-02-16",
+   "gameId": "0027300522",
+   "personId": 76972,
+   "team": "PHX"
+  },
+  {
+   "date": "1974-02-17",
+   "gameId": "0027300530",
+   "personId": 76972,
+   "team": "PHX"
+  },
+  {
+   "date": "1974-11-02",
+   "gameId": "0027400067",
+   "personId": 77162,
+   "team": "SAC"
+  },
+  {
+   "date": "1974-11-16",
+   "gameId": "0027400126",
+   "personId": 77162,
+   "team": "SAC"
+  },
+  {
+   "date": "1975-03-19",
+   "gameId": "0027400624",
+   "personId": 77101,
+   "team": "NYK"
+  },
+  {
+   "date": "1976-10-24",
+   "gameId": "0027603002",
+   "personId": 78188,
+   "team": "CLE"
+  },
+  {
+   "date": "1976-10-28",
+   "gameId": "0027600038",
+   "personId": 78188,
+   "team": "CLE"
+  },
+  {
+   "date": "1976-11-07",
+   "gameId": "0027600088",
+   "personId": 78188,
+   "team": "CLE"
+  },
+  {
+   "date": "1976-11-10",
+   "gameId": "0027600101",
+   "personId": 78188,
+   "team": "CLE"
+  },
+  {
+   "date": "1976-11-17",
+   "gameId": "0027600140",
+   "personId": 78188,
+   "team": "CLE"
+  },
+  {
+   "date": "1976-11-26",
+   "gameId": "0027603001",
+   "personId": 78188,
+   "team": "CLE"
+  },
+  {
+   "date": "1976-11-27",
+   "gameId": "0027600187",
+   "personId": 78575,
+   "team": "IND"
+  },
+  {
+   "date": "1976-12-03",
+   "gameId": "0027600221",
+   "personId": 78188,
+   "team": "CLE"
+  },
+  {
+   "date": "1976-12-11",
+   "gameId": "0027603009",
+   "personId": 78188,
+   "team": "CLE"
+  },
+  {
+   "date": "1977-10-21",
+   "gameId": "0027700015",
+   "personId": 77152,
+   "team": "OKC"
+  },
+  {
+   "date": "1977-10-23",
+   "gameId": "0027700030",
+   "personId": 77152,
+   "team": "OKC"
+  },
+  {
+   "date": "1977-12-30",
+   "gameId": "0027700367",
+   "personId": 78143,
+   "team": "LAC"
+  },
+  {
+   "date": "1978-02-22",
+   "gameId": "0027700633",
+   "personId": 76076,
+   "team": "BKN"
+  },
+  {
+   "date": "1978-03-05",
+   "gameId": "0027700694",
+   "personId": 76564,
+   "team": "GSW"
+  },
+  {
+   "date": "1978-10-13",
+   "gameId": "0027800003",
+   "personId": 76526,
+   "team": "LAL"
+  },
+  {
+   "date": "1978-10-14",
+   "gameId": "0027800011",
+   "personId": 76526,
+   "team": "LAL"
+  },
+  {
+   "date": "1978-10-17",
+   "gameId": "0027800024",
+   "personId": 76526,
+   "team": "LAL"
+  },
+  {
+   "date": "1978-10-22",
+   "gameId": "0027800050",
+   "personId": 76526,
+   "team": "LAL"
+  },
+  {
+   "date": "1978-10-24",
+   "gameId": "0027800054",
+   "personId": 76526,
+   "team": "LAL"
+  },
+  {
+   "date": "1978-11-08",
+   "gameId": "0027800130",
+   "personId": 78157,
+   "team": "BKN"
+  },
+  {
+   "date": "1978-11-08",
+   "gameId": "0027800130",
+   "personId": 76365,
+   "team": "PHI"
+  },
+  {
+   "date": "1978-11-08",
+   "gameId": "0027800130",
+   "personId": 77627,
+   "team": "PHI"
+  },
+  {
+   "date": "1979-12-01",
+   "gameId": "0027900271",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1979-12-05",
+   "gameId": "0027900291",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1979-12-07",
+   "gameId": "0027900304",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1979-12-08",
+   "gameId": "0027900307",
+   "personId": 78202,
+   "team": "CLE"
+  },
+  {
+   "date": "1979-12-08",
+   "gameId": "0027900310",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1979-12-12",
+   "gameId": "0027900325",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1979-12-13",
+   "gameId": "0027900332",
+   "personId": 78202,
+   "team": "CLE"
+  },
+  {
+   "date": "1979-12-13",
+   "gameId": "0027900333",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1979-12-14",
+   "gameId": "0027900339",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1979-12-18",
+   "gameId": "0027900360",
+   "personId": 78202,
+   "team": "CLE"
+  },
+  {
+   "date": "1979-12-19",
+   "gameId": "0027900365",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1979-12-22",
+   "gameId": "0027900379",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1979-12-26",
+   "gameId": "0027900400",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1979-12-27",
+   "gameId": "0027900406",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-01-02",
+   "gameId": "0027900431",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-01-04",
+   "gameId": "0027900443",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-01-05",
+   "gameId": "0027900454",
+   "personId": 78202,
+   "team": "CLE"
+  },
+  {
+   "date": "1980-01-09",
+   "gameId": "0027900474",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-01-09",
+   "gameId": "0027900476",
+   "personId": 78202,
+   "team": "CLE"
+  },
+  {
+   "date": "1980-01-11",
+   "gameId": "0027900486",
+   "personId": 78202,
+   "team": "CLE"
+  },
+  {
+   "date": "1980-01-12",
+   "gameId": "0027900489",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-01-13",
+   "gameId": "0027900498",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-01-19",
+   "gameId": "0027900526",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-01-23",
+   "gameId": "0027900547",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-01-26",
+   "gameId": "0027900563",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-01-29",
+   "gameId": "0027900580",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-01-30",
+   "gameId": "0027900588",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-01-31",
+   "gameId": "0027900595",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-02-06",
+   "gameId": "0027900600",
+   "personId": 78202,
+   "team": "CLE"
+  },
+  {
+   "date": "1980-02-06",
+   "gameId": "0027900610",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-02-08",
+   "gameId": "0027900620",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-02-09",
+   "gameId": "0027900626",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-02-12",
+   "gameId": "0027900636",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-02-13",
+   "gameId": "0027900644",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-02-15",
+   "gameId": "0027900657",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-02-17",
+   "gameId": "0027900666",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-02-20",
+   "gameId": "0027900683",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-02-26",
+   "gameId": "0027900705",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-02-27",
+   "gameId": "0027900717",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-02-28",
+   "gameId": "0027900721",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-02-29",
+   "gameId": "0027900730",
+   "personId": 76526,
+   "team": "UTA"
+  },
+  {
+   "date": "1980-03-02",
+   "gameId": "0027900732",
+   "personId": 76526,
+   "team": "UTA"
+  },
+  {
+   "date": "1980-03-02",
+   "gameId": "0027900736",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-03-04",
+   "gameId": "0027900744",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-03-04",
+   "gameId": "0027900750",
+   "personId": 76526,
+   "team": "UTA"
+  },
+  {
+   "date": "1980-03-05",
+   "gameId": "0027900756",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-03-06",
+   "gameId": "0027900759",
+   "personId": 76526,
+   "team": "UTA"
+  },
+  {
+   "date": "1980-03-07",
+   "gameId": "0027900767",
+   "personId": 76526,
+   "team": "UTA"
+  },
+  {
+   "date": "1980-03-07",
+   "gameId": "0027900768",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-03-08",
+   "gameId": "0027900770",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-03-08",
+   "gameId": "0027900773",
+   "personId": 76526,
+   "team": "UTA"
+  },
+  {
+   "date": "1980-03-11",
+   "gameId": "0027900786",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-03-16",
+   "gameId": "0027900815",
+   "personId": 76526,
+   "team": "UTA"
+  },
+  {
+   "date": "1980-03-18",
+   "gameId": "0027900820",
+   "personId": 76526,
+   "team": "UTA"
+  },
+  {
+   "date": "1980-03-19",
+   "gameId": "0027900829",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-03-19",
+   "gameId": "0027900832",
+   "personId": 76526,
+   "team": "UTA"
+  },
+  {
+   "date": "1980-03-20",
+   "gameId": "0027900840",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-03-21",
+   "gameId": "0027900842",
+   "personId": 76526,
+   "team": "UTA"
+  },
+  {
+   "date": "1980-03-22",
+   "gameId": "0027900850",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-03-23",
+   "gameId": "0027900854",
+   "personId": 76526,
+   "team": "UTA"
+  },
+  {
+   "date": "1980-03-25",
+   "gameId": "0027900862",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1980-03-25",
+   "gameId": "0027900865",
+   "personId": 76526,
+   "team": "UTA"
+  },
+  {
+   "date": "1980-03-26",
+   "gameId": "0027900871",
+   "personId": 77182,
+   "team": "HOU"
+  },
+  {
+   "date": "1981-02-10",
+   "gameId": "0028000664",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-02-21",
+   "gameId": "0028000730",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-02-22",
+   "gameId": "0028000735",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-02-24",
+   "gameId": "0028000749",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-02-27",
+   "gameId": "0028000766",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-03-03",
+   "gameId": "0028000782",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-03-06",
+   "gameId": "0028000801",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-03-07",
+   "gameId": "0028000809",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-03-10",
+   "gameId": "0028000821",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-03-11",
+   "gameId": "0028000829",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-03-13",
+   "gameId": "0028000839",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-03-14",
+   "gameId": "0028000845",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-03-17",
+   "gameId": "0028000860",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-03-18",
+   "gameId": "0028000867",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-03-20",
+   "gameId": "0028000882",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-03-24",
+   "gameId": "0028000908",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1981-03-29",
+   "gameId": "0028000934",
+   "personId": 76418,
+   "team": "ATL"
+  },
+  {
+   "date": "1982-01-06",
+   "gameId": "0028100358",
+   "personId": 77163,
+   "team": "SAS"
+  },
+  {
+   "date": "1982-02-28",
+   "gameId": "0028100645",
+   "personId": 78199,
+   "team": "OKC"
+  },
+  {
+   "date": "1982-03-03",
+   "gameId": "0028100661",
+   "personId": 78199,
+   "team": "OKC"
+  },
+  {
+   "date": "1982-03-04",
+   "gameId": "0028100669",
+   "personId": 77163,
+   "team": "SAS"
+  },
+  {
+   "date": "1982-03-08",
+   "gameId": "0028100692",
+   "personId": 77163,
+   "team": "SAS"
+  },
+  {
+   "date": "1982-03-12",
+   "gameId": "0028100716",
+   "personId": 77167,
+   "team": "OKC"
+  },
+  {
+   "date": "1982-03-20",
+   "gameId": "0028100760",
+   "personId": 77163,
+   "team": "SAS"
+  },
+  {
+   "date": "1982-03-23",
+   "gameId": "0028100780",
+   "personId": 77163,
+   "team": "SAS"
+  },
+  {
+   "date": "1982-03-24",
+   "gameId": "0028100787",
+   "personId": 77163,
+   "team": "SAS"
+  },
+  {
+   "date": "1982-03-30",
+   "gameId": "0028100816",
+   "personId": 77167,
+   "team": "OKC"
+  },
+  {
+   "date": "1982-04-08",
+   "gameId": "0028100874",
+   "personId": 77167,
+   "team": "OKC"
+  },
+  {
+   "date": "1982-04-16",
+   "gameId": "0028100924",
+   "personId": 77163,
+   "team": "SAS"
+  },
+  {
+   "date": "1982-04-17",
+   "gameId": "0028100934",
+   "personId": 77167,
+   "team": "OKC"
+  },
+  {
+   "date": "1982-11-19",
+   "gameId": "0028200121",
+   "personId": 76444,
+   "team": "WAS"
+  },
+  {
+   "date": "1982-11-24",
+   "gameId": "0028200150",
+   "personId": 76444,
+   "team": "WAS"
+  },
+  {
+   "date": "1982-11-26",
+   "gameId": "0028200160",
+   "personId": 76444,
+   "team": "WAS"
+  },
+  {
+   "date": "1982-11-27",
+   "gameId": "0028200166",
+   "personId": 76444,
+   "team": "WAS"
+  },
+  {
+   "date": "1982-11-30",
+   "gameId": "0028200175",
+   "personId": 77623,
+   "team": "MIL"
+  },
+  {
+   "date": "1982-12-01",
+   "gameId": "0028200187",
+   "personId": 76444,
+   "team": "WAS"
+  },
+  {
+   "date": "1983-02-16",
+   "gameId": "0028200593",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-02-18",
+   "gameId": "0028200605",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-02-22",
+   "gameId": "0028200620",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-02-25",
+   "gameId": "0028200643",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-03-01",
+   "gameId": "0028200664",
+   "personId": 77168,
+   "team": "MIL"
+  },
+  {
+   "date": "1983-03-06",
+   "gameId": "0028200697",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-03-09",
+   "gameId": "0028200716",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-03-11",
+   "gameId": "0028200719",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-03-17",
+   "gameId": "0028200757",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-03-19",
+   "gameId": "0028200768",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-03-22",
+   "gameId": "0028200782",
+   "personId": 76444,
+   "team": "LAC"
+  },
+  {
+   "date": "1983-03-22",
+   "gameId": "0028200788",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-03-25",
+   "gameId": "0028200807",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-03-29",
+   "gameId": "0028200820",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-03-29",
+   "gameId": "0028200826",
+   "personId": 76444,
+   "team": "LAC"
+  },
+  {
+   "date": "1983-03-30",
+   "gameId": "0028200834",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-03-30",
+   "gameId": "0028200835",
+   "personId": 76444,
+   "team": "LAC"
+  },
+  {
+   "date": "1983-04-01",
+   "gameId": "0028200845",
+   "personId": 76444,
+   "team": "LAC"
+  },
+  {
+   "date": "1983-04-02",
+   "gameId": "0028200848",
+   "personId": 76444,
+   "team": "LAC"
+  },
+  {
+   "date": "1983-04-02",
+   "gameId": "0028200850",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-04-05",
+   "gameId": "0028200862",
+   "personId": 76444,
+   "team": "LAC"
+  },
+  {
+   "date": "1983-04-06",
+   "gameId": "0028200871",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-04-07",
+   "gameId": "0028200875",
+   "personId": 76444,
+   "team": "LAC"
+  },
+  {
+   "date": "1983-04-10",
+   "gameId": "0028200897",
+   "personId": 76444,
+   "team": "LAC"
+  },
+  {
+   "date": "1983-04-11",
+   "gameId": "0028200900",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-04-13",
+   "gameId": "0028200918",
+   "personId": 76444,
+   "team": "LAC"
+  },
+  {
+   "date": "1983-04-14",
+   "gameId": "0028200920",
+   "personId": 76444,
+   "team": "LAC"
+  },
+  {
+   "date": "1983-04-15",
+   "gameId": "0028200924",
+   "personId": 76444,
+   "team": "LAC"
+  },
+  {
+   "date": "1983-04-15",
+   "gameId": "0028200925",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-04-17",
+   "gameId": "0028200937",
+   "personId": 77136,
+   "team": "IND"
+  },
+  {
+   "date": "1983-04-17",
+   "gameId": "0028200940",
+   "personId": 76444,
+   "team": "LAC"
+  },
+  {
+   "date": "1983-11-13",
+   "gameId": "0028300095",
+   "personId": 78512,
+   "team": "LAC"
+  },
+  {
+   "date": "1984-03-18",
+   "gameId": "0028300774",
+   "personId": 77134,
+   "team": "SAC"
+  },
+  {
+   "date": "1984-03-31",
+   "gameId": "0028300856",
+   "personId": 77134,
+   "team": "SAC"
+  },
+  {
+   "date": "1984-12-15",
+   "gameId": "0028400275",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1984-12-27",
+   "gameId": "0028400339",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1984-12-29",
+   "gameId": "0028400352",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-01-06",
+   "gameId": "0028400392",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-01-08",
+   "gameId": "0028400400",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-01-11",
+   "gameId": "0028400417",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-01-15",
+   "gameId": "0028400439",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-01-27",
+   "gameId": "0028400506",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-01-31",
+   "gameId": "0028400527",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-02-05",
+   "gameId": "0028400558",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-02-07",
+   "gameId": "0028400569",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-02-24",
+   "gameId": "0028400651",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-02-26",
+   "gameId": "0028400656",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-02-27",
+   "gameId": "0028400667",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-03-22",
+   "gameId": "0028400809",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-03-31",
+   "gameId": "0028400861",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-04-03",
+   "gameId": "0028400877",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-04-07",
+   "gameId": "0028400900",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-04-09",
+   "gameId": "0028400909",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-04-12",
+   "gameId": "0028400772",
+   "personId": 78538,
+   "team": "DET"
+  },
+  {
+   "date": "1985-04-12",
+   "gameId": "0028400927",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "1985-04-14",
+   "gameId": "0028400938",
+   "personId": 77184,
+   "team": "SAS"
+  },
+  {
+   "date": "2007-12-19",
+   "gameId": "0020700367",
+   "personId": 1890,
+   "team": "MIA"
   }
  ],
  "minutes_groups": {
@@ -1814,7 +3328,7 @@
   "nba-boxscores": "05efb8f 2026-11-17",
   "nba-career-map": "a7f4d78 2026-11-17",
   "nba-headshots": "9d46952d 2026-11-16",
-  "nba-player-data": "d3e3149 2026-11-18"
+  "nba-player-data": "17a4cf5 2026-11-18"
  },
  "standings": {
   "atl_2024_trailing": [

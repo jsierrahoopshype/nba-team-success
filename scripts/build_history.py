@@ -54,6 +54,7 @@ ROUND_ORDER = {"": 0, "Play-In": 0.5, "First Round": 1, "Conf Semis": 2,
                "Conf Finalist": 3, "Finalist": 4, "Champion": 5}
 
 step0 = {}
+ZERO_MIN = set()     # (pid, gid, franchise): 0-minute rows in games where minutes were kept
 
 
 def log(*a):
@@ -211,6 +212,8 @@ def load_games_and_box(seasons):
                 appeared = True
             pid = b["personId"]
             names[pid][b["name"]] += 1
+            if rec[(gid, b["team"])] and m == 0:
+                ZERO_MIN.add((pid, gid, fr[0]))
             rows_out.append((pid, gid, fr[0], appeared, m, b.get("pts") or 0))
     step0["null_codes_fixed"] = null_fixed
     step0["neutral_site_fixed"] = neutral
@@ -224,6 +227,74 @@ def load_games_and_box(seasons):
     step0["minutes_share"] = {sy: round(a / b, 3) for sy, (a, b) in minutes_mode.items() if b}
     step0["dnp_rows_excluded"] = dict(dnp_like_recorded)
     return games, rows_out, names
+
+
+def drop_impossible(rows, games, oncourt=frozenset()):
+    """Remove appearances a player could not have made (audit 2026-11).
+
+    Some source box scores file a player's ID under a team he was not on that day (another
+    player's line under his ID, or a row on the wrong side). The sign: his games for team B sit
+    between two games of team A that he played, with no team-A game missed in between, so he
+    could not have left and come back. Among the rows involved we drop the 0-minute rows from
+    games where minutes were kept; if there are none (seasons without minutes), the rows of
+    the team he played fewer games for that season. Repeats until no impossible run is left.
+    Rows the lineup data puts on the floor (oncourt, 1996-97 on) are never treated as 0-minute.
+    Returns (clean rows, dropped list).
+    """
+    zero_min = {k for k in ZERO_MIN if (k[0], k[1]) not in oncourt}
+    team_games = defaultdict(list)
+    for g in games.values():
+        if g["t"] == "2":
+            team_games[(g["h"], g["sy"])].append(g["date"])
+            team_games[(g["a"], g["sy"])].append(g["date"])
+    seq = defaultdict(list)
+    for i, (pid, gid, fr, appeared, m, p) in enumerate(rows):
+        if appeared and gid[2] == "2":
+            seq[(pid, games[gid]["sy"])].append((games[gid]["date"], gid, fr, i))
+    drop = set()
+    for (pid, sy), lst in seq.items():
+        if len({x[2] for x in lst}) < 2:
+            continue
+        alive = sorted(lst)
+        for _ in range(20):
+            cnt = Counter(x[2] for x in alive)
+            runs = []
+            for x in alive:
+                if runs and runs[-1][0] == x[2]:
+                    runs[-1][1].append(x)
+                else:
+                    runs.append([x[2], [x]])
+            bad = []
+            for k in range(1, len(runs) - 1):
+                a = runs[k - 1][0]
+                if runs[k + 1][0] != a:
+                    continue
+                lo, hi = runs[k - 1][1][-1][0], runs[k + 1][1][0][0]
+                if not any(lo < dd < hi for dd in team_games[(a, sy)]):
+                    bad += runs[k][1] + [runs[k - 1][1][-1], runs[k + 1][1][0]]
+                elif all((pid, x[1], x[2]) in zero_min for x in runs[k][1]):
+                    # a stint made only of 0-minute rows, in games where minutes were kept
+                    bad += runs[k][1]
+            # same game both sides, or two teams on the same day
+            by_day = defaultdict(list)
+            for x in alive:
+                by_day[x[0]].append(x)
+            for xs in by_day.values():
+                if len({x[2] for x in xs}) > 1:
+                    bad += xs
+            if not bad:
+                break
+            zero = [x for x in bad if (pid, x[1], x[2]) in zero_min]
+            if zero:
+                kill = set(zero)
+            else:
+                small = min({x[2] for x in bad}, key=lambda f: (cnt[f], f))
+                kill = {x for x in bad if x[2] == small}
+            drop |= {x[3] for x in kill}
+            alive = [x for x in alive if x not in kill]
+    dropped = [{"personId": rows[i][0], "gameId": rows[i][1], "team": rows[i][2],
+                "date": games[rows[i][1]]["date"]} for i in sorted(drop)]
+    return [r for i, r in enumerate(rows) if i not in drop], dropped
 
 
 def game_counts_check(games, standings):
@@ -517,6 +588,30 @@ def source_versions():
     return out
 
 
+def write_gamelogs(games, rows):
+    """data/gamelog/<season>.json: every game we count, and who appeared for each side.
+
+    games: [gameId, date, home franchise, away franchise, home era code, away era code,
+            home score, away score]; app: {gameId: [[home pids], [away pids]]}. Committed, so the
+    audit, the opponent tables and the per-player game files rebuild without the sources.
+    """
+    by = defaultdict(list)
+    app = defaultdict(lambda: ([], []))
+    for g in games.values():
+        by[g["sy"]].append([g["gid"], g["date"], g["h"], g["a"], g["hc"], g["ac"], g["hs"], g["as"]])
+    for pid, gid, fr, appeared, m, p in rows:
+        if not appeared:
+            continue
+        g = games[gid]
+        side = 0 if fr == g["h"] else 1
+        app[gid][side].append(pid)
+    for sy, lst in by.items():
+        lst.sort(key=lambda x: (x[1], x[0]))
+        doc = {"season": sy, "games": lst,
+               "app": {x[0]: [sorted(set(app[x[0]][0])), sorted(set(app[x[0]][1]))] for x in lst}}
+        dump_json(os.path.join(DATA, "gamelog", f"{sy}.json"), doc)
+
+
 def build():
     step0["sources"] = source_versions()
     standings = load_standings()
@@ -660,6 +755,8 @@ def build():
                 (flips if gid[2] == "2" else flips_po)[season_of_gid(gid)] += 1
             new_rows.append(row)
         rows = new_rows
+    rows, impossible = drop_impossible(rows, games, oncourt)
+    step0["impossible_rows_dropped"] = impossible
     excluded_left = Counter(season_of_gid(r[1]) for r in rows if not r[3])
     step0["ramiro_cameos_counted"] = {"regular": dict(flips), "playoffs": dict(flips_po),
                                       "enabled": COUNT_RAMIRO_CAMEOS}
@@ -774,10 +871,20 @@ def build():
             pt["win"].append([start, end])
             pt["first"] = min(pt["first"], st["games"][0][0])
             pt["last"] = max(pt["last"], st["games"][-1][0])
+            # Appearance span (audit 2026-11): the team's games he missed between his own first
+            # and last game of this stint. Dated only by his appearances, so no game before he
+            # arrived or after he left can count. Kept next to the published window proxy.
+            sp_a, sp_b = st["games"][0][0], st["games"][-1][0]
+            pt.setdefault("span", [])
+            pt["span"].append([sp_a, sp_b])
+            pt.setdefault("sw", 0)
+            pt.setdefault("sl", 0)
             for g in team_games.get((st["fr"], sy, "2"), []):
                 if not (start <= g["date"] <= end):
                     continue
                 won = team_won(g, st["fr"])
+                if g["gid"] not in mine and sp_a <= g["date"] <= sp_b:
+                    pt["s" + ("w" if won else "l")] += 1
                 if g["gid"] in mine:
                     pt["g"] += 1
                     pt["w" if won else "l"] += 1
@@ -903,6 +1010,7 @@ def build():
                                  "duos": [[a, g, w] for a, g, w in d],
                                  "acc": aw["score"], "accY": aw["byYear"], "awards": aw["counts"]}
     dump_json(os.path.join(DATA, "players.json"), out_players)
+    write_gamelogs(games, rows)
     ts_out = {f"{f}-{s}": r for (f, s), r in sorted(tseasons.items())}
     dump_json(os.path.join(DATA, "team_seasons.json"), ts_out)
     meta = {"season_bounds": {str(k): v for k, v in season_bounds.items()},
