@@ -1,0 +1,742 @@
+{
+ "coverage": {
+  "career_seasons": [
+   "1946-47",
+   "2025-26"
+  ],
+  "current_games": 205,
+  "current_season": "2026-27",
+  "current_source": "Ramiro lineups (nba-boxscores has no 2026-27 data yet)",
+  "current_through": "2026-11-16",
+  "minutes_never": [
+   1947,
+   1948,
+   1949,
+   1950,
+   1951
+  ],
+  "ramiro_first": "1996-97",
+  "ramiro_gaps": {
+   "2025": {
+    "playoffs": [
+     83,
+     84
+    ],
+    "regular": [
+     1230,
+     1230
+    ]
+   }
+  }
+ },
+ "games": {
+  "player_on_both_sides": [],
+  "playoff_games": 4606,
+  "regular_season_games": 68521,
+  "same_matchup_same_day": [],
+  "team_game_counts_off": [
+   {
+    "games": 71,
+    "name": "Milwaukee Hawks",
+    "standings": 72,
+    "team": "ATL 1954"
+   },
+   {
+    "games": 71,
+    "name": "Baltimore Bullets",
+    "standings": 72,
+    "team": "BAL 1954"
+   }
+  ]
+ },
+ "jordan": {
+  "avg_rnk": 7.4,
+  "games": 1072,
+  "gap_pp": 25.984791233704897,
+  "pct": 0.6585820895522388,
+  "seasons": [
+   {
+    "first": "1984-10-26",
+    "g": 82,
+    "last": "1985-04-13",
+    "po": "First Round",
+    "rnk": 14,
+    "season": 1985,
+    "span_without": "0-0",
+    "team": "Chicago Bulls",
+    "team_rec": "38-44",
+    "window": [
+     [
+      "1984-10-26",
+      "1985-04-14"
+     ]
+    ],
+    "winning": false,
+    "with": "38-44",
+    "without": "0-0"
+   },
+   {
+    "first": "1985-10-25",
+    "g": 18,
+    "last": "1986-04-13",
+    "po": "First Round",
+    "rnk": 16,
+    "season": 1986,
+    "span_without": "21-43",
+    "team": "Chicago Bulls",
+    "team_rec": "30-52",
+    "window": [
+     [
+      "1985-10-25",
+      "1986-04-13"
+     ]
+    ],
+    "winning": false,
+    "with": "9-9",
+    "without": "21-43"
+   },
+   {
+    "first": "1986-11-01",
+    "g": 82,
+    "last": "1987-04-17",
+    "po": "First Round",
+    "rnk": 15,
+    "season": 1987,
+    "span_without": "0-0",
+    "team": "Chicago Bulls",
+    "team_rec": "40-42",
+    "window": [
+     [
+      "1986-10-31",
+      "1987-04-19"
+     ]
+    ],
+    "winning": false,
+    "with": "40-42",
+    "without": "0-0"
+   },
+   {
+    "first": "1987-11-07",
+    "g": 82,
+    "last": "1988-04-24",
+    "po": "Conf Semis",
+    "rnk": 6,
+    "season": 1988,
+    "span_without": "0-0",
+    "team": "Chicago Bulls",
+    "team_rec": "50-32",
+    "window": [
+     [
+      "1987-11-06",
+      "1988-04-24"
+     ]
+    ],
+    "winning": true,
+    "with": "50-32",
+    "without": "0-0"
+   },
+   {
+    "first": "1988-11-04",
+    "g": 81,
+    "last": "1989-04-23",
+    "po": "Conf Finalist",
+    "rnk": 4,
+    "season": 1989,
+    "span_without": "0-1",
+    "team": "Chicago Bulls",
+    "team_rec": "47-35",
+    "window": [
+     [
+      "1988-11-04",
+      "1989-04-23"
+     ]
+    ],
+    "winning": true,
+    "with": "47-34",
+    "without": "0-1"
+   },
+   {
+    "first": "1989-11-03",
+    "g": 82,
+    "last": "1990-04-22",
+    "po": "Conf Finalist",
+    "rnk": 3,
+    "season": 1990,
+    "span_without": "0-0",
+    "team": "Chicago Bulls",
+    "team_rec": "55-27",
+    "window": [
+     [
+      "1989-11-03",
+      "1990-04-22"
+     ]
+    ],
+    "winning": true,
+    "with": "55-27",
+    "without": "0-0"
+   },
+   {
+    "first": "1990-11-02",
+    "g": 82,
+    "last": "1991-04-21",
+    "po": "Champion",
+    "rnk": 1,
+    "season": 1991,
+    "span_without": "0-0",
+    "team": "Chicago Bulls",
+    "team_rec": "61-21",
+    "window": [
+     [
+      "1990-11-02",
+      "1991-04-21"
+     ]
+    ],
+    "winning": true,
+    "with": "61-21",
+    "without": "0-0"
+   },
+   {
+    "first": "1991-11-01",
+    "g": 80,
+    "last": "1992-04-19",
+    "po": "Champion",
+    "rnk": 1,
+    "season": 1992,
+    "span_without": "0-2",
+    "team": "Chicago Bulls",
+    "team_rec": "67-15",
+    "window": [
+     [
+      "1991-11-01",
+      "1992-04-19"
+     ]
+    ],
+    "winning": true,
+    "with": "67-13",
+    "without": "0-2"
+   },
+   {
+    "first": "1992-11-06",
+    "g": 78,
+    "last": "1993-04-25",
+    "po": "Champion",
+    "rnk": 1,
+    "season": 1993,
+    "span_without": "1-3",
+    "team": "Chicago Bulls",
+    "team_rec": "57-25",
+    "window": [
+     [
+      "1992-11-06",
+      "1993-04-25"
+     ]
+    ],
+    "winning": true,
+    "with": "56-22",
+    "without": "1-3"
+   },
+   {
+    "first": "1995-03-19",
+    "g": 17,
+    "last": "1995-04-23",
+    "po": "Conf Semis",
+    "rnk": 8,
+    "season": 1995,
+    "span_without": "0-0",
+    "team": "Chicago Bulls",
+    "team_rec": "47-35",
+    "window": [
+     [
+      "1994-11-04",
+      "1995-04-23"
+     ]
+    ],
+    "winning": true,
+    "with": "13-4",
+    "without": "34-31"
+   },
+   {
+    "first": "1995-11-03",
+    "g": 82,
+    "last": "1996-04-21",
+    "po": "Champion",
+    "rnk": 1,
+    "season": 1996,
+    "span_without": "0-0",
+    "team": "Chicago Bulls",
+    "team_rec": "72-10",
+    "window": [
+     [
+      "1995-11-03",
+      "1996-04-21"
+     ]
+    ],
+    "winning": true,
+    "with": "72-10",
+    "without": "0-0"
+   },
+   {
+    "first": "1996-11-01",
+    "g": 82,
+    "last": "1997-04-19",
+    "po": "Champion",
+    "rnk": 1,
+    "season": 1997,
+    "span_without": "0-0",
+    "team": "Chicago Bulls",
+    "team_rec": "69-13",
+    "window": [
+     [
+      "1996-11-01",
+      "1997-04-20"
+     ]
+    ],
+    "winning": true,
+    "with": "69-13",
+    "without": "0-0"
+   },
+   {
+    "first": "1997-10-31",
+    "g": 82,
+    "last": "1998-04-18",
+    "po": "Champion",
+    "rnk": 1,
+    "season": 1998,
+    "span_without": "0-0",
+    "team": "Chicago Bulls",
+    "team_rec": "62-20",
+    "window": [
+     [
+      "1997-10-31",
+      "1998-04-19"
+     ]
+    ],
+    "winning": true,
+    "with": "62-20",
+    "without": "0-0"
+   },
+   {
+    "first": "2001-10-30",
+    "g": 60,
+    "last": "2002-04-02",
+    "po": "",
+    "rnk": 19,
+    "season": 2002,
+    "span_without": "4-10",
+    "team": "Washington Wizards",
+    "team_rec": "37-45",
+    "window": [
+     [
+      "2001-10-30",
+      "2002-04-17"
+     ]
+    ],
+    "winning": false,
+    "with": "30-30",
+    "without": "7-15"
+   },
+   {
+    "first": "2002-10-30",
+    "g": 82,
+    "last": "2003-04-16",
+    "po": "",
+    "rnk": 20,
+    "season": 2003,
+    "span_without": "0-0",
+    "team": "Washington Wizards",
+    "team_rec": "37-45",
+    "window": [
+     [
+      "2002-10-29",
+      "2003-04-16"
+     ]
+    ],
+    "winning": false,
+    "with": "37-45",
+    "without": "0-0"
+   }
+  ],
+  "span_gap_pp": 35.269973661106235,
+  "span_without": [
+   26,
+   59
+  ],
+  "span_without_pct": 0.3058823529411765,
+  "titles": 6,
+  "trips": 13,
+  "w_minus_l": 340,
+  "winning": 10,
+  "with": [
+   706,
+   366
+  ],
+  "without": [
+   63,
+   95
+  ],
+  "without_games": 158,
+  "without_pct": 0.3987341772151899
+ },
+ "opponents": {
+  "n_bad": 0,
+  "not_adding_up": [],
+  "players_checked": 5103
+ },
+ "playoffs": {
+  "non_series_pairs": [],
+  "standings_vs_games": [
+   {
+    "name": "Fort Wayne Pistons",
+    "po": "missed",
+    "series": [
+     "SAC 0-2",
+     "LAL 0-2"
+    ],
+    "team": "DET 1954"
+   },
+   {
+    "name": "New York Knicks",
+    "po": "missed",
+    "series": [
+     "BOS 0-2",
+     "PHI 0-2"
+    ],
+    "team": "NYK 1954"
+   }
+  ]
+ },
+ "raw": {
+  "duplicate_box_rows": {},
+  "duplicate_game_ids": {},
+  "game_types": [
+   "2",
+   "4",
+   "5"
+  ],
+  "play_in_games_type5": {
+   "2021": 6,
+   "2022": 6,
+   "2023": 6,
+   "2024": 6,
+   "2025": 6,
+   "2026": 6
+  }
+ },
+ "rnk": {
+  "league_sizes": {
+   "1947": 11,
+   "1948": 8,
+   "1949": 12,
+   "1950": 17,
+   "1951": 11,
+   "1952": 10,
+   "1953": 10,
+   "1954": 9,
+   "1955": 8,
+   "1956": 8,
+   "1957": 8,
+   "1958": 8,
+   "1959": 8,
+   "1960": 8,
+   "1961": 8,
+   "1962": 9,
+   "1963": 9,
+   "1964": 9,
+   "1965": 9,
+   "1966": 9,
+   "1967": 10,
+   "1968": 12,
+   "1969": 14,
+   "1970": 14,
+   "1971": 17,
+   "1972": 17,
+   "1973": 17,
+   "1974": 17,
+   "1975": 18,
+   "1976": 18,
+   "1977": 22,
+   "1978": 22,
+   "1979": 22,
+   "1980": 22,
+   "1981": 23,
+   "1982": 23,
+   "1983": 23,
+   "1984": 23,
+   "1985": 23,
+   "1986": 23,
+   "1987": 23,
+   "1988": 23,
+   "1989": 25,
+   "1990": 27,
+   "1991": 27,
+   "1992": 27,
+   "1993": 27,
+   "1994": 27,
+   "1995": 27,
+   "1996": 29,
+   "1997": 29,
+   "1998": 29,
+   "1999": 29,
+   "2000": 29,
+   "2001": 29,
+   "2002": 29,
+   "2003": 29,
+   "2004": 29,
+   "2005": 30,
+   "2006": 30,
+   "2007": 30,
+   "2008": 30,
+   "2009": 30,
+   "2010": 30,
+   "2011": 30,
+   "2012": 30,
+   "2013": 30,
+   "2014": 30,
+   "2015": 30,
+   "2016": 30,
+   "2017": 30,
+   "2018": 30,
+   "2019": 30,
+   "2020": 30,
+   "2021": 30,
+   "2022": 30,
+   "2023": 30,
+   "2024": 30,
+   "2025": 30,
+   "2026": 30
+  },
+  "max_rank_le_size": true,
+  "mismatches": [],
+  "tied_rows": 365
+ },
+ "shortened": [
+  {
+   "games_per_team": [
+    50
+   ],
+   "season": 1999,
+   "teams": 29
+  },
+  {
+   "games_per_team": [
+    66
+   ],
+   "season": 2012,
+   "teams": 30
+  },
+  {
+   "games_per_team": [
+    64,
+    65,
+    66,
+    67,
+    71,
+    72,
+    73,
+    74,
+    75
+   ],
+   "season": 2020,
+   "teams": 30
+  },
+  {
+   "games_per_team": [
+    72
+   ],
+   "season": 2021,
+   "teams": 30
+  }
+ ],
+ "standings_csv": {
+  "brk_rows": [
+   "BRK 2025",
+   "BRK 2026"
+  ],
+  "header_text_in_data": []
+ },
+ "windows": {
+  "examples": {
+   "after_last": [
+    {
+     "games": 81,
+     "player": "Larry Wright",
+     "season": 1982,
+     "slug": "larry-wright",
+     "team": "DET"
+    },
+    {
+     "games": 81,
+     "player": "Walt Wesley",
+     "season": 1976,
+     "slug": "walt-wesley",
+     "team": "LAL"
+    },
+    {
+     "games": 81,
+     "player": "Stan Washington",
+     "season": 1975,
+     "slug": "stan-washington",
+     "team": "WAS"
+    },
+    {
+     "games": 81,
+     "player": "Joao Vianna",
+     "season": 1992,
+     "slug": "joao-vianna",
+     "team": "DAL"
+    },
+    {
+     "games": 81,
+     "player": "Robert Smith",
+     "season": 1981,
+     "slug": "robert-smith",
+     "team": "CLE"
+    },
+    {
+     "games": 81,
+     "player": "Luther Rackley",
+     "season": 1973,
+     "slug": "luther-rackley",
+     "team": "NYK"
+    },
+    {
+     "games": 81,
+     "player": "Chuck Nevitt",
+     "season": 1994,
+     "slug": "chuck-nevitt",
+     "team": "SAS"
+    },
+    {
+     "games": 81,
+     "player": "Calvin Natt",
+     "season": 1987,
+     "slug": "calvin-natt",
+     "team": "DEN"
+    }
+   ],
+   "before_first": [
+    {
+     "games": 81,
+     "player": "Jack Haley",
+     "season": 1996,
+     "slug": "jack-haley",
+     "team": "CHI"
+    },
+    {
+     "games": 81,
+     "player": "Geert Hammink",
+     "season": 1994,
+     "slug": "geert-hammink",
+     "team": "ORL"
+    },
+    {
+     "games": 81,
+     "player": "Linton Townes",
+     "season": 1985,
+     "slug": "linton-townes",
+     "team": "SAS"
+    },
+    {
+     "games": 81,
+     "player": "Walker Russell Sr",
+     "season": 1988,
+     "slug": "walker-russell-sr",
+     "team": "DET"
+    },
+    {
+     "games": 81,
+     "player": "David Wingate",
+     "season": 2001,
+     "slug": "david-wingate",
+     "team": "OKC"
+    },
+    {
+     "games": 81,
+     "player": "Don Reid",
+     "season": 2003,
+     "slug": "don-reid",
+     "team": "DET"
+    },
+    {
+     "games": 81,
+     "player": "Dana Barros",
+     "season": 2004,
+     "slug": "dana-barros",
+     "team": "BOS"
+    },
+    {
+     "games": 81,
+     "player": "Pavel Podkolzin",
+     "season": 2006,
+     "slug": "pavel-podkolzin",
+     "team": "DAL"
+    }
+   ],
+   "between_teams": [
+    {
+     "games": 79,
+     "player": "Walter Tavares",
+     "season": 2017,
+     "slug": "walter-tavares",
+     "team": "ATL"
+    },
+    {
+     "games": 78,
+     "player": "Walter Tavares",
+     "season": 2017,
+     "slug": "walter-tavares",
+     "team": "CLE"
+    },
+    {
+     "games": 73,
+     "player": "Ronald Dupree",
+     "season": 2008,
+     "slug": "ronald-dupree",
+     "team": "OKC"
+    },
+    {
+     "games": 72,
+     "player": "Sedric Toney",
+     "season": 1986,
+     "slug": "sedric-toney",
+     "team": "ATL"
+    },
+    {
+     "games": 72,
+     "player": "Ronald Dupree",
+     "season": 2008,
+     "slug": "ronald-dupree",
+     "team": "DET"
+    },
+    {
+     "games": 69,
+     "player": "Tim Bassett",
+     "season": 1980,
+     "slug": "tim-bassett",
+     "team": "BKN"
+    },
+    {
+     "games": 68,
+     "player": "Sedric Toney",
+     "season": 1986,
+     "slug": "sedric-toney",
+     "team": "PHX"
+    },
+    {
+     "games": 68,
+     "player": "Tim Bassett",
+     "season": 1980,
+     "slug": "tim-bassett",
+     "team": "SAS"
+    }
+   ]
+  },
+  "one_team_games_after_last_appearance": 154161,
+  "one_team_games_before_first_appearance": 127111,
+  "rows_after": 7444,
+  "rows_before": 6734,
+  "rows_traded": 5185,
+  "traded_games_between_teams": 48524,
+  "zero_missed_careers": 16
+ }
+}

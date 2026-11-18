@@ -9,6 +9,7 @@ Served at https://hoopsmatic.com/team-success/.
 bash scripts/fetch_sources.sh          # public repos + Ramiro's Parquet files into _src/ (git-ignored)
 python scripts/build_history.py        # rebuilds everything in data/ (about 1 minute)
 python scripts/step0_report.py         # docs/step0-report.md
+python scripts/audit.py                # docs/audit-report.md + data/audit.json (no network)
 python -m pytest tests/ -q             # sanity checks on the committed data
 ```
 
@@ -19,7 +20,9 @@ python -m pytest tests/ -q             # sanity checks on the committed data
 | `data/player_ids.json` | NBA personId -> stable slug (Career Map style) + display name + headshot file |
 | `data/team_seasons.json` | one row per franchise-season: record, finish, RNK, playoff series |
 | `data/players.json` | one row per player-team-season: games, with/without records, on/off, starts, close games; best duos; accolade score |
-| `data/step0.json` | the numbers behind `docs/step0-report.md` |
+| `data/step0.json` | the numbers behind `docs/step0-report.md` (incl. `impossible_rows_dropped`) |
+| `data/gamelog/<season>.json` | every counted game and who appeared for each side (audit, opponent tables) |
+| `data/audit.json` | the numbers behind `docs/audit-report.md`, re-checked by `tests/test_audit.py` |
 
 ## Pages
 

@@ -131,12 +131,14 @@ def per82(t):
 # ---------------------------------------------------------------------------
 def summary(d, pid, min_games=1, era_from=1947):
     seasons = d.season_main(pid, era_from, min_games)
-    w = l = ow = ol = 0
+    w = l = ow = ol = sw = sl = 0
     for s in d.stints(pid, era_from, min_games):
         w += s["w"]
         l += s["l"]
         ow += s["ow"]
         ol += s["ol"]
+        sw += s.get("sw", 0)        # appearance span (games missed between his first and last game)
+        sl += s.get("sl", 0)
     winning = trips = titles = 0
     deepest = None
     rnks = []
@@ -155,7 +157,7 @@ def summary(d, pid, min_games=1, era_from=1947):
             if pr[0]["po"] == "Champion":
                 titles += 1
                 title_years.append(sy)
-    return {"w": w, "l": l, "ow": ow, "ol": ol, "seasons": len(seasons), "winning": winning,
+    return {"w": w, "l": l, "ow": ow, "ol": ol, "sw": sw, "sl": sl, "seasons": len(seasons), "winning": winning,
             "trips": trips, "titles": titles, "titleYears": title_years, "deepest": deepest,
             "rnk": (sum(rnks) / len(rnks)) if rnks else None,
             "gap": (pct(w, l) - pct(ow, ol)) if (w + l) and (ow + ol) else None}

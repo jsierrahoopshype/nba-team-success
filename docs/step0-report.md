@@ -7,7 +7,7 @@ Read-only checks on the sources, run before building the pages. Every number bel
 | Source | Version used | What we take |
 |---|---|---|
 | aderoa/nba-boxscores | 05efb8f 2026-11-17 | every game and box score, 1946-47 to 2025-26 |
-| jsierrahoopshype/nba-player-data | d3e3149 2026-11-18 | RS-Stats.csv (names), Awards.csv |
+| jsierrahoopshype/nba-player-data | 17a4cf5 2026-11-18 | RS-Stats.csv (names), Awards.csv |
 | jsierrahoopshype/hh-teammates | b9767c3 2026-11-17 | accolade weights (`scores`) and the scoring rules |
 | ramirobentes/nbadatar (data in ramirobentes/nba_data releases) | Parquet files of 2026-11-18 | lineups and possessions, 1996-97 on |
 | jsierrahoopshype/nba-headshots | 9d46952d 2026-11-16 | face-fill headshots, team slugs |
@@ -107,7 +107,7 @@ Also fixed: 10 neutral-site games in 2024-25 and 2025-26 (NBA Cup semifinals, Me
 
 Box-score players (personId + name) matched to RS-Stats.csv names per season + franchise, accents and punctuation stripped on both sides. Passes, in order: exact name, name without Jr./Sr./II and birth-year tags, same last name + first initial, the only player on that team-season with that last name (RS-Stats uses nicknames: Johnny Kerr = "Red Kerr", Rod Hundley = "Hot Rod Hundley"), close spelling (similarity 0.85+). A small alias list covers renamed players (Enes Freedom = Enes Kanter, Timothe Luwawu-Cabarrot = Timothe Luwawu).
 
-- Player-team-seasons: **28558 of 28817 matched (99.1%)**.
+- Player-team-seasons: **28557 of 28803 matched (99.2%)**.
 - Players: 5103; with an RS-Stats name: 5056; with a Career Map page under the same slug: 5074.
 - Players with 20+ games and **no RS-Stats name at all: 7**, all 2025-26 rookies missing from RS-Stats (their box-score name is used, and it matches Career Map):
   - Kasparas Jakučionis (53 games, personId 1642857)

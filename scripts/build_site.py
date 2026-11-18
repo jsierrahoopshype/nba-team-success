@@ -98,6 +98,43 @@ def rec(w, l):
     return f"{w}-{l}"
 
 
+# House formats (brief, Nov 2026): rates 65.9%, gaps +26.0 pp (from unrounded rates), records
+# with an en dash in display (706–366), empty samples N/A, minus signs as U+2212.
+EN = "\u2013"
+MINUS = "\u2212"
+
+
+def pct1(p):
+    return "N/A" if p is None else f"{100 * p:.1f}%"
+
+
+def pp(g):
+    if g is None:
+        return "N/A"
+    v = round(100 * g, 1)
+    if v == 0:
+        return "0.0 pp"
+    return ("+" if v > 0 else MINUS) + f"{abs(v):.1f} pp"
+
+
+def wl(w, l):
+    return f"{w}{EN}{l}" if (w + l) else "N/A"
+
+
+def signed(n):
+    return ("+" if n > 0 else (MINUS if n < 0 else "")) + f"{abs(n):,}"
+
+
+def nice_date(iso):
+    """'2026-11-16' -> 'Nov. 16, 2026' (AP months)."""
+    if not iso:
+        return "N/A"
+    y, m, d = (int(x) for x in iso.split("-"))
+    mon = ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.",
+           "Nov.", "Dec."][m - 1]
+    return f"{mon} {d}, {y}"
+
+
 def cls_gap(g):
     if g is None:
         return "flat"
@@ -324,7 +361,9 @@ def summary_cards(s, pid, mg, up):
          "RNK, 1 = champion"),
         ("With him vs without him",
          f'<span class="mono {cls_gap(gap)}">{fgap(gap)}</span>',
-         f'{rec(w, l)} with, {rec(sm["ow"], sm["ol"])} without'),
+         f'{rec(w, l)} with, {rec(sm["ow"], sm["ol"])} without (team-season window). '
+         f'Between his first and last game for each team: {rec(sm["sw"], sm["sl"])} without, gap '
+         f'{fgap((A.pct(w, l) - A.pct(sm["sw"], sm["sl"])) if (w + l) and (sm["sw"] + sm["sl"]) else None)}'),
     ]
     return '<div class="cards">' + "".join(
         f'<div class="card"><h3>{e(a)}</h3><p class="big">{b}</p><p class="sub">{c}</p></div>'
@@ -450,7 +489,7 @@ def current_block(s, pid, up):
 <td data-l="Started / bench" class="mono">{wl2(st['st'])} / {wl2(st['bn'])}</td>
 <td data-l="Close games" class="mono">{wl2(st['cl'])}</td></tr>""")
     return (f"""<section><h2>{season_label(CURRENT_SEASON)} so far</h2>
-<p class="note">Games through {e(s.cur['through'])}, updated every morning. Not included in the career numbers below until the season ends.</p>
+<p class="note">Games through {e(nice_date(s.cur['through']))}, the last game in the nightly data. Not included in the career numbers (completed seasons through {season_label(LAST_COMPLETE)}) until the season ends.</p>
 <table class="tt"><thead><tr><th>Team</th><th>His games</th><th>With him</th><th>Without him</th><th>Gap</th><th>On/off per 100</th><th>Started / bench</th><th>Close games</th></tr></thead><tbody>"""
             + "".join(rows) + "</tbody></table></section>")
 
@@ -498,7 +537,7 @@ def player_page(s, pid):
         parts.append(toggles(False, "p"))
         parts.append(f"""<section class="sum"><h2>Career summary</h2>
 <div class="vall">{summary_cards(s, pid, 1, up)}</div><div class="v20">{summary_cards(s, pid, 20, up)}</div>
-<p class="note">Regular season, 1946-47 through 2025-26. "With him" counts games he played; "without him" counts the team's games he missed inside his window with that team (see <a href="../how-we-count.html">How we count</a>).</p></section>""")
+<p class="note">Career: regular seasons {season_label(1947)} through {season_label(LAST_COMPLETE)}.{(' ' + season_label(CURRENT_SEASON) + ' (games through ' + e(nice_date(s.cur['through'])) + ') is shown separately and is not in these totals.') if s.cur else ''} "With him" counts games he played; "without him" counts the team's games he missed inside his team-season window (see <a href="../how-we-count.html">How we count</a>).</p></section>""")
     parts.append(current_block(s, pid, up))
     if has_hist:
         rows = season_rows(s, pid, up)
@@ -769,18 +808,18 @@ def board_page(s, key):
     through = s.cur["through"] if s.cur else "n/a"
     if key == "without-him":
         rel = "lists/winning-without-him.html"
-        title = f"Winning without him: {season_label(CURRENT_SEASON)} with/without gaps"
+        title = f"{season_label(CURRENT_SEASON)} with and without: team win rate in games he played vs missed"
         desc = (f"Every active player's {season_label(CURRENT_SEASON)} team record with him and without him "
-                f"(at least 5 games each side), sorted by the gap. Updated every morning; games through {through}.")
+                f"(at least 5 games each side), sorted by the gap. Updated every morning; games through {nice_date(through) if s.cur else through}.")
         body = f"""<header><h1>{e(title)}</h1><p class="subtitle">{e(desc)}</p></header>
-<section><h2>Teams winning more with him</h2>{rows_html(s, gap_items(s, gaps[:TOP_N], up), up)}</section>
-<section><h2>Teams winning more without him</h2>{rows_html(s, gap_items(s, gaps[::-1][:TOP_N], up), up)}</section>"""
+<section><h2>Higher win rate in games he played</h2>{rows_html(s, gap_items(s, gaps[:TOP_N], up), up)}</section>
+<section><h2>Higher win rate in games he missed</h2>{rows_html(s, gap_items(s, gaps[::-1][:TOP_N], up), up)}</section>"""
     else:
         rel = "lists/on-off-movers.html"
         lab = "the rest of the season" if baseline == "earlier" else "2025-26"
         title = f"Last 30 days movers: on/off per 100, {season_label(CURRENT_SEASON)}"
         desc = (f"Biggest change in on/off per 100 possessions over the last 30 days compared with {lab}. "
-                f"From Ramiro's lineup data, updated every morning; games through {through}.")
+                f"From Ramiro's lineup data, updated every morning; games through {nice_date(through) if s.cur else through}.")
         note = ("" if baseline == "earlier" else
                 "<p class=\"note\">Early in the season the last 30 days are the whole season, so the comparison is "
                 "with his 2025-26 on/off (any team). It switches to the earlier part of this season once enough "
@@ -818,16 +857,16 @@ def hub(s):
 <input id="q" name="q" type="search" autocomplete="off" placeholder="Type a name, e.g. Bill Russell" data-index="assets/players.json"></form>
 <ul id="results" class="results" aria-live="polite"></ul>
 <p class="az">Browse A-Z: {az}</p></section>
-<section><h2>{season_label(CURRENT_SEASON)}: winning without him</h2>
-<p class="note">Team record with him and without him this season, at least 5 games each side. Games through {e(through)}. <a href="lists/winning-without-him.html">Full board</a></p>
-<div class="two"><div><h3>Better with him</h3>{rows_html(s, gap_items(s, gaps[:8], up), up)}</div>
-<div><h3>Better without him</h3>{rows_html(s, gap_items(s, gaps[::-1][:8], up), up)}</div></div></section>
+<section><h2>{season_label(CURRENT_SEASON)}: with and without</h2>
+<p class="note">Team record with him and without him this season, at least 5 games each side. {season_label(CURRENT_SEASON)} games through {e(nice_date(through) if s.cur else through)}; career pages cover completed seasons through {season_label(LAST_COMPLETE)}. <a href="lists/winning-without-him.html">Full board</a></p>
+<div class="two"><div><h3>Higher win rate in games he played</h3>{rows_html(s, gap_items(s, gaps[:8], up), up)}</div>
+<div><h3>Higher win rate in games he missed</h3>{rows_html(s, gap_items(s, gaps[::-1][:8], up), up)}</div></div></section>
 <section><h2>Last 30 days movers</h2>
 <p class="note">Change in on/off per 100 possessions, last 30 days vs {'earlier this season' if baseline == 'earlier' else '2025-26'}. <a href="lists/on-off-movers.html">Full board</a></p>
 <div class="two"><div><h3>Risers</h3>{rows_html(s, mover_items(s, movers[:8], up, baseline), up)}</div>
 <div><h3>Fallers</h3>{rows_html(s, mover_items(s, movers[::-1][:8], up, baseline), up)}</div></div></section>
 <section><h2>The lists</h2><ul class="lists">{lists}
-<li><a href="lists/winning-without-him.html"><strong>Winning without him ({season_label(CURRENT_SEASON)})</strong></a><span class="det">Updated every morning.</span></li>
+<li><a href="lists/winning-without-him.html"><strong>{season_label(CURRENT_SEASON)} with and without</strong></a><span class="det">Updated every morning.</span></li>
 <li><a href="lists/on-off-movers.html"><strong>Last 30 days movers</strong></a><span class="det">On/off per 100, updated every morning.</span></li></ul></section>
 <section><h2>Featured players</h2><ul class="feat">{''.join(feat)}</ul></section>
 <script src="assets/search.js" defer></script>"""
@@ -873,46 +912,119 @@ def az_pages(s):
 
 
 def how_page(s):
+    """How we count: every rule, traced to the code, with the audit's worked examples."""
     st0 = load_json(os.path.join(DATA, "step0.json"), {})
+    au = load_json(os.path.join(DATA, "audit.json"), {})
     groups = st0.get("minutes_groups", {})
-    body = f"""<header><h1>How we count</h1><p class="subtitle">The definitions behind every number in Team Success, in plain words.</p></header>
+    j = au.get("jordan", {})
+    w = au.get("windows", {})
+    rk = au.get("rnk", {})
+    through = s.cur["through"] if s.cur else None
+    sizes = rk.get("league_sizes", {})
+    jrows = "".join(
+        f"""<tr><td data-l="Season" class="mono">{season_label(r['season'])}</td><td data-l="Team">{e(r['team'])}</td>
+<td data-l="His games" class="mono">{r['g']}</td><td data-l="First and last game" class="mono">{e(r['first'])} to {e(r['last'])}</td>
+<td data-l="With him" class="mono">{e(r['with'].replace('-', EN))}</td><td data-l="Without, window" class="mono">{e(wl(*map(int, r['without'].split('-'))))}</td>
+<td data-l="Without, span" class="mono">{e(wl(*map(int, r['span_without'].split('-'))))}</td><td data-l="Final finish" class="mono">#{r['rnk']} of {sizes.get(str(r['season']), '?')}</td></tr>"""
+        for r in j.get("seasons", []))
+    jw, jl = j.get("with", [0, 0])
+    ow, ol = j.get("without", [0, 0])
+    sw, sl = j.get("span_without", [0, 0])
+    dropped = len(st0.get("impossible_rows_dropped", []))
+    # the season that moves the most between the two definitions, filled from the audit rows
+    j95_html = ""
+    rows95 = [r for r in j.get("seasons", []) if r["season"] == 1995]
+    if rows95:
+        r = rows95[0]
+        a, b = map(int, r["without"].split("-"))
+        missing = sorted(set(range(1985, 2004)) - {x["season"] for x in j["seasons"]})
+        j95_html = (f"<p>The difference is mostly {season_label(1995)}. He played only for the {e(r['team'])} that season, "
+                    f"so the window is the whole season and the team's <span class=\"mono\">{a}{EN}{b}</span> before his first game "
+                    f"on {e(nice_date(r['first']))} counts as \"without him\". The span starts at his first game, so those "
+                    f"{a + b} games drop out. Seasons with no games for any team "
+                    f"({e(', '.join(season_label(y) for y in missing))}) are outside both definitions: no team-season, no window.</p>")
+    # removed appearances, grouped by player-season-team
+    grp = defaultdict(list)
+    for x in st0.get("impossible_rows_dropped", []):
+        grp[(str(x["personId"]), x["team"], x["date"][:4])].append(x["date"])
+    items = []
+    for (pid, f, _), dates in sorted(grp.items(), key=lambda kv: (min(kv[1]), kv[0])):
+        sy = int(min(dates)[:4]) + (1 if int(min(dates)[5:7]) >= 8 else 0)
+        nm = s.plink(pid, "") if pid in s.ids else e(pid)
+        items.append(f"<li>{nm}, {season_label(sy)}, {s.tlink(f, sy)}: {len(dates)} "
+                     f"{'game' if len(dates) == 1 else 'games'} ({', '.join(e(nice_date(d)) for d in sorted(dates))})</li>")
+    # the two player-seasons with the most removed rows, named from the data
+    bys = defaultdict(lambda: defaultdict(int))
+    for (pid, f, _), dates in grp.items():
+        sy = int(min(dates)[:4]) + (1 if int(min(dates)[5:7]) >= 8 else 0)
+        bys[(pid, sy)][f] += len(dates)
+    top = sorted(bys.items(), key=lambda kv: -sum(kv[1].values()))[:2]
+    ex = []
+    for (pid, sy), fs in top:
+        if pid not in s.ids:
+            continue
+        teams = " and ".join(s.tlink(f, sy) for f in sorted(fs, key=lambda f: -fs[f]))
+        ex.append(f"{season_label(sy)} rows that put {s.plink(pid, '')} on the {teams}")
+    examples_html = (" (for example, " + "; ".join(ex) + ")") if ex else ""
+    removed_html = (f'<details><summary>{dropped} removed appearances, by player</summary><ul>{"".join(items)}</ul></details>'
+                    if items else "")
+    size_txt = ", ".join(f"{season_label(int(y))}: {n}" for y, n in sorted(sizes.items(), key=lambda x: int(x[0]))
+                         if int(y) in (1947, 1950, 1951, 1954, 1962, 1967, 1968, 1977, 1981, 1989, 1996, 2005))
+    body = f"""<header><h1>How we count</h1><p class="subtitle">The rules behind every number in Team Success, traced to the data and code that produce them.</p></header>
 <section class="prose">
-<h2>Seasons and teams</h2>
-<p>A season is shown as "1996-97". Every team appears under the name it had that season (the 1955-56 Rochester Royals, not today's Sacramento Kings). Team names link to that franchise's Career Map page; teams that no longer exist (the Anderson Packers, the Chicago Stags and others from the 1940s and 50s) have no page, so their names are not links.</p>
-<h2>Records</h2>
-<p>Win % is wins divided by wins plus losses. A team's record, finish and playoff result come from our standings table. "Rank" is our own season ranking of all teams: the champion is 1, the runner-up 2, then by playoff round reached and win %.</p>
-<p>A "60-win season" means a 60-win pace: a win % of at least 60/82 (.732), so shortened seasons (1998-99, 2011-12, 2019-20) and the shorter schedules of the 1940s to 60s count fairly. The worst or best record of a season is the lowest or highest win %; when teams tie, every tied team counts.</p>
+<h2>What each page covers</h2>
+<p><strong>Career numbers</strong> cover completed regular seasons, {season_label(1947)} through {season_label(LAST_COMPLETE)}, plus the playoffs of those seasons. <strong>The current season</strong> ({season_label(CURRENT_SEASON)}) is shown separately: games through {e(nice_date(through))}, the last game in the nightly data. It is not added to any career total until the season ends.</p>
+<p>That is why a player page can say "through {season_label(LAST_COMPLETE)}" while the daily boards show games from {e(nice_date(through))}: one is the career, the other the season in progress.</p>
+<h2>Formats</h2>
+<p>Records use an en dash (706{EN}366). Win rates read 65.9%. Differences between two win rates read +26.0 pp (percentage points), worked out from the unrounded rates. Possession-based on/off is in points per 100 possessions, a different unit, and is always labeled that way. An empty sample (no games) shows N/A, never 0.0%.</p>
+<h2>Final NBA finish</h2>
+<p>Each team-season's final finish is the RNK column of our standings table. The champion is #1 and the runner-up #2; the other teams follow by playoff round reached, then by regular-season win %. Teams with the same round and win % share a rank. We re-derived every RNK from that rule: {len(rk.get('mismatches', [])) if rk else 'N/A'} of {sum(sizes.values()):,} team-seasons differ, and {rk.get('tied_rows', 0):,} share a rank.</p>
+<p>A finish always comes with that season's league size: "#8 of 30". League sizes changed a lot ({e(size_txt)}; 30 since 2004-05), so the league-size-adjusted finish puts every season on one scale: (rank {MINUS} 1) / (teams {MINUS} 1), where 0 is the champion and 1 is last. Live standings and conference seeds are labeled as such and never mixed with the final finish.</p>
 <h2>Was he on that team?</h2>
-<p>A player was on a team-season if he played at least one regular-season game for it. Every count shows his games for that team next to it, and every page and list has a "20+ games only" filter.</p>
-<p>"Played" means he logged minutes or any stat. Minutes were not kept in 1946-47 to 1950-51, and only in some games from 1951-52 to 1975-76; in a game without minutes, being in the box score counts as playing. From 1996-97, a player with 0 minutes and no stats who was on the floor in the lineup data counts too: those are seconds-long appearances, not DNPs.</p>
+<p>A player was on a team-season if he played at least one regular-season game for it. "Played" means he logged minutes or any stat. Minutes were not kept from {season_label(1947)} to {season_label(1951)} and only in some games until {season_label(1976)}; in a game without minutes, being in the box score counts as playing. From {season_label(RAMIRO_FIRST)}, a 0-minute row with no stats counts when the lineup data puts him on the floor (a seconds-long appearance, not a DNP).</p>
+<p>We removed {dropped} appearances a player could not have made: source box scores that file one player's line under another player's ID, or on the wrong team{examples_html}. The rule flags games for one team that sit between two games he played for another team with no game of that team missed in between, appearances for two teams on the same day, and stints made only of 0-minute rows in games where minutes were kept. Among the flagged rows, the 0-minute ones go; when there are none (seasons without minutes), the rows of the team he played fewer games for that season go. Every removed row is listed below.</p>
+{removed_html}
 <h2>With him and without him</h2>
-<p>For each player and team-season: the team's record in the games he played vs the games he missed, inside his window with that team. With one team all season, the window is the whole season. If he changed teams, the window with the first team runs from the start of the season to the day before his first game for the next team, and the next window starts the day after his last game for the previous team. The career numbers add up every window. The gap is win % with him minus win % without him.</p>
-<p>Two limits: we cannot see the day a player was waived or traded, only the games he played, so the days between his last game for one team and his first for the next count for both. And a player cut in mid-season with no new team keeps a window to season's end, so those team games count as "without him".</p>
-<p>The playoff numbers work the same way, shown separately, for each team he played at least one playoff game for.</p>
-<h2>On/off, starts and close games (1996-97 on)</h2>
-<p>These come from Ramiro Bentes' public lineup and possession data, which starts in 1996-97. Before that they show "n/a".</p>
-<ul><li><strong>On/off per 100</strong>: the team's net points per 100 possessions with him on the floor minus with him off the floor, in the games he played for that team.</li>
+<p>"With him" is the team's record in the regular-season games he played for it. "Without him" is the team's record in games he missed, and it needs a window: which missed games count. No free source we are allowed to use has historical signing, waiver or trade dates, so we publish two definitions, both rebuilt from the game logs.</p>
+<ul>
+<li><strong>Team-season window</strong> (the headline number): with one team all season, the whole season. If he changed teams, the first window ends the day before his first game for the next team, and the next window starts the day after his last game for the previous one.</li>
+<li><strong>Appearance span</strong>: only the team's games between his first and last game for that team (per stint). No game before he arrived or after he left counts, and no game counts for two teams. It can miss a real absence at the start or end of a stint.</li>
+</ul>
+<p>What the window proxy counts that the span does not, across every player: {w.get('one_team_games_before_first_appearance', 0):,} team games before a one-team player's first appearance (late signings, call-ups, injuries) in {w.get('rows_before', 0):,} team-seasons; {w.get('one_team_games_after_last_appearance', 0):,} games after his last appearance (cuts, season-ending injuries) in {w.get('rows_after', 0):,} team-seasons; and {w.get('traded_games_between_teams', 0):,} games in the days between two teams, which count for both, in {w.get('rows_traded', 0):,} traded team-seasons.</p>
+<p>The gap is win % with him minus win % without him, in percentage points. Leaderboards that rank gaps set separate minimums for games played and games missed and show both samples.</p>
+<h2>Worked example: Michael Jordan</h2>
+<p>With him: <span class="mono">{jw}{EN}{jl}</span> in {jw + jl:,} games ({pct1(jw / (jw + jl)) if jw + jl else 'N/A'}), wins minus losses <span class="mono">{signed(jw - jl)}</span>. Without him, team-season window: <span class="mono">{wl(ow, ol)}</span> in {ow + ol} games ({pct1(ow / (ow + ol)) if ow + ol else 'N/A'}), a gap of <span class="mono">{pp((jw / (jw + jl)) - (ow / (ow + ol))) if ow + ol else 'N/A'}</span>. Without him, appearance span: <span class="mono">{wl(sw, sl)}</span> in {sw + sl} games ({pct1(sw / (sw + sl)) if sw + sl else 'N/A'}), a gap of <span class="mono">{pp((jw / (jw + jl)) - (sw / (sw + sl))) if sw + sl else 'N/A'}</span>.</p>
+{j95_html}
+<table class="tt"><thead><tr><th>Season</th><th>Team</th><th>His games</th><th>First and last game</th><th>With him</th><th>Without, window</th><th>Without, span</th><th>Final finish</th></tr></thead><tbody>{jrows}</tbody></table>
+<p>His career cards trace to the same rows: {j.get('winning', 'N/A')} winning seasons (team above .500), {j.get('trips', 'N/A')} playoff trips, {j.get('titles', 'N/A')} titles and an average final finish of {j.get('avg_rnk', 0):.1f} (the mean of his {len(j.get('seasons', []))} seasons' ranks). The leaderboards use the same functions.</p>
+<h2>Seasons split between teams</h2>
+<p>Each stint is its own row with its own window. Where a summary needs one row per season (winning seasons, average finish, streaks), it uses the stint with the most games; ties go to the later team. A playoff trip means he played a playoff game, or the team he finished the season with made the playoffs; a title follows the same rule. Play-in losses are not playoff trips.</p>
+<h2>Playoffs</h2>
+<p>Playoff with/without works the same way, shown separately, for each team he played at least one playoff game for. A team's playoff result always comes from the standings; series scores come from the playoff games. Play-in games are in neither the regular season nor the playoffs. In 1953-54 the first round was a round robin: the Fort Wayne Pistons and New York Knicks played playoff games but are listed as missing the playoffs, as in the standings.</p>
+<h2>On/off, starts and close games ({season_label(RAMIRO_FIRST)} on)</h2>
+<ul><li><strong>On/off per 100</strong>: the team's net points per 100 possessions with him on the floor minus with him off, in the games he played for that team. A different unit from the win-rate gaps.</li>
 <li><strong>Started / bench</strong>: the team's record in games he was in the first five vs games he came off the bench.</li>
-<li><strong>Close games</strong>: games where, at some point in the last 5 minutes of the 4th quarter or overtime, the margin was 5 points or fewer, and he was on the floor for at least one of those possessions. Shows the team's record in those games.</li></ul>
-<p>Before 1996-97, minutes are often missing, so the with/without records count games only.</p>
+<li><strong>Close games</strong>: games where the margin was 5 points or fewer at some point in the last 5 minutes of the 4th quarter or overtime, and he was on the floor for at least one of those possessions.</li></ul>
+<p>These come from Ramiro Bentes' public lineup and possession data, which starts in {season_label(RAMIRO_FIRST)}. Before that they show N/A.</p>
 <h2>Lists</h2>
-<p>Every list covers regular seasons 1946-47 through 2025-26 (the current season is only on the daily boards) and has three eras: all-time, since 1976-77 and since 1996-97. "Winning seasons" and "playoff droughts" count the seasons he played, in a row; a season he missed entirely neither breaks nor extends a streak. For a season split between teams, a winning season uses the team he played the most games for, and a playoff trip means he played a playoff game or the team he finished with made the playoffs.</p>
-<p>The Accolade score uses the Teammates Score weights; the formula is on the <a href="lists/bad-luck.html">Bad Luck Index</a> page.</p>
+<p>Every list covers regular seasons {season_label(1947)} through {season_label(LAST_COMPLETE)} and has three eras: all-time, since 1976-77 and since 1996-97. "Winning seasons" and "playoff droughts" count the seasons he played, in a row; a season he missed entirely neither breaks nor extends a streak. The Accolade score uses the Teammates Score weights; the formula is on the <a href="lists/bad-luck.html">Bad Luck Index</a> page.</p>
 <h2>What is missing or corrected</h2>
 <ul>
-<li>One 1953-54 Milwaukee Hawks vs Baltimore Bullets game is missing from the box scores, and three games from 1946-47, 1950-51 and 1952-53 have results that disagree with the official standings. Team records use the official standings; with/without uses the games we have.</li>
+<li>One 1953-54 Milwaukee Hawks vs Baltimore Bullets game is missing from the box scores, and eight games from 1946-47 to 1953-54 have results that disagree with the official standings. Team records use the standings; with/without uses the games we have.</li>
 <li>Eight tiebreaker games from 1948 to 1957 and the cancelled April 2013 Celtics-Pacers game are left out of the regular season.</li>
+<li>Ten neutral-site games (2024-25 and 2025-26) have the missing team and score filled in from the box score.</li>
 <li>2025-26 conference and division finishes are worked out from the records.</li>
-<li>The current season ({season_label(CURRENT_SEASON)}) uses Ramiro's daily lineup data until the box-score archive adds it.</li>
 <li>Seasons with no minutes at all: {e(', '.join(season_label(y) for y in groups.get('never', [])))}.</li>
+<li>The current season uses Ramiro's daily lineup data until the box-score archive adds it.</li>
 </ul>
 <h2>Sources</h2>
 <p>Box scores for every game since 1946-47 (Alberto de Roa's nba-boxscores), lineups and possessions since 1996-97 (Ramiro Bentes' nba_data), player names and awards (HoopsMatic's player database), team standings (HoopsMatic). All public.</p>
 </section>"""
     rel = "how-we-count.html"
     return rel, page(rel, "How we count: team records with and without a player | HoopsMatic",
-                     "The definitions behind Team Success: win %, 60-win pace, with/without windows, on/off per 100, "
-                     "close games, the 20+ games filter and the data gaps.", body, "")
+                     "The rules behind Team Success: final NBA finish, the two with/without definitions, "
+                     "traded players, playoffs, on/off per 100 and the data corrections, with a worked example.",
+                     body, "")
 
 
 # ---------------------------------------------------------------------------
