@@ -28,7 +28,10 @@
     var i = Array.prototype.indexOf.call(head, th);
     var type = th.getAttribute("data-type") || "text";
     var factor = direction === "ascending" ? 1 : -1;
-    var rows = Array.prototype.slice.call(tbody.rows).map(function (r, k) {
+    // an opened detail row (class "detail") travels with the row above it
+    var rows = Array.prototype.slice.call(tbody.rows).filter(function (r) {
+      return !r.classList.contains("detail");
+    }).map(function (r, k) {
       var v = cellValue(r, i);
       return { r: r, k: k, v: type === "number" ? (v === "" ? NaN : parseFloat(v)) : v };
     });
@@ -46,7 +49,9 @@
     for (var h = 0; h < head.length; h++) head[h].removeAttribute("aria-sort");
     th.setAttribute("aria-sort", direction);
     rows.forEach(function (x) {
+      var det = x.r.nextElementSibling && x.r.nextElementSibling.classList.contains("detail") ? x.r.nextElementSibling : null;
       if (tbody.moveBefore) tbody.moveBefore(x.r, null); else tbody.appendChild(x.r);
+      if (det) { if (tbody.moveBefore) tbody.moveBefore(det, null); else tbody.appendChild(det); }
     });
     var st = table.parentNode.querySelector(".sort-status");
     var label = th.querySelector("button");

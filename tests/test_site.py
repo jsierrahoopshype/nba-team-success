@@ -152,7 +152,11 @@ def test_team_links_go_to_career_map(html):
 
 def test_era_names_on_old_seasons(html):
     t = html["player/oscar-robertson.html"]
-    assert "Cincinnati Royals" in t and ">Sacramento Kings<" not in t
+    seasons = t[t.index('id="cap-seasons"'):t.index('<section id="opp">')]
+    assert "Cincinnati Royals" in seasons and ">Sacramento Kings<" not in seasons
+    # the opponent table groups by franchise (named as today) and keeps the era names
+    opp = t[t.index('<section id="opp">'):]
+    assert "as Cincinnati Royals" in opp or "Cincinnati Royals" in opp
 
 
 def test_sitemap_lists_every_page_with_stable_lastmod():

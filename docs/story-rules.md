@@ -28,6 +28,18 @@ the rise is 8 places or more: "The biggest one-season rise in his career: the {t
 
 Counts per rule are printed by `scripts/build_site.py` on every build.
 
+## Opponent takeaways (player page, "Record against each opponent")
+
+Shown only when the sample supports them. Each links to its row, which opens the games.
+
+| Takeaway | When | Template |
+|---|---|---|
+| Best matchup | 3+ franchises with 20+ regular-season games each | "Best regular-season record against one franchise: {W}–{L} ({pct}) against the {franchise} in {G} games." (highest win %, ties: more games) |
+| Toughest matchup | same | "Toughest regular-season record against one franchise: {W}–{L} ({pct}) against the {franchise} in {G} games." (lowest win %, ties: more games) |
+| Playoff rivalry | 2+ playoff series he played in against one franchise | "Most playoff series against one franchise: {n} against the {franchise}, {SW}–{SL} in series and {W}–{L} in games." |
+
+Franchises are named as today; game lists use each team's name that season.
+
 ## Season board lead
 
 "The {champion} finished #1 ({W}–{L}), the {runner-up} #2 ({W}–{L})." From the standings' RNK.

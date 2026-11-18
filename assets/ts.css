@@ -208,3 +208,16 @@ a.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .seasonnav{font-size:.9rem;margin:.3rem 0 .6rem}
 .lists.seasons li{padding:.45rem .75rem}
 .tt .sub.wrap{white-space:normal}
+/* record against each opponent */
+.takes{list-style:none;display:grid;gap:.4rem;margin:.3rem 0 .6rem}
+.takes li{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.5rem .75rem;font-size:.9rem}
+.opp-open{font:inherit;font-size:.78rem;font-weight:600;padding:.2rem .65rem;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--accent);cursor:pointer;white-space:nowrap}
+.opp-open[aria-expanded="true"]{background:var(--accent-dim);border-color:var(--accent)}
+.tt tr.detail td{display:block;text-align:left;grid-template-columns:none}
+.tt tr.detail td::before{content:none}
+.tt tr.detail h4{font-size:.85rem;margin:.5rem 0 .2rem}
+.glist{list-style:none;font-size:.8rem;columns:1}
+.glist li{padding:.12rem 0;break-inside:avoid}
+.glist li.w::before{content:"\25CF  ";color:var(--green)}.glist li.l::before{content:"\25CF  ";color:var(--red)}
+@media(min-width:900px){.glist{columns:2}}
+@media(min-width:1100px){.tt.opp tr.detail td{display:table-cell}}
