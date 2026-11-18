@@ -103,7 +103,7 @@ server.listen(0, async () => {
     if (!fs.existsSync(file)) { bad.push(`${rel}: missing`); continue; }
     for (const w of WIDTHS) {
       const page = await browser.newPage({ viewport: { width: w, height: 900 } });
-      await page.goto(`http://localhost:${port}/${rel}`, { waitUntil: 'networkidle' });
+      await page.goto(`http://localhost:${port}/${rel}`, { waitUntil: rel.includes('?') ? 'networkidle' : 'load' });
       await page.waitForTimeout(rel.includes('?') ? 400 : 50);
       const sw = await page.evaluate(() => document.documentElement.scrollWidth);
       if (sw > w) bad.push(`${rel} at ${w}px: page is ${sw}px wide`);
@@ -114,7 +114,7 @@ server.listen(0, async () => {
   for (const rel of TEXT_CHECK) {
     for (const w of [390, 1366]) {
       const page = await browser.newPage({ viewport: { width: w, height: 900 } });
-      await page.goto(`http://localhost:${port}/${rel}`, { waitUntil: 'networkidle' });
+      await page.goto(`http://localhost:${port}/${rel}`, { waitUntil: 'load' });
       const probs = await page.evaluate(textProblems, true);
       probs.slice(0, 8).forEach(p => bad.push(`${rel} at ${w}px: ${p}`));
       n++;
