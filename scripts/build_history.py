@@ -395,6 +395,7 @@ def load_awards():
     out = {}
     for p, years in by.items():
         total = 0.0
+        per_year = {}
         counts = Counter()
         for y, aws in years.items():
             s = set(aws)
@@ -407,8 +408,10 @@ def load_awards():
                 elif "Defensive Player of the Year" in s and a in alldef:
                     pts = 0
                 total += pts
+                per_year[y] = per_year.get(y, 0) + pts
                 counts[a] += 1
-        out[p] = {"score": round(total, 3), "counts": dict(counts)}
+        out[p] = {"score": round(total, 3), "counts": dict(counts),
+                  "byYear": {str(y): round(v, 3) for y, v in sorted(per_year.items()) if v}}
     return scores, out
 
 
@@ -437,7 +440,7 @@ def ramiro_season(sy, kind, games):
     pp = os.path.join(RAMIRO, f"possessions_{kind}_{sy}.parquet")
     res = {"on": defaultdict(lambda: [0, 0, 0, 0]), "team": defaultdict(lambda: [0, 0, 0, 0]),
            "starters": defaultdict(set), "clutch_games": set(), "clutch_on": set(),
-           "side": {}, "games": set(), "oncourt": set()}
+           "side": {}, "games": set(), "oncourt": set(), "pteam": {}}
     if not os.path.exists(lp):
         return None
     t = pq.read_table(lp, columns=["game_id", "location_team", "period", "stint", "team",
@@ -462,6 +465,7 @@ def ramiro_season(sy, kind, games):
             for i in range(4):
                 o[i] += vals[i]
             res["oncourt"].add((pid, gid))
+            res["pteam"][(pid, gid)] = fr
         key = (gid, fr)
         st = r["secs_game_start"] if r["secs_game_start"] is not None else 1e9
         if key not in first or st < first[key][0]:
@@ -893,11 +897,11 @@ def build():
         if not info:
             continue
         d = sorted(duos.get(pid, []), key=lambda x: (-(x[2] / x[1]), -x[1], x[0]))[:10]
-        aw = awards.get(info["rsName"] or info["name"], {"score": 0, "counts": {}})
+        aw = awards.get(info["rsName"] or info["name"], {"score": 0, "counts": {}, "byYear": {}})
         seas = sorted(p["seasons"], key=lambda x: (x["s"], x.get("first") or "9999"))
         out_players[str(pid)] = {"seasons": seas,
                                  "duos": [[a, g, w] for a, g, w in d],
-                                 "acc": aw["score"], "awards": aw["counts"]}
+                                 "acc": aw["score"], "accY": aw["byYear"], "awards": aw["counts"]}
     dump_json(os.path.join(DATA, "players.json"), out_players)
     ts_out = {f"{f}-{s}": r for (f, s), r in sorted(tseasons.items())}
     dump_json(os.path.join(DATA, "team_seasons.json"), ts_out)
