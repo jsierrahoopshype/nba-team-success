@@ -182,6 +182,9 @@ def build(sy=CURRENT_SEASON):
                 gid = g["gid"]
                 if gid not in mine:
                     pt["o" + ("w" if won else "l")] += 1
+                    # appearance span: missed games between his first and last game of this stint
+                    if st["games"][0][0] <= g["date"] <= st["games"][-1][0]:
+                        pt["s" + ("w" if won else "l")] = pt.get("s" + ("w" if won else "l"), 0) + 1
                     continue
                 pt["g"] += 1
                 pt["w" if won else "l"] += 1
@@ -235,7 +238,16 @@ def build(sy=CURRENT_SEASON):
                     fh.write(body)
             else:
                 v["hs"] = None
-    doc = {"season": sy, "source": source, "start": start, "through": through,
+    # team records to date (the current-season standings)
+    trec = {}
+    for f, gl in team_games.items():
+        w = sum(1 for g in gl if bh.team_won(g, f))
+        trec[f] = [w, len(gl) - w]
+    for sts in out.values():
+        for pt in sts:
+            pt.setdefault("sw", 0)
+            pt.setdefault("sl", 0)
+    doc = {"season": sy, "source": source, "start": start, "through": through, "teams": trec,
            "cutoff30": cutoff, "games": len(games), "players": out, "newIds": new_ids}
     changed = dump_json(os.path.join(DATA, "current.json"), doc)
     print("CHANGED" if changed else "UNCHANGED", f"{len(games)} games through {through}")

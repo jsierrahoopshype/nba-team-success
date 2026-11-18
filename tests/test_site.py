@@ -177,7 +177,7 @@ def test_sitemap_lists_every_page_with_stable_lastmod():
 def test_pre_rendered_content(html):
     t = html["player/michael-jordan.html"]
     assert "706\u2013366" in t     # career record is in the HTML, not built by JavaScript
-    assert "65.9%" in t and "+26.0 pp" in t
+    assert "65.9% · 39.9%" in t and "26.0 points higher" in t
     t = html["lists/worst-team.html"]
     assert "John Block" in t and "Johnny Green" in t
 
@@ -203,4 +203,35 @@ def test_noindex_pages():
 def test_today_on_hub():
     t = read("index.html")
     assert "<h2>Today in Team Success</h2>" in t and '<p class="story-head">' in t
-    assert "Data through" in t
+    assert "data through" in t
+
+
+def test_no_pp_unit_in_pages(html):
+    for rel, t in html.items():
+        body = re.sub(r"<[^>]+>", " ", t.split("<body", 1)[1])
+        assert not re.search(r"\d pp\b", body), rel
+
+
+def test_search_top_and_bottom(html):
+    for rel, t in html.items():
+        assert 'class="finder top"' in t and 'class="finder bottom"' in t, rel
+
+
+def test_logos_follow_h2h_rule():
+    t = read("player/kevin-durant.html")
+    assert "assets/logos/h-seattle-supersonics.svg" in t        # Seattle SuperSonics: its own historical file
+    assert "assets/logos/c-oklahoma-city-thunder.svg" in t
+    t = read("player/george-mikan.html")
+    assert "c-los-angeles-lakers.svg" not in t.split('id="opp"')[0]  # Minneapolis Lakers: never today's logo
+    for f in os.listdir(os.path.join(ROOT, "assets", "logos")):
+        assert f.endswith(".svg")
+
+
+def test_card_json_files():
+    doc = json.loads(read("assets/card/michael-jordan.json"))
+    assert doc["record"]["w"] == 706 and doc["with_without"]["gap_points"] == 26.0 and doc["titles"] == 6
+    assert doc["top_peer"] and doc["headshot"].startswith("assets/hs/")
+    lst = json.loads(read("assets/card/lists/no-allstar-teammate.json"))
+    assert len(lst["rows"]) == 5
+    sea = json.loads(read("assets/card/seasons/1997-98.json"))
+    assert sea["rows"][0]["team"] == "Chicago Bulls" and sea["rows"][0]["rank"] == 1

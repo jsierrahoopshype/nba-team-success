@@ -21,7 +21,7 @@
       var v = q.get(k);
       if (v !== null && v !== "" && !isNaN(parseInt(v, 10))) f[k] = parseInt(v, 10);
     });
-    ["team", "as", "st", "sort", "hl"].forEach(function (k) { var v = q.get(k); if (v) f[k] = v; });
+    ["team", "as", "st", "sort", "hl", "self"].forEach(function (k) { var v = q.get(k); if (v) f[k] = v; });
     if (f.season) { f.from = f.season; f.to = f.season; }
     return f;
   }
@@ -30,6 +30,11 @@
     var lo = f.from || data.first, hi = f.to || data.last, ts = f.ts || 1, team = f.team || "";
     var active = row[3], allstar = row[4], stints = row[5];
     var inc = stints.filter(function (s) { return lo <= s[0] && s[0] <= hi && s[2] >= ts && (!team || s[1] === team); });
+    if (f.noas) {                                    // winning without an All-Star teammate
+      inc = inc.filter(function (s) { return s[10]; });
+      if (f.self === "yes") inc = inc.filter(function (s) { return s[11]; });
+      else if (f.self === "no") inc = inc.filter(function (s) { return !s[11]; });
+    }
     if (!inc.length) return null;
     if (f.st === "active" && !active) return null;
     if (f.st === "retired" && active) return null;
@@ -42,9 +47,10 @@
       by[s[0]].push(s);
     });
     order.sort(function (a, b) { return a - b; });
-    var winning = 0, trips = 0, titles = 0, deep = -1, deepn = 0, rk = 0, adj = 0, years = [];
+    var winning = 0, trips = 0, titles = 0, deep = -1, deepn = 0, rk = 0, adj = 0, years = [], liveN = 0;
     order.forEach(function (sy) {
       var lst = by[sy], main = lst[0], end = null, i;
+      if (teams[lst[0][1] + "-" + sy][5]) { liveN++; return; }   // season in progress: W-L only
       // Python max() keeps the FIRST maximal element: replace only on a strictly greater key
       for (i = 1; i < lst.length; i++) {
         if (lst[i][2] > main[2] || (lst[i][2] === main[2] && lst[i][9] > main[9])) main = lst[i];
@@ -71,10 +77,10 @@
       if (best && best[4] === 6) { titles++; years.push(sy); }
       if (d > deep) { deep = d; deepn = 1; } else if (d === deep) deepn++;
     });
-    var n = order.length;
-    return { pid: row[0], slug: row[1], name: row[2], w: w, l: l, ow: ow, ol: ol, gp: w + l, gm: ow + ol, wl: w - l,
-      pct: (w + l) ? w / (w + l) : null, seasons: n, winning: winning, wshare: winning / n, trips: trips,
-      tshare: trips / n, titles: titles, years: years, deep: deep, deepn: deepn, avg: rk / n, adj: adj / n,
+    var n = order.length - liveN;
+    return { pid: row[0], slug: row[1], name: row[2], hs: row[6] || "", w: w, l: l, ow: ow, ol: ol, gp: w + l, gm: ow + ol, wl: w - l,
+      pct: (w + l) ? w / (w + l) : null, seasons: f.noas ? n + liveN : n, winning: winning, wshare: n ? winning / n : null, trips: trips,
+      tshare: n ? trips / n : null, titles: titles, years: years, deep: n ? deep : 0, deepn: deepn, avg: n ? rk / n : null, adj: n ? adj / n : null,
       gap: ((w + l) && (ow + ol)) ? (w / (w + l)) - (ow / (ow + ol)) : null };
   }
 
@@ -105,6 +111,7 @@
   }
 
   function compute(f) {
+    if (DEF.noas) f.noas = 1;
     var sorts = DEF.sorts, sort = f.sort && sorts[f.sort] ? f.sort : Object.keys(sorts)[0];
     var mins = {}, base = sorts[sort][2];
     Object.keys(base).forEach(function (k) { mins[k] = base[k]; });
@@ -114,7 +121,7 @@
     data.p.forEach(function (row) {
       var m = metrics(row, data.t, f);
       if (!m || m.gp < mins.cg) return;
-      if (m.seasons < (mins.ms || 1)) return;
+      if (m.seasons < (mins.ms || 0)) return;
       if (m.gp < (mins.mp || 0) || m.gm < (mins.mm || 0)) return;
       if (m[sort] === null) return;
       m._k = key(sort, m);
@@ -138,11 +145,11 @@
 
   // ---- formatting (same as build_site.py)
   function pct1(p) { return p === null ? "N/A" : (100 * p).toFixed(1) + "%"; }
-  function pp(g) {
+  function pp(g) {           // the gap between two win %s, in points (no unit sign: "+26.0")
     if (g === null) return "N/A";
     var v = Math.round(1000 * g) / 10;
-    if (v === 0) return "0.0 pp";
-    return (v > 0 ? "+" : MINUS) + Math.abs(v).toFixed(1) + " pp";
+    if (v === 0) return "0.0";
+    return (v > 0 ? "+" : MINUS) + Math.abs(v).toFixed(1);
   }
   function signed(n) { return (n > 0 ? "+" : (n < 0 ? MINUS : "")) + Math.abs(n).toLocaleString("en-US"); }
   function wl(w, l) { return (w + l) ? w + EN + l : "N/A"; }
@@ -165,8 +172,8 @@
       case "deepn": return [m.deepn, String(m.deepn)];
       case "titles": return [m.titles, String(m.titles)];
       case "years": return [m.years.length, m.years.map(label).join(", ") || "N/A"];
-      case "avg": return [m.avg, m.avg.toFixed(1)];
-      case "adj": return [m.adj, m.adj.toFixed(3)];
+      case "avg": return [m.avg, m.avg === null ? "N/A" : m.avg.toFixed(1)];
+      case "adj": return [m.adj, m.adj === null ? "N/A" : m.adj.toFixed(3)];
       case "gap": return [m.gap, pp(m.gap)];
       case "with": return [m.pct, wl(m.w, m.l) + ", " + pct1(m.pct)];
       case "without": return [m.gm ? m.ow / m.gm : null, wl(m.ow, m.ol) + ", " + pct1(m.gm ? m.ow / m.gm : null)];
@@ -186,10 +193,23 @@
     tr.appendChild(td);
     td = document.createElement("td");
     td.setAttribute("data-l", "Player");
+    var wrapN = document.createElement("span");
+    wrapN.className = "tmn";
+    var face = document.createElement("span");
+    face.className = "hs sm" + (m.hs ? "" : " nohs");
+    if (m.hs) {
+      var im = document.createElement("img");
+      im.src = UP + "assets/hs/" + m.hs; im.alt = ""; im.width = 160; im.height = 160; im.loading = "lazy";
+      face.appendChild(im);
+    } else {
+      var w = m.name.replace(/\./g, " ").split(/\s+/).filter(function (x) { return x && !/^(jr|sr|ii|iii|iv|v),?$/i.test(x); });
+      face.textContent = w.length ? (w[0][0] + (w.length > 1 ? w[w.length - 1][0] : "")).toUpperCase() : "?";
+    }
     var a = document.createElement("a");
     a.href = UP + "player/" + encodeURIComponent(m.slug) + ".html";
     a.textContent = m.name;
-    td.appendChild(a);
+    wrapN.appendChild(face); wrapN.appendChild(document.createTextNode(" ")); wrapN.appendChild(a);
+    td.appendChild(wrapN);
     tr.appendChild(td);
     DEF.cols.forEach(function (c) {
       var v = cell(c, m), x = document.createElement("td");

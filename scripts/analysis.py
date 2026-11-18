@@ -11,7 +11,7 @@ import sys
 from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import DATA, LAST_COMPLETE, SIXTY_PACE, load_json  # noqa: E402
+from common import CURRENT_SEASON, DATA, LAST_COMPLETE, SIXTY_PACE, franchise_name, load_json  # noqa: E402
 
 ERAS = ((1947, "all"), (1977, "1977"), (1997, "1997"))
 GAME_FILTERS = ((1, "any"), (20, "20"))
@@ -23,11 +23,32 @@ PO_LABEL = {"First Round": "First round", "Conf Semis": "Conference semifinals",
 
 
 class Data:
-    def __init__(self, data_dir=DATA):
+    """live=True adds the season in progress (data/current.json) as team-seasons flagged "live":
+    they count in career W-L totals, never in season-based counts (winning seasons, trips, finish)."""
+    def __init__(self, data_dir=DATA, live=False):
         self.players = load_json(os.path.join(data_dir, "players.json"), {})
         self.teams = load_json(os.path.join(data_dir, "team_seasons.json"), {})
         self.ids = load_json(os.path.join(data_dir, "player_ids.json"), {})
         self.meta = load_json(os.path.join(data_dir, "meta.json"), {})
+        self.through = None
+        cur = load_json(os.path.join(data_dir, "current.json"), None) if live else None
+        if cur and cur.get("teams"):
+            self.through = cur["through"]
+            sy = cur["season"]
+            for f, (w, l) in cur["teams"].items():
+                self.teams[f"{f}-{sy}"] = {"f": f, "s": sy, "w": w, "l": l, "pct": round(w / (w + l), 4) if w + l else 0,
+                                           "name": franchise_name(f, sy) or f, "rnk": None, "po": "", "series": [],
+                                           "elim": None, "best": False, "worst": False, "gpBox": w + l, "live": True,
+                                           "conf": "", "div": "", "confPos": "", "divPos": ""}
+            for k, v in cur.get("newIds", {}).items():
+                self.ids.setdefault(k, v)
+            for pid, sts in cur["players"].items():
+                p = self.players.setdefault(pid, {"seasons": [], "duos": [], "acc": 0, "accY": {}, "awards": {}, "as": []})
+                for st in sts:
+                    p["seasons"].append({"f": st["f"], "s": sy, "g": st["g"], "w": st["w"], "l": st["l"],
+                                         "ow": st["ow"], "ol": st["ol"], "sw": st.get("sw", 0), "sl": st.get("sl", 0),
+                                         "first": st.get("last"), "last": st.get("last"), "endTeam": st.get("endTeam"),
+                                         "win": [], "live": True})
 
     def team(self, f, s):
         return self.teams.get(f"{f}-{s}")
@@ -130,9 +151,11 @@ def per82(t):
 # Player career summary
 # ---------------------------------------------------------------------------
 def summary(d, pid, min_games=1, era_from=1947):
+    """Career summary. W-L, with/without and span include the live season when the Data has one;
+    season counts (seasons, winning, trips, titles, finish) use completed seasons only."""
     seasons = d.season_main(pid, era_from, min_games)
     w = l = ow = ol = sw = sl = 0
-    for s in d.stints(pid, era_from, min_games):
+    for s in d.stints(pid, era_from, min_games, upto=CURRENT_SEASON):
         w += s["w"]
         l += s["l"]
         ow += s["ow"]
