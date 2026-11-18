@@ -1018,7 +1018,11 @@ def build():
         out_players[str(pid)] = {"seasons": seas,
                                  "duos": [[a, g, w] for a, g, w in d],
                                  "acc": aw["score"], "accY": aw["byYear"], "awards": aw["counts"],
-                                 "as": aw.get("allstar", [])}
+                                 "as": aw.get("allstar", []),
+                                 # honors by season (Teammates Score awards), for "the help behind a score"
+                                 "awY": {str(y): sorted(AWARDS_BY_YEAR[(info["rsName"] or info["name"], y)])
+                                         for y in range(1946, LAST_COMPLETE + 2)
+                                         if (info["rsName"] or info["name"], y) in AWARDS_BY_YEAR}}
     dump_json(os.path.join(DATA, "players.json"), out_players)
     write_gamelogs(games, rows)
     ts_out = {f"{f}-{s}": r for (f, s), r in sorted(tseasons.items())}

@@ -40,6 +40,27 @@ Shown only when the sample supports them. Each links to its row, which opens the
 
 Franchises are named as today; game lists use each team's name that season.
 
+## Teammate help panel (player page)
+
+- "Average help per season: {x}" with "Entering the season: {y}"; rank among 300+ game players.
+- "Most of it came from: {teammate} {points} points over {n} seasons" (top 3 by same-season points).
+- Similar-help sentence (5+ seasons, 3+ seasons within 25% of his median help): "In his {n} seasons with
+  help between {lo} and {hi} points, his best final finish was #{r} of {N} ({season}) and his worst
+  #{r} of {N} ({season})."
+- 0 = no honored teammate; "+" = a teammate with 10+ shared games has no award record.
+
+## Peer comparisons
+
+- Suggestion: "Careers centered on {season} and {season}; help {x} and {y} points per season; own honors
+  {a} and {b} per season; {g} and {g} games." Prefixed "Closest by the same rules, outside the usual
+  limits." when it is a fallback match.
+- Compare page, biggest single-season gap (career seasons aligned, largest difference in W − L in his
+  games): "The biggest gap in one season came in career season {k}: {A}'s {season} {team} went {W}–{L}
+  in his games (#{r} of {N}); {B}'s {season} {team} went {W}–{L} (#{r} of {N})."
+- Share card: names, seasons span, record and win %, W − L, average finish, titles and playoff trips,
+  help per season, and the scope line "Regular seasons through 2025-26. Records are his teams' in his
+  games; help is Teammates Score points per season."
+
 ## Season board lead
 
 "The {champion} finished #1 ({W}–{L}), the {runner-up} #2 ({W}–{L})." From the standings' RNK.

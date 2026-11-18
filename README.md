@@ -10,6 +10,7 @@ bash scripts/fetch_sources.sh          # public repos + Ramiro's Parquet files i
 python scripts/build_history.py        # rebuilds everything in data/ (about 1 minute)
 python scripts/step0_report.py         # docs/step0-report.md
 python scripts/audit.py                # docs/audit-report.md + data/audit.json (no network)
+python scripts/build_help.py           # data/help.json: teammate help per team-season + peers
 python -m pytest tests/ -q             # sanity checks on the committed data
 ```
 
@@ -30,6 +31,8 @@ python -m pytest tests/ -q             # sanity checks on the committed data
 python scripts/build_site.py           # every page (about 5 seconds); writes only files that changed
 python -m pytest tests/ -q             # data + page checks (canonical, footer, links, escaping, JS = Python ranks)
 node tests/layout.js                   # no horizontal scroll, every template, 320-1920 px (Playwright)
+node scripts/render_cards.js           # share PNGs of the suggested comparisons (compare/img/), local only
+python scripts/quantize_cards.py       # shrink them to a 64-colour palette (~30 KB each)
 ```
 
 Output is served from the repo root (GitHub Pages: main, / (root)), and will be served at
