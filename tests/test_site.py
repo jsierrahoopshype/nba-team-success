@@ -197,6 +197,10 @@ def test_no_bare_missed(html):
 def test_compare_scoreboard():
     t = read("compare/karl-malone--michael-jordan.html")
     assert '<table class="sbt"' in t and "Malone leads " in t and "Jordan leads " in t
+    # with vs without is shown but never a lead: 7 counted categories, no tint on that row
+    assert re.search(r"Malone leads \d of 7 · Jordan leads \d of 7", t)
+    row = re.search(r'<tr><th scope="row">With vs without.*?</tr>', t).group(0)
+    assert 'class="la"' not in row and 'class="lb"' not in row
     assert "Less help: Jordan (2.2 per season vs 3.4)" in t
     assert '<ul class="takes">' not in t                                   # the old text boxes are gone
     assert "Better finish" in t and 'class="cmpcards"' in t
@@ -285,3 +289,12 @@ def test_card_json_files():
     assert len(lst["rows"]) == 5
     sea = json.loads(read("assets/card/seasons/1997-98.json"))
     assert sea["rows"][0]["team"] == "Chicago Bulls" and sea["rows"][0]["rank"] == 1
+
+
+def test_low_help_all_stars_rank_by_adjusted_finish():
+    t = read("lists/low-help-all-stars.html")
+    tbl = t[t.index('id="cap-low"'):t.index('id="cap-low2"')]
+    assert 'aria-sort="ascending" data-first="ascending"><button type="button">Average finish (of 30)</button>' in tbl
+    assert "<button type=\"button\">Raw average</button>" in tbl
+    adj = [float(x) for x in re.findall(r'data-l="Average finish \(of 30\)" class="mono" data-value="([\d.]+)"', tbl)]
+    assert len(adj) > 10 and adj == sorted(adj)

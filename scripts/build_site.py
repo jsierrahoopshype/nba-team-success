@@ -300,17 +300,21 @@ class Site:
             return f'<span class="tmn">{lg}<a href="{CM_TEAM.format(TEAM_SLUG[f])}" title="{e(nm)}">{e(shown)}</a></span>'
         return f'<span class="tmn">{lg}<span class="tn" title="{e(nm)}">{e(shown)}</span></span>'
 
-    def logo(self, f, sy, up, name=None):
+    def logo_key(self, f, sy, name=None):
         """H2H rule (nba-head-to-head src/core.js logoKey): the current logo only when the team's name
         that season is the franchise's current name; a historical file for 8 exact old names; else none."""
         nm = name or ((self.d.team(f, sy) or {}).get("name")) or franchise_name(f, sy) or ""
         if f == "CHA" and nm == "Charlotte Hornets" and sy <= 2002:
-            k = "h-charlotte-hornets-original"
-        elif nm in HIST_LOGO:
-            k = "h-" + HIST_LOGO[nm]
-        elif nm in CURRENT_NAMES:
-            k = "c-" + re.sub(r"[^a-z0-9]+", "-", nm.lower()).strip("-")
-        else:
+            return "h-charlotte-hornets-original"
+        if nm in HIST_LOGO:
+            return "h-" + HIST_LOGO[nm]
+        if nm in CURRENT_NAMES:
+            return "c-" + re.sub(r"[^a-z0-9]+", "-", nm.lower()).strip("-")
+        return ""
+
+    def logo(self, f, sy, up, name=None):
+        k = self.logo_key(f, sy, name)
+        if not k:
             return ""
         return f'<img class="lg" src="{up}assets/logos/{k}.svg" alt="" width="18" height="18" loading="lazy" decoding="async">'
 
@@ -1077,8 +1081,11 @@ def team_names_json(s):
     for t in s.d.teams.values():
         if t["f"] not in latest or t["s"] > latest[t["f"]][0]:
             latest[t["f"]] = (t["s"], s.city(t["f"], t["s"]))
+    # full names (link titles) and logo files (H2H rule) for the in-page comparison (compare.js)
+    full = {f"{t['f']}-{t['s']}": t["name"] for t in s.d.teams.values()}
+    lg = {k: v for k, v in ((f"{t['f']}-{t['s']}", s.logo_key(t["f"], t["s"])) for t in s.d.teams.values()) if v}
     return "assets/teamnames.json", json.dumps({"season": names, "latest": {f: v[1] for f, v in latest.items()},
-                                                "cm": TEAM_SLUG}, ensure_ascii=False, sort_keys=True,
+                                                "cm": TEAM_SLUG, "full": full, "lg": lg}, ensure_ascii=False, sort_keys=True,
                                                separators=(",", ":"))
 
 
@@ -1295,7 +1302,7 @@ def scoreboard(s, a, b, ca, cb, up):
 
     def gap_txt(g):
         return "N/A" if g is None else pp(g)
-    # (label, how it counts, value A, value B, text A, text B, lower leads)
+    # (label, how it counts, value A, value B, text A, text B, lower leads; None = shown, never a lead)
     cats = [
         ("Career record", "win % in his games", round(ca["pct"] or 0, 3), round(cb["pct"] or 0, 3),
          f'{wl(ca["w"], ca["l"])}<small>{pct1(ca["pct"])}</small>', f'{wl(cb["w"], cb["l"])}<small>{pct1(cb["pct"])}</small>', False),
@@ -1305,15 +1312,17 @@ def scoreboard(s, a, b, ca, cb, up):
         ("Deepest run", "", ca["deep"], cb["deep"], e(ca["deepLabel"]), e(cb["deepLabel"]), False),
         ("Average finish", "adjusted for league size, lower leads", round(ca["adj30"], 1), round(cb["adj30"], 1),
          f'{ca["adj30"]:.1f} of 30', f'{cb["adj30"]:.1f} of 30', True),
-        ("With vs without", "win-rate gap in points", None if ca["gap"] is None else round(100 * ca["gap"], 1),
-         None if cb["gap"] is None else round(100 * cb["gap"], 1), gap_txt(ca["gap"]), gap_txt(cb["gap"]), False),
+        ("With vs without", "win-rate gap in points, not a lead category", None, None,
+         gap_txt(ca["gap"]), gap_txt(cb["gap"]), None),
         ("Help per season", "teammates' honors, less help leads", None if ca["help"] is None else round(ca["help"], 1),
          None if cb["help"] is None else round(cb["help"], 1), hfmt(ca["help"]), hfmt(cb["help"]), True),
     ]
     rows = []
     la = lb = even = 0
     for lab, how, va, vb, ta, tb, low in cats:
-        if va is None or vb is None or va == vb:
+        if low is None:                                  # shown for reference, no tint, not in the tally
+            ka = kb = ""
+        elif va is None or vb is None or va == vb:
             ka = kb = ""
             even += 1
         elif (va < vb) == low:
@@ -1324,7 +1333,7 @@ def scoreboard(s, a, b, ca, cb, up):
             lb += 1
         rows.append(f'<tr{" class=\"txt\"" if lab == "Deepest run" else ""}><th scope="row">{e(lab)}{("<small>" + e(how) + "</small>") if how else ""}</th>'
                     f'<td{ka}>{ta}</td><td{kb}>{tb}</td></tr>')
-    n = len(cats)
+    n = sum(1 for c in cats if c[6] is not None)
     tally = f"{e(na)} leads {la} of {n} · {e(nb)} leads {lb} of {n}" + (f" · {even} even" if even else "")
     help_line = ""
     if ca["help"] is not None and cb["help"] is not None and round(ca["help"], 1) != round(cb["help"], 1):
@@ -1338,7 +1347,7 @@ def scoreboard(s, a, b, ca, cb, up):
 <table class="sbt" aria-labelledby="cap-sb"><thead><tr><th scope="col">Category</th><th scope="col">{e(na)}</th><th scope="col">{e(nb)}</th></tr></thead>
 <tbody>{''.join(rows)}</tbody></table>
 <p class="tally">{tally}</p>
-{help_line}<p class="note">The leader's cell is tinted: the larger number, except average finish and help, where the smaller one leads. These are team records and finishes, not a measure of who was better.</p>
+{help_line}<p class="note">The leader's cell is tinted: the larger number, except average finish and help, where the smaller one leads. With vs without is shown for reference and is not counted. These are team records and finishes, not a measure of who was better.</p>
 </section>"""
 
 
@@ -1431,7 +1440,7 @@ def comparison_rules_page(s):
 <p>Each suggestion states the numbers it was matched on. Comparisons align the two careers by career season (season 1 with season 1), so players from different eras can be compared the same way. A comparison states records and finishes, not what a player caused.</p>
 <h2>Cohort lists</h2>
 <ul>
-<li><a href="lists/low-help-all-stars.html">Best finishes among low-help All-Stars</a>: All-Stars with 300+ games and 5+ seasons whose average help is in the lowest quarter of that group, ranked by average final finish; a second table uses help entering the season.</li>
+<li><a href="lists/low-help-all-stars.html">Best finishes among low-help All-Stars</a>: All-Stars with 300+ games and 5+ seasons whose average help is in the lowest quarter of that group, ranked by average final finish adjusted for league size (30-team scale, raw average alongside); a second table uses help entering the season.</li>
 <li><a href="lists/same-help-different-results.html">Same help, different results</a>: pairs of players from the same era (career middles within 4 seasons) with help within 15% of each other and 500+ games each, ranked by the difference in average final finish.</li>
 <li>On every player page: his best and worst final finish among the seasons with help within 25% of his median.</li>
 </ul>
@@ -1459,28 +1468,32 @@ def cohort_pages(s):
         vals = sorted(x[1][key] for x in pool)
         q1 = vals[len(vals) // 4] if vals else 0
         rows = [x for x in pool if x[1][key] <= q1]
-        rows.sort(key=lambda x: (x[2]["rnk"], x[1][key], s.ids[x[0]]["name"]))
+        # ranked by the league-size-adjusted finish (30-team scale); raw average is the second sort
+        rows.sort(key=lambda x: (round(eq30(s.adj_avg(x[0])), 9), x[2]["rnk"], x[1][key], s.ids[x[0]]["name"]))
         trs = []
         for i, (pid, a, sm) in enumerate(rows[:100]):
+            adj = eq30(s.adj_avg(pid))
             trs.append("<tr>" + "".join([td("Rank", str(i + 1), i + 1, "mono"), td("Player", s.plink(pid, up), s.ids[pid]["name"]),
-                       td("Average final finish", f'{sm["rnk"]:.1f}', fval(sm["rnk"]), "mono"),
+                       td("Average finish (of 30)", f'{adj:.1f}', fval(adj), "mono"),
+                       td("Raw average", f'{sm["rnk"]:.1f}', fval(sm["rnk"]), "mono"),
                        td("Help per season", f'{a["help"]:.1f}', a["help"], "mono"),
                        td("Entering", f'{a["enter"]:.1f}', a["enter"], "mono"),
                        td("Seasons", str(a["n"]), a["n"], "mono"), td("Titles", str(sm["titles"]), sm["titles"], "mono"),
                        td("W–L", wl(sm["w"], sm["l"]), sm["w"] - sm["l"], "mono")]) + "</tr>")
-        heads = [th("Rank", first="ascending"), th("Player", "text"), th("Average final finish", sort="ascending", first="ascending"),
+        heads = [th("Rank", first="ascending"), th("Player", "text"),
+                 th("Average finish (of 30)", sort="ascending", first="ascending"), th("Raw average", first="ascending"),
                  th("Help per season"), th("Entering"), th("Seasons"), th("Titles"), th("W–L")]
         return (f"<p class=\"pop\">{len(rows)} of {len(pool)} All-Stars (300+ games, 5+ seasons) have {key == 'help' and 'help' or 'help entering the season'} "
                 f"of {q1:.1f} points per season or less (the lowest quarter).</p>" + sortable(cap, "", heads, trs))
     body = f"""<header><h1>Best finishes among low-help All-Stars</h1>
-<p class="subtitle">All-Stars whose teammates were honored least, ranked by their teams' average final NBA finish (1 = champion). Help is the Teammates Score of the teammates they shared games with, per season.</p></header>
+<p class="subtitle">All-Stars whose teammates were honored least, ranked by their teams' average final NBA finish adjusted for league size, on a 30-team scale (1 = champion; 3rd of 9 teams counts as 8.25 of 30). The raw average of the ranks is the second column and sorts too. Help is the Teammates Score of the teammates they shared games with, per season.</p></header>
 <section><h2 id="cap-low">By help in the same season</h2>{low_table('help', 'cap-low')}</section>
 <section><h2 id="cap-low2">By help entering the season</h2><p class="note">Teammates' honors from the season before, which the season's own results cannot have influenced.</p>{low_table('enter', 'cap-low2')}</section>
 <p class="note"><a href="../comparison-rules.html">How help works</a>.</p>"""
     rel = "lists/low-help-all-stars.html"
     out.append((rel, page(rel, "Best team finishes among low-help NBA All-Stars | HoopsMatic",
                           "NBA All-Stars with the least teammate help (Teammates Score per season), ranked by their teams' "
-                          "average final finish, with help entering the season as a second view.", body, up)))
+                          "average final finish adjusted for league size, with help entering the season as a second view.", body, up)))
     # 2. same help, different results
     big = [(pid, a) for pid, a in av.items() if a["g"] >= 500]
     pairs = []
