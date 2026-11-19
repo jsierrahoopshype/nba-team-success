@@ -45,7 +45,8 @@ def test_list_passes_are_notable():
     for it in st["items"]:
         if it["type"].endswith("-pass"):
             txt = "".join(p[0] for p in it["parts"])
-            r = int(re.search(r"(?:T-|#)([\d,]+) in ", txt).group(1).replace(",", ""))
+            # every pass quotes the passer's board rank: "for T-83 in career wins", "65.6%, #36 among ..."
+            r = int(re.search(r"(?:T-|#)([\d,]+)\b", txt).group(1).replace(",", ""))
             assert r <= 250
 
 
