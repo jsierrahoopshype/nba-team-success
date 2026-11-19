@@ -235,8 +235,18 @@ class Site:
         self.opp_take = {}
         pool = sorted((a["help"], pid) for pid, a in self.help["avg"].items() if a["g"] >= 300)
         self.help_rank = {}
-        for i, (v, pid) in enumerate(sorted(pool, key=lambda x: -x[0])):
-            self.help_rank[pid] = (i + 1, len(pool))
+        # same tie rule as the boards: standard competition ranking on the shown value (one decimal)
+        order = sorted(pool, key=lambda x: -round(x[0], 1))
+        cnt = defaultdict(int)
+        rk, prev = 0, None
+        tmp = []
+        for i, (v, pid) in enumerate(order):
+            if round(v, 1) != prev:
+                rk, prev = i + 1, round(v, 1)
+            tmp.append((pid, rk))
+            cnt[rk] += 1
+        for pid, r in tmp:
+            self.help_rank[pid] = (r, len(pool), cnt[r] > 1)
         self.avg_rnk = {}
         for pid in self.help["avg"]:
             if pid in self.d.players:
@@ -621,7 +631,7 @@ def rank_txt(s, board, pid):
     if not r:
         need = {"average-finish": "5+ seasons", "gap-career": "200+ games played and 50+ missed"}.get(board, "")
         return f'<span class="rk">Not ranked{(": needs " + need) if need else ""}</span>'
-    return (f'<span class="rk">#{r[0]:,}{" (tied)" if r[1] else ""} of {n:,}</span>')
+    return f'<span class="rk">{B.rank_label(*r)} of {n:,} · {B.scope_label(board)}</span>'
 
 
 def summary_cards(s, pid, up):
@@ -645,20 +655,21 @@ def summary_cards(s, pid, up):
     gap = sm["gap"]
     sgap = (A.pct(w, l) - A.pct(sm["sw"], sm["sl"])) if (w + l) and (sm["sw"] + sm["sl"]) else None
     live = s.through and s.cur and pid in s.cur["players"]
-    thru = f"through {nice_date(s.through)}" if live else f"through {season_label(LAST_COMPLETE)}"
+    # career records include the season to date (B.LIVE_BOARDS); say so next to the number
+    thru = f"incl. {season_label(CURRENT_SEASON)} through {nice_date(s.through)}" if live else f"through {season_label(LAST_COMPLETE)}"
     hero = [
         ("career-wins", "Career record in his games", f'{w}{EN}{l}', f"{pct1(A.pct(w, l))} · {w + l:,} games · {thru}"),
         ("wins-minus-losses", "Wins minus losses", signed(w - l), f"{w:,} W · {l:,} L · {thru}"),
         ("average-finish", "Average final NBA finish", f'{eq30(adj):.1f} of 30',
-         f"adjusted for league size · raw average {sm['rnk']:.1f} · {sm['seasons']} completed seasons"),
+         f"adjusted for league size · raw average {sm['rnk']:.1f} · {sm['seasons']} seasons {B.SCOPE_DONE}"),
     ]
     small = [
-        ("winning-seasons", "Winning seasons", str(sm["winning"]), f'of {sm["seasons"]} ({pct1(sm["winning"] / sm["seasons"])})'),
-        ("playoff-trips", "Playoff trips", str(sm["trips"]), f'of {sm["seasons"]} ({pct1(sm["trips"] / sm["seasons"])})'),
+        ("winning-seasons", "Winning seasons", str(sm["winning"]), f'of {sm["seasons"]} ({pct1(sm["winning"] / sm["seasons"])}) · {B.SCOPE_DONE}'),
+        ("playoff-trips", "Playoff trips", str(sm["trips"]), f'of {sm["seasons"]} ({pct1(sm["trips"] / sm["seasons"])}) · {B.SCOPE_DONE}'),
         ("deepest-run", "Deepest playoff run", deep_txt, deep_sub),
         ("titles", "Titles", str(sm["titles"]), (season_label(sm["titleYears"][0]) + (f' to {season_label(sm["titleYears"][-1])}' if len(sm["titleYears"]) > 1 else '')) if sm["titleYears"] else "None"),
         ("gap-career", "With vs without", f'{pct1(A.pct(w, l))} · {pct1(A.pct(sm["ow"], sm["ol"]))}',
-         f'with him · without. {pts_txt(gap)}'),
+         f'with him · without. {pts_txt(gap)} · {thru}'),
     ]
 
     def card(c, cls):
@@ -878,7 +889,7 @@ def current_block(s, pid, up):
             td("Started / bench", f"{wl2(st['st'])} / {wl2(st['bn'])}", None, "mono"),
             td("Close games", wl2(st["cl"]), None, "mono")]) + "</tr>")
     return (f"""<section><h2>{season_label(CURRENT_SEASON)} so far</h2>
-<p class="note">Games through {e(nice_date(s.cur['through']))}, the last game in the nightly data. Not included in the career numbers (completed seasons through {season_label(LAST_COMPLETE)}) until the season ends. No final finish until the season ends.</p>
+<p class="note">Games through {e(nice_date(s.cur['through']))}, the last game in the nightly data. These games are already in his career records above (W{EN}L, win %, W {MINUS} L, with and without, all marked "incl. {season_label(CURRENT_SEASON)}"). Season counts, final finishes and teammate help use completed seasons through {season_label(LAST_COMPLETE)}; {season_label(CURRENT_SEASON)} joins them when the season ends.</p>
 <table class="tt"><thead><tr><th scope="col">Team</th><th scope="col">His games</th><th scope="col">With him</th><th scope="col">Without him</th><th scope="col">Gap</th><th scope="col">On/off per 100</th><th scope="col">Started / bench</th><th scope="col">Close games</th></tr></thead><tbody>"""
             + "".join(rows) + "</tbody></table></section>")
 
@@ -1019,12 +1030,13 @@ def opponents_section(s, pid, up):
             td("W–L", wl(r["w"], r["l"]), r["w"], "mono"),
             td("Win %", pct1(r["w"] / g), fval(r["w"] / g), "mono" + (" best" if f == best_o else (" worst" if f == worst_o else ""))),
             td("W − L", signed(r["w"] - r["l"]), r["w"] - r["l"], "mono"),
-            td("Playoff series", series_txt, sw - sl if (sw + sl) else None),
+            td("Playoff series", series_txt, sw - sl if (sw + sl) else None, "ser"),
             td("Seasons", f'{season_label(r["first"])} to {season_label(r["last"])}' if r["first"] != r["last"] else season_label(r["first"]), r["first"], "mono"),
             f'<td data-l="Games list"><button type="button" class="opp-open" aria-expanded="false" aria-controls="games-{e(f)}">Show games</button></td>',
         ]) + "</tr>")
     heads = [th("Opponent", "text"), th("Games", sort="descending"), th("W–L"), th("Win %"), th("W − L"),
-             th("Playoff series"), th("Seasons", first="ascending"), '<th scope="col">Games list</th>']
+             th("Playoff series").replace("<th ", '<th class="ser" ', 1), th("Seasons", first="ascending"),
+             '<th scope="col">Games list</th>']
     tk = opponent_takeaways(s, pid, rs, ser, up)
     s.opp_take[pid] = tk
     takes = ("<ul class=\"takes\">" + "".join(f"<li>{t}</li>" for _, _, t in tk) + "</ul>") if tk else ""
@@ -1036,8 +1048,9 @@ def opponents_section(s, pid, up):
     tw = sum(r["w"] for r in rs.values())
     return f"""<section id="opp"><h2 id="cap-opp">Record against each opponent</h2>
 {takes}
-<form id="opp-form" class="filters" data-src="{up}assets/pg/{e(slug)}.json" data-names="{up}assets/teamnames.json" data-up="{up}">
-<label>Games<select name="k"><option value="2">Regular season</option><option value="4">Playoffs</option><option value="b">Both</option></select></label>
+<form id="opp-form" class="filters" data-scope="{e(B.SCOPE_DONE)}, {season_label(CURRENT_SEASON)} games not included" data-src="{up}assets/pg/{e(slug)}.json" data-names="{up}assets/teamnames.json" data-up="{up}">
+<div class="tabs" role="tablist" aria-label="Regular season or playoffs"><button type="button" role="tab" data-k="2" aria-selected="true">Regular season</button><button type="button" role="tab" data-k="4" aria-selected="false">Playoffs</button></div>
+<input type="hidden" name="k" value="2">
 <label>From<select name="from"><option value="">First season</option>{yo}</select></label>
 <label>To<select name="to"><option value="">Last season</option>{yo}</select></label>
 <label>His team<select name="team"><option value="">Any</option>{team_opts}</select></label>
@@ -1045,8 +1058,9 @@ def opponents_section(s, pid, up):
 <label>Min games<input name="min" type="number" min="1" inputmode="numeric" placeholder="1"></label>
 <a href="#opp" class="opp-reset">Reset</a>
 </form>
-<p class="pop" id="opp-pop">Regular season, completed seasons: {tg:,} games, {wl(tw, tg - tw)}, against {len(rs)} franchises. Grouped by franchise (named as today); game lists keep each team's name that season.</p>
-{sortable("cap-opp", "", heads, rows, "opp")}
+<p class="pop" id="opp-pop">Regular season, {B.SCOPE_DONE} ({season_label(CURRENT_SEASON)} games not included): {tg:,} games, {wl(tw, tg - tw)}, against {len(rs)} franchises.</p>
+<p class="note">Grouped by franchise (named as today); game lists keep each team's name that season. Filters and the tab are kept in the URL, so a filtered view can be shared.</p>
+{sortable("cap-opp", "", heads, rows, "opp").replace('<table class="tt sortable opp"', '<table data-k="2" class="tt sortable opp"', 1)}
 <p class="note">Rows add up to his career record in his games. A playoff series counts when he played in it; early round-robin games show as games only. <a href="../how-we-count.html">How we count</a>.</p>
 <script src="{up}assets/opp.js" defer></script>
 </section>"""
@@ -1152,7 +1166,7 @@ def help_panel(s, pid, up):
                    f'<a href="{board_link(up, b["sy"], b["f"])}">#{b["rnk"]} of {b["size"]}, {season_label(b["sy"])}</a>, worst '
                    f'<a href="{board_link(up, w["sy"], w["f"])}">#{w["rnk"]} of {w["size"]}, {season_label(w["sy"])}</a>.</p>')
     rk = s.help_rank.get(pid)
-    rank = f'<span class="rk">#{rk[0]:,} of {rk[1]:,} (300+ games, most help = #1)</span>' if rk else ""
+    rank = f'<span class="rk">{B.rank_label(rk[0], rk[2])} of {rk[1]:,} (300+ games, most help = #1) · {B.SCOPE_DONE}</span>' if rk else ""
     return f"""<section class="help"><h2>Teammate help</h2>
 <div class="cards"><div class="card"><span class="lbl">Help per season</span><span class="big">{a['help']:.1f}</span><span class="sub">same-season honors of teammates</span>{rank}</div>
 <div class="card"><span class="lbl">Help coming in</span><span class="big">{a['enter']:.1f}</span><span class="sub">teammates' honors the season before</span></div></div>
@@ -1183,6 +1197,57 @@ def award_badges(aws):
     return "".join(f'<span class="aw{" top" if a in top else ""}">{e(AWARD_ABBR.get(a, a))}</span>' for a in aws)
 
 
+def hpts(x):
+    """Teammates Score points, exact (weights are multiples of 1/8): 14.5, 1, 0.125."""
+    return ("%.3f" % x).rstrip("0").rstrip(".")
+
+
+def help_breakdown(s, up, mates, k, total, partial):
+    """One line that adds up: 'total = a (name) + b (name) ...' over EVERY teammate with points in
+    column k (2 = same season, 3 = coming in). The displayed total is the sum of the listed parts."""
+    parts = sorted((m for m in mates if m[k]), key=lambda m: (-m[k], -m[1]))
+
+    def who(q):
+        return s.plink(q, up) if q in s.ids else e(q)
+    if not parts:
+        return '<span class="mono">0</span>' + (" (a teammate with 10+ games has no award record: +)" if partial else "")
+    return (f'<strong class="mono">{hpts(total)}{"+" if partial else ""}</strong> = '
+            + " + ".join(f'<span class="mono">{hpts(m[k])}</span> {who(m[0])}' for m in parts))
+
+
+def current_help_row(s, pid, up):
+    """The season in progress: same-season help is pending (honors come after the season); help
+    coming in = last season's honors of the teammates he has shared a game with so far."""
+    if not s.cur or pid not in s.cur["players"]:
+        return ""
+    lg = s.cur.get("log") or {}
+    ip = int(pid)
+    st = ([x for x in s.cur["players"][pid] if x.get("endTeam")] or s.cur["players"][pid][-1:])[0]
+    f = st["f"]
+    shared = defaultdict(int)
+    for gid, dd, h, a, hs, as_ in lg.get("games", []):
+        side = 0 if h == f else (1 if a == f else None)
+        if side is None:
+            continue
+        ps = lg["app"].get(gid, [[], []])[side]
+        if ip in ps:
+            for q in ps:
+                if q != ip:
+                    shared[str(q)] += 1
+    mates = []
+    for q, g in shared.items():
+        pe = s.d.players.get(q, {}).get("accY", {}).get(str(LAST_COMPLETE), 0)
+        if pe:
+            mates.append([q, g, 0, pe, []])
+    enter = sum(m[3] for m in mates)
+    head = (f'<span class="hs-y">{season_label(CURRENT_SEASON)}</span>'
+            f'<span class="hs-t">{s.tlink(f, CURRENT_SEASON)}</span>')
+    return (f'<li class="slim">{head}<span class="hnote">Help this season: <strong>pending</strong> '
+            f'(honors are awarded after the season)</span>'
+            f'<p class="more">Help coming in ({season_label(LAST_COMPLETE)} honors of teammates he has played with so far): '
+            f'{help_breakdown(s, up, mates, 3, enter, 0)}</p></li>')
+
+
 def help_table(s, pid, up):
     hs = s.help["season"].get(pid)
     if not hs:
@@ -1190,7 +1255,7 @@ def help_table(s, pid, up):
     sts = sorted(s.d.stints(pid), key=lambda x: (-x["s"], x.get("first") or ""))
     vals = [hs.get(f"{st['f']}-{st['s']}", [0])[0] for st in sts]
     top = max(vals + [1])
-    items = []
+    items = [current_help_row(s, pid, up)]
 
     def who(q):
         return s.plink(q, up) if q in s.ids else e(q)
@@ -1200,27 +1265,24 @@ def help_table(s, pid, up):
             continue
         same, enter, partial, mates = h
         honored = [m for m in mates if m[2]]
-        prev = [m for m in mates if m[3] and not m[2]]
         head = (f'<span class="hs-y">{season_label(st["s"])}</span>'
                 f'<span class="hs-t">{s.tlink(st["f"], st["s"])}</span>')
+        # help coming in: its own total and its own full breakdown (every teammate with points)
         coming = (f'<p class="more">Help coming in (teammates\' honors the season before): '
-                  f'<strong class="mono">{hfmt(enter, partial)}</strong>'
-                  + (" · from " + ", ".join(f'{who(q)} ({pe:.1f})' for q, shared, ps, pe, aws in prev[:4]) if prev else "")
-                  + "</p>")
+                  f'{help_breakdown(s, up, mates, 3, enter, partial)}</p>')
         if st["s"] in s.partial_years:
-            # honors for this season are not in awards.json yet: say so, no bar
-            items.append(f'<li class="slim">{head}<span class="hnote">Honors not in the data yet</span></li>')
+            # honors for this season are not in awards.json yet: pending, never 0
+            items.append(f'<li class="slim">{head}<span class="hnote">Honors pending</span></li>')
             continue
         if not honored:
-            # one slim row; a toggle only when last season's honors give something to show
-            more = (f'<details><summary>More: last season\'s honors</summary>{coming}</details>' if prev else "")
-            items.append(f'<li class="slim">{head}<span class="hnote">No honored teammate'
+            more = (f'<details><summary>More: help coming in</summary>{coming}</details>' if enter else "")
+            items.append(f'<li class="slim">{head}<span class="hnote">Help this season: 0, no honored teammate'
                          f'{" <span class=\"aw\">partial</span>" if partial else ""}</span>{more}</li>')
             continue
         chips = "".join(
             f'<span class="mchip">{s.pic(q, up, "sm")}<span class="mn">{who(q)}</span> {award_badges(aws)}'
-            f'<span class="gtog">{shared} g</span></span>'
-            for q, shared, ps, pe, aws in honored)
+            f'<span class="mono hp">{hpts(ps)}</span><span class="gtog">{shared} g</span></span>'
+            for q, shared, ps, pe, aws in sorted(honored, key=lambda m: (-m[2], -m[1])))
         allm = stint_mates(s, pid, st["f"], st["s"])
         hon = {m[0] for m in honored}
         rest = sorted(((g, q) for q, g in allm.items() if q not in hon), reverse=True)
@@ -1231,10 +1293,13 @@ def help_table(s, pid, up):
         val = hfmt(same, partial) + (' <span class="aw">partial</span>' if partial else "")
         items.append(f"""<li>{head}
 <span class="hbar"><i style="width:{w}rem"></i>{val}</span>
+<p class="more">Help this season: {help_breakdown(s, up, mates, 2, same, partial)}</p>
 <span class="chipsrow">{chips}</span>
-<details><summary>More: last season's honors and other teammates</summary>{coming}{others}</details></li>""")
+<details><summary>More: help coming in and other teammates</summary>{coming}{others}</details></li>""")
     return (f'<section><h2 id="cap-help">Teammate help by season</h2>'
-            f'<p class="note">Help = Teammates Score points for honors won that season by teammates who shared a game with him. '
+            f'<p class="note">Two separate numbers per season, each with every teammate that adds to it. '
+            f'<strong>Help this season</strong> = Teammates Score points for honors won that season by teammates who shared a game with him. '
+            f'<strong>Help coming in</strong> = the same teammates\' honors from the season before. '
             f'<a href="../comparison-rules.html">How help works</a>.</p><ul class="helprows">{"".join(items)}</ul></section>')
 
 
@@ -1311,17 +1376,17 @@ def scoreboard(s, a, b, ca, cb, up):
         return "N/A" if g is None else pp(g)
     # (label, how it counts, value A, value B, text A, text B, lower leads; None = shown, never a lead)
     cats = [
-        ("Career record", "win % in his games", round(ca["pct"] or 0, 3), round(cb["pct"] or 0, 3),
+        ("Career record", f"win % in his games, {B.SCOPE_LIVE}", round(ca["pct"] or 0, 3), round(cb["pct"] or 0, 3),
          f'{wl(ca["w"], ca["l"])}<small>{pct1(ca["pct"])}</small>', f'{wl(cb["w"], cb["l"])}<small>{pct1(cb["pct"])}</small>', False),
-        ("W \u2212 L", "", ca["wl"], cb["wl"], signed(ca["wl"]), signed(cb["wl"]), False),
-        ("Titles", "", ca["titles"], cb["titles"], str(ca["titles"]), str(cb["titles"]), False),
+        ("W \u2212 L", B.SCOPE_LIVE, ca["wl"], cb["wl"], signed(ca["wl"]), signed(cb["wl"]), False),
+        ("Titles", B.SCOPE_DONE, ca["titles"], cb["titles"], str(ca["titles"]), str(cb["titles"]), False),
         ("Playoff trips", "", ca["trips"], cb["trips"], str(ca["trips"]), str(cb["trips"]), False),
         ("Deepest run", "", ca["deep"], cb["deep"], e(ca["deepLabel"]), e(cb["deepLabel"]), False),
-        ("Average finish", "adjusted for league size, lower leads", round(ca["adj30"], 1), round(cb["adj30"], 1),
+        ("Average finish", f"adjusted for league size, lower leads, {B.SCOPE_DONE}", round(ca["adj30"], 1), round(cb["adj30"], 1),
          f'{ca["adj30"]:.1f} of 30', f'{cb["adj30"]:.1f} of 30', True),
-        ("With vs without", "win-rate gap in points, not a lead category", None, None,
+        ("With vs without", f"win-rate gap in points, not a lead category, {B.SCOPE_LIVE}", None, None,
          gap_txt(ca["gap"]), gap_txt(cb["gap"]), None),
-        ("Help per season", "teammates' honors, less help leads", None if ca["help"] is None else round(ca["help"], 1),
+        ("Help per season", f"teammates' honors, less help leads, {B.SCOPE_DONE}", None if ca["help"] is None else round(ca["help"], 1),
          None if cb["help"] is None else round(cb["help"], 1), hfmt(ca["help"]), hfmt(cb["help"]), True),
     ]
     rows = []
@@ -1448,7 +1513,7 @@ def compare_any_page(s):
     body = f"""<header><h1>Compare any two players</h1>
 <p class="subtitle">Team success head to head: record in his games, titles, playoff runs, final NBA finish and teammate help, then the two careers season by season.</p></header>
 <div class="cmppick">{side("a", "First player", "e.g. Michael Jordan")}<span class="vs">vs</span>{side("b", "Second player", "e.g. LeBron James")}</div>
-<div id="cmp" data-up="{up}" data-page="1"><p class="note">Pick two players. Players need one completed season ({season_label(LAST_COMPLETE)} or earlier).</p></div>
+<div id="cmp" data-up="{up}" data-page="1" data-scope-live="{e(B.SCOPE_LIVE)}" data-scope-done="{e(B.SCOPE_DONE)}"><p class="note">Pick two players. Players need one completed season ({season_label(LAST_COMPLETE)} or earlier).</p></div>
 <noscript><p class="note">This page needs JavaScript. Every player's suggested comparisons are on his page.</p></noscript>
 <script src="{up}assets/compare.js" defer></script>"""
     desc = ("Compare any two NBA players' team success: record in their games, titles, playoff trips, final finish "
@@ -1611,7 +1676,7 @@ def card_files(s):
                "span": [season_label(yrs[0]), season_label(yrs[-1])],
                "record": {"w": sm["w"], "l": sm["l"], "pct": round(A.pct(sm["w"], sm["l"]) or 0, 4),
                           "wl": sm["w"] - sm["l"], "wl_rank": rk[0] if rk else None, "wl_tied": bool(rk and rk[1]),
-                          "wl_of": s.rank_n["wins-minus-losses"]},
+                          "wl_of": s.rank_n["wins-minus-losses"], "scope": B.SCOPE_LIVE},
                "titles": sm["titles"], "title_seasons": [season_label(y) for y in sm["titleYears"]],
                "best_finish": {"rank": best[2], "of": best[3], "season": season_label(best[1]), "team": best[4]} if best else None,
                "with_without": {"with_pct": round(A.pct(sm["w"], sm["l"]) or 0, 4),
@@ -1619,7 +1684,7 @@ def card_files(s):
                                 "gap_points": round(100 * sm["gap"], 1) if sm["gap"] is not None else None,
                                 "without_games": sm["ow"] + sm["ol"]},
                "help": {"per_season": round(a["help"], 2) if a else None, "rank": hr[0] if hr else None,
-                        "of": hr[1] if hr else None},
+                        "of": hr[1] if hr else None, "tied": bool(hr and hr[2]), "scope": B.SCOPE_DONE},
                "top_peer": s.ids[peers[0][0]]["slug"] if peers and peers[0][0] in s.ids else None}
         out.append((f"assets/card/{v['slug']}.json", json.dumps(doc, ensure_ascii=False, separators=(",", ":"))))
     for key, dfn in B.BOARDS.items():
@@ -1692,6 +1757,7 @@ def player_page(s, pid):
                f'All {best["size"]} teams ranked in {season_label(best["sy"])}, his best finish (#{best["rnk"]})</a>')
         chart = CH.finish_chart(pts, "chart-t")
         parts.append(f"""<p class="lead">{' '.join(e(x) for x in sents)}</p>
+<p class="jump">Jump to: <a href="#opp">Record by opponent</a> · <a href="#cap-seasons">Season by season</a> · <a href="#cap-help">Teammate help</a></p>
 {compare_block(s, pid, up)}
 <div class="hero">
 <section class="tl"><h2 id="chart-t">Final NBA finish, season by season</h2>
@@ -1701,7 +1767,7 @@ def player_page(s, pid):
 {help_panel(s, pid, up)}
 </div>
 <section class="sum"><h2>Career</h2>{summary_cards(s, pid, up)}
-<p class="note">Regular seasons {season_label(1947)} to {season_label(CURRENT_SEASON)}, games through {e(nice_date(s.through))}. Records include {season_label(CURRENT_SEASON)} to date; season counts and finishes use completed seasons. Each card opens its board. <a href="../how-we-count.html">How we count</a>.</p>
+<p class="note">Career records (W{EN}L, W {MINUS} L, with and without) include {season_label(CURRENT_SEASON)} games through {e(nice_date(s.through))}; season counts and finishes are through {season_label(LAST_COMPLETE)}. Each card opens its board in the same scope. <a href="../how-we-count.html">How we count</a>.</p>
 <p>{download_link(f"{OG}player/{v['slug']}.png", f"{v['slug']}-team-success.png")}</p></section>""")
         parts.append(f'<section><h2>Latest completed seasons</h2>{latest_seasons(s, pid, up, pts)}</section>')
     parts.append(current_block(s, pid, up))
@@ -2105,7 +2171,9 @@ def career_board_page(s, key):
             heads.append(f'<th scope="col">{e(B.COL_LABEL[c])}</th>')
     rows = [board_row_html(s, r, tied, m, cols, up) for r, tied, m in ranked[:100]]
     defjs = json.dumps({"sorts": {k: list(v) for k, v in dfn["sorts"].items()}, "cols": cols,
-                        "labels": B.COL_LABEL, "noas": 1 if dfn.get("noas") else 0}, ensure_ascii=False, separators=(",", ":"))
+                        "labels": B.COL_LABEL, "noas": 1 if dfn.get("noas") else 0, "live": 1 if key in B.LIVE_BOARDS else 0,
+                        "scopeLive": B.SCOPE_LIVE, "scopeDone": B.SCOPE_DONE, "last": CURRENT_SEASON},
+                       ensure_ascii=False, separators=(",", ":"))
     mtxt = []
     if mins.get("cg", 1) > 1:
         mtxt.append(f"{mins['cg']:,}+ career games")
@@ -2116,7 +2184,7 @@ def career_board_page(s, key):
     if mins.get("mm"):
         mtxt.append(f"{mins['mm']}+ games missed")
     pop = (f"{len(ranked):,} players qualify" + (f" ({', '.join(mtxt)})" if mtxt else "")
-           + f". Ranked by {dfn["sorts"][sort][0]}; equal values share a rank (T-).")
+           + f". Ranked by {dfn["sorts"][sort][0]}; equal values share a rank (T-). Numbers {B.scope_label(key)}.")
     others = " · ".join(f'<a href="{k}.html">{e(B.BOARDS[k]["h1"])}</a>' for k in B.BOARDS if k != key)
     body = f"""<header><h1>{e(dfn['h1'])}</h1><p class="subtitle">{e(dfn['desc'])}</p></header>
 {board_form(s, key)}
@@ -2166,6 +2234,7 @@ def current_rows(s):
             if pre["on"][1] < 300 or pre["off"][1] < 100:
                 continue
             base = A.onoff(pre)
+            base_poss = pre["on"][1]
         else:
             if pid not in s.d.players:
                 continue
@@ -2179,9 +2248,10 @@ def current_rows(s):
             if on[1] < 500 or off[1] < 200:
                 continue
             base = A.onoff({"on": on, "off": off})
+            base_poss = on[1]
         if base is None:
             continue
-        movers.append((now - base, pid, st, now, base))
+        movers.append((now - base, pid, st, now, base, {"now_poss": st["on30"][1], "base_poss": base_poss}))
     gaps.sort(key=lambda x: -x[0])
     movers.sort(key=lambda x: -x[0])
     return gaps, movers, baseline
@@ -2193,11 +2263,32 @@ def gap_items(s, rows, up):
              f'<span class="mono">{st["ow"]}-{st["ol"]}</span> without') for g, pid, st in rows]
 
 
+def short_day(iso):
+    y, m, d = (int(x) for x in iso.split("-"))
+    return f'{["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][m - 1]} {d}'
+
+
+def mover_windows(s, baseline):
+    """(last-30-days window, baseline label): 'Oct 19-Nov 17' and 'Oct 21-Oct 18' or '2025-26'."""
+    cut, thr, start = s.cur["cutoff30"], s.cur["through"], s.cur["start"]
+    first = max(cut, start)
+    now = f"{short_day(first)}{EN}{short_day(thr)}"
+    if baseline == "earlier":
+        prev_end = (dt.date.fromisoformat(cut) - dt.timedelta(days=1)).isoformat()
+        return now, f"{short_day(start)}{EN}{short_day(prev_end)}"
+    return now, f"in {season_label(LAST_COMPLETE)}"
+
+
+def mover_line(s, ch, st, now, base, info, baseline):
+    w_now, w_base = mover_windows(s, baseline)
+    return (f'{s.tlink(st["f"], CURRENT_SEASON)}: <span class="mono">{fnum(now)}</span> per 100 over '
+            f'<span class="mono">{round(info["now_poss"]):,}</span> poss., {w_now}, vs <span class="mono">{fnum(base)}</span> over '
+            f'<span class="mono">{round(info["base_poss"]):,}</span> poss. {w_base}')
+
+
 def mover_items(s, rows, up, baseline):
-    lab = "earlier this season" if baseline == "earlier" else "2025-26"
-    return [(pid, f'<span class="big mono {cls_gap(ch)}">{ch:+.1f}</span>',
-             f'{s.tlink(st["f"], CURRENT_SEASON)}: on/off {now:+.1f} per 100 in the last 30 days, '
-             f'{base:+.1f} {lab}') for ch, pid, st, now, base in rows]
+    return [(pid, f'<span class="big mono {cls_gap(ch)}">{ch:+.1f}</span>', mover_line(s, ch, st, now, base, info, baseline))
+            for ch, pid, st, now, base, info in rows]
 
 
 def gap_table(s, rows, up, cap, desc_first=True):
@@ -2248,7 +2339,9 @@ def board_page(s, key):
                 "<p class=\"note\">Early in the season the last 30 days are the whole season, so the comparison is "
                 "with his 2025-26 on/off (any team). It switches to the earlier part of this season once enough "
                 "games are played.</p>")
+        w_now, w_base = mover_windows(s, baseline) if s.cur else ("", "")
         body = f"""<header><h1>{e(title)}</h1><p class="subtitle">{e(desc)}</p></header>{note}
+<p class="pop">Each row: on/off over the last 30 days ({e(w_now)}) vs {"the earlier part of this season (" + e(w_base) + ")" if baseline == "earlier" else "his whole " + season_label(LAST_COMPLETE) + " season (any team)"}, with the on-court possessions behind both numbers.</p>
 <p class="note">On/off = team net points per 100 possessions with him on the floor minus with him off, in the games he played: possession-based, a different unit from the win-rate gaps in pp on the <a href="winning-without-him.html">with and without board</a>. Minimum 250 on-court possessions in the last 30 days.</p>
 <section><h2>Biggest risers</h2>{rows_html(s, mover_items(s, movers[:TOP_N], up, baseline), up)}</section>
 <section><h2>Biggest fallers</h2>{rows_html(s, mover_items(s, movers[::-1][:TOP_N], up, baseline), up)}</section>"""
@@ -2487,9 +2580,11 @@ def hub(s):
                   f'the career with and without leaders (200+ games played, 50+ missed). '
                   f'<a href="lists/winning-without-him.html">This season\'s full board</a> uses 5 and 5.</p>')
     mov = []
-    for ch, pid, t, now, base in movers[:5]:
+    for ch, pid, t, now, base, info in movers[:5]:
         if pid in s.ids:
-            mov.append(prow(s, pid, up, f'{s.logo(t["f"], CURRENT_SEASON, up)}{fnum(now)} last 30 days · {fnum(base)} before',
+            w_now, w_base = mover_windows(s, baseline)
+            mov.append(prow(s, pid, up, f'{s.logo(t["f"], CURRENT_SEASON, up)}{fnum(now)} over {round(info["now_poss"]):,} poss., {w_now} · '
+                            f'{fnum(base)} over {round(info["base_poss"]):,} poss. {w_base}',
                             f'{fnum(ch)}<small>per 100</small>', None, "up" if ch > 0 else "down"))
     # current standings, all teams
     ts = sorted((t for t in s.d.teams.values() if t["s"] == CURRENT_SEASON), key=lambda t: (-t["pct"], -t["w"], t["name"]))
@@ -2517,7 +2612,7 @@ def hub(s):
 {ww_why}<p class="note">Team win % in the games he played minus in the games he missed, in points; {HOME_MIN_PLAYED}+ games played and {HOME_MIN_MISSED}+ missed. A team record, not what he caused. The full board lets you set your own minimums.</p></section>
 <section><h2>Last 30 days: on/off movers</h2>
 <div class="box"><div class="boxhead">Biggest change in on/off per 100 possessions <a href="lists/on-off-movers.html">full board</a></div><ul class="rows">{''.join(mov)}</ul></div>
-<p class="note">Last 30 days vs {'earlier this season' if baseline == 'earlier' else season_label(LAST_COMPLETE)}. Possession-based: a different unit from the win-rate gaps.</p></section>
+<p class="note">Last 30 days ({mover_windows(s, baseline)[0] if s.cur else ''}) vs {'earlier this season' if baseline == 'earlier' else 'his ' + season_label(LAST_COMPLETE) + ' season'}, with the on-court possessions behind each number. Possession-based: a different unit from the win-rate gaps.</p></section>
 <section><h2>{season_label(CURRENT_SEASON)} standings</h2>
 <div class="dgrid"><div class="box"><ul class="rows">{''.join(tl[:half])}</ul></div><div class="box"><ul class="rows">{''.join(tl[half:])}</ul></div></div>
 <p class="note">By win % to date. <a href="seasons/{season_label(CURRENT_SEASON)}.html">All teams with their most-used players</a> · <a href="seasons/{season_label(LAST_COMPLETE)}.html">{season_label(LAST_COMPLETE)} final standings</a></p></section>
@@ -2631,6 +2726,8 @@ def how_page(s):
 <section class="prose">
 <h2>What each page covers</h2>
 <p><strong>Career records</strong> (W{EN}L, win %, W {MINUS} L, with and without) count every regular season from {season_label(1947)} through {season_label(CURRENT_SEASON)}, with {season_label(CURRENT_SEASON)} games through {e(nice_date(through))}, the last game in the nightly data; the nightly job recomputes them. <strong>Season counts and finishes</strong> (winning seasons, playoff trips, titles, final NBA finish, teammate help) use completed seasons, {season_label(1947)} through {season_label(LAST_COMPLETE)}, because a season in progress has no final finish. The career boards have a "Completed seasons only" option.</p>
+<h2 id="ranks">Ranks and scopes</h2>
+<p>Every rank on the site (player cards, boards, the daily list, fun facts, share-card data) comes from the board's own rule: its default view, its qualifying group and standard competition ranking, where equal values share a rank shown as "T-155" and the next rank skips ahead. Each career number says its scope in a few words: <strong>"{B.SCOPE_LIVE}"</strong> for career records (W{EN}L, win %, W {MINUS} L, with and without), <strong>"{B.SCOPE_DONE}"</strong> for season counts, finishes and teammate help. A link always opens the board in the scope it quotes.</p>
 <h2>Formats</h2>
 <p>Records use an en dash (706{EN}366). Win rates read 65.9%. With and without is shown as the two win rates, "65.9% with him · 39.9% without", and the gap as "26.0 points higher": the difference between the two win percentages (percentage points), worked out from the unrounded rates. It is not a relative change: +26.0 does not mean 26% more wins. Possession-based on/off is in points per 100 possessions, a different unit, and is always labeled that way. An empty sample (no games) shows N/A, never 0.0%.</p>
 <h2>Final NBA finish</h2>

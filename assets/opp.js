@@ -30,7 +30,7 @@
   function filt() {
     var f = {};
     new FormData(form).forEach(function (v, k) { if (v !== "") f[k] = v; });
-    f.k = f.k || "2";
+    f.k = f.k === "4" ? "4" : "2";               // regular season and playoffs are never mixed
     return f;
   }
   // every game that passes the filters: {sy, team, md, opp, home, ts, os, t}
@@ -118,7 +118,7 @@
       tr.appendChild(td("W" + EN + "L", wl(r.w, r.l), r.w, "mono"));
       tr.appendChild(td("Win %", pct1(r.w / g), (r.w / g).toFixed(6), "mono"));
       tr.appendChild(td("W " + MINUS + " L", signed(r.w - r.l), r.w - r.l, "mono " + (r.w > r.l ? "up" : (r.w < r.l ? "down" : "flat"))));
-      tr.appendChild(td("Playoff series", (s[0] + s[1]) ? s[0] + EN + s[1] : "N/A", (s[0] + s[1]) ? s[0] - s[1] : null));
+      tr.appendChild(td("Playoff series", (s[0] + s[1]) ? s[0] + EN + s[1] : "N/A", (s[0] + s[1]) ? s[0] - s[1] : null, "ser"));
       tr.appendChild(td("Seasons", r.first === r.last ? label(r.first) : label(r.first) + " to " + label(r.last), r.first, "mono"));
       var b = document.createElement("button");
       b.type = "button"; b.className = "opp-open"; b.textContent = "Show games";
@@ -126,9 +126,16 @@
       tr.appendChild(td("Games list", b));
       tbody.appendChild(tr);
     });
-    var kind = { "2": "Regular season", "4": "Playoffs", "b": "Regular season and playoffs" }[f.k];
-    document.getElementById("opp-pop").textContent = kind + ": " + tg.toLocaleString("en-US") + " games, " + wl(tw, tg - tw) +
+    var kind = { "2": "Regular season", "4": "Playoffs" }[f.k] || "Regular season";
+    table.setAttribute("data-k", f.k);
+    document.getElementById("opp-pop").textContent = kind + ", " + (form.getAttribute("data-scope") || "completed seasons") + ": " +
+      tg.toLocaleString("en-US") + " games, " + wl(tw, tg - tw) +
       ", against " + keep.length + " franchises" + (min > 1 ? " (" + min + "+ games)" : "") + ".";
+    // the view is shareable: every filter and the tab go in the URL
+    var q = new URLSearchParams(location.search);
+    ["k", "from", "to", "team", "ha", "min"].forEach(function (k) { if (f[k] && !(k === "k" && f[k] === "2")) q.set(k, f[k]); else q.delete(k); });
+    var qs = q.toString();
+    history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + location.hash);
     var sorted = table.tHead.querySelector("th[aria-sort]");
     if (sorted && window.TS) window.TS.sortTable(table, sorted, sorted.getAttribute("aria-sort"));
   }
@@ -181,14 +188,28 @@
     load(function () { openGames(tr, b); });
   });
   form.addEventListener("change", function () { load(render); });
+  // tabs: Regular season | Playoffs
+  var tabs = form.querySelectorAll('[role="tab"]'), kIn = form.querySelector('[name="k"]');
+  function setTab(k) {
+    kIn.value = k;
+    Array.prototype.forEach.call(tabs, function (t) { t.setAttribute("aria-selected", t.getAttribute("data-k") === k ? "true" : "false"); });
+  }
+  Array.prototype.forEach.call(tabs, function (t) {
+    t.addEventListener("click", function () { setTab(t.getAttribute("data-k")); load(render); });
+  });
   form.addEventListener("submit", function (ev) { ev.preventDefault(); load(render); });
   var reset = form.querySelector(".opp-reset");
-  if (reset) reset.addEventListener("click", function () { form.reset(); load(render); });
-  // ?vs=BOS (&k=4): open that opponent's games (links from the takeaways and the daily lead)
+  if (reset) reset.addEventListener("click", function () { form.reset(); setTab("2"); load(render); });
+  // a shared view: ?k=4&from=..&to=..&team=..&ha=..&min=.. (and ?vs=BOS opens that opponent's games)
   var q = new URLSearchParams(location.search), vs = q.get("vs");
+  var shared = ["k", "from", "to", "team", "ha", "min"].filter(function (k) { return q.get(k); });
+  shared.forEach(function (k) {
+    if (k === "k") setTab(q.get("k") === "4" ? "4" : "2");
+    else { var el = form.querySelector('[name="' + k + '"]'); if (el) el.value = q.get(k); }
+  });
+  if (shared.length && !vs) load(render);
   if (vs) {
     load(function () {
-      if (q.get("k")) { form.querySelector('[name="k"]').value = q.get("k"); }
       render();
       var tr = document.getElementById("vs-" + vs);
       if (tr) { openGames(tr, tr.querySelector("button.opp-open")); tr.scrollIntoView({ block: "start" }); }

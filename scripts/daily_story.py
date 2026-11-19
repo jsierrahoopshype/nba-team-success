@@ -110,8 +110,18 @@ def build(date):
     total = dict(comp)
     for pid, v in cur_wl.items():
         total[pid] = total.get(pid, 0) + v
-    order = sorted(total, key=lambda p: (-total[p], ids.get(p, {}).get("name", "")))
-    rank = {p: i + 1 for i, p in enumerate(order)}
+    # ranks: the career W - L board's own rule (default view incl. the season to date, its
+    # qualifying group, standard competition ranking with ties), the same as the player cards
+    bdata = B.compact(A.Data(live=True), cur, load_json(os.path.join(DATA, "help.json"), {}))
+    now_rk = {m["pid"]: (r, t) for r, t, m in B.compute(bdata, "wins-minus-losses")[0]}
+    base_rk = {m["pid"]: (r, t) for r, t, m in B.compute(bdata, "wins-minus-losses", {"to": LAST_COMPLETE})[0]}
+    rank = {p: v[0] for p, v in now_rk.items()}
+    for p in total:
+        rank.setdefault(p, 10 ** 6)
+
+    def rl(p, base=False):
+        r = (base_rk if base else now_rk).get(p)
+        return B.rank_label(*r) if r else "unranked"
 
     def name(p):
         return ids[p]["name"]
@@ -150,10 +160,10 @@ def build(date):
                     "headline": f"{name(p)} passes {name(q)} on the career wins-minus-losses list",
                     "body": [f"{name(p)}'s teams are {signed(total[p])} in his regular-season games: {signed(comp.get(p, 0))} "
                              f"through {season_label(LAST_COMPLETE)} and {signed(cur_wl[p])} in {season_label(CURRENT_SEASON)}.",
-                             f"That is #{rank[p]} all time counting this season, ahead of {name(q)} "
+                             f"That is {rl(p)} on the career W − L board ({B.SCOPE_LIVE}), ahead of {name(q)} "
                              f"({signed(total.get(q, prev[q]))})."],
                     "link": {"text": f"{name(p)}'s page", "href": plink(p)},
-                    "more": {"text": "Career W − L board (completed seasons)", "href": f"lists/wins-minus-losses.html?hl={ids[p]['slug']}#p-{ids[p]['slug']}"},
+                    "more": {"text": f"Career W − L board ({B.SCOPE_LIVE})", "href": f"lists/wins-minus-losses.html?hl={ids[p]['slug']}#p-{ids[p]['slug']}"},
                     "line": f"{name(p)} passed {name(q)} on the career W − L list."}))
     # (b) tonight's matchup against his toughest franchise
     games, gdate = schedule()
@@ -201,7 +211,7 @@ def build(date):
                 "line": f"Tonight: {name(p)} is {wl(w, l)} against the {on} in his games."}))
     # (a') climbed the most places on the career W - L list this season
     base = sorted(comp, key=lambda p: (-comp[p], ids.get(p, {}).get("name", "")))
-    base_rank = {p: i + 1 for i, p in enumerate(base)}
+    base_rank = {p: v[0] for p, v in base_rk.items()}
     climbs = []
     for p in cur["players"]:
         if p in base_rank and rank[p] <= 300:
@@ -221,12 +231,12 @@ def build(date):
             "players": [ids[p]["slug"], ids[q]["slug"]],
             "headline": f"{name(p)} moves past {name(q)} on the career wins-minus-losses list",
             "body": [f"His teams are {signed(cur_wl[p])} in his {season_label(CURRENT_SEASON)} games, which takes his career "
-                     f"total to {signed(total[p])}: #{rank[p]} all time counting this season, up from #{base_rank[p]} at the "
+                     f"total to {signed(total[p])}: {rl(p)} on the career W − L board ({B.SCOPE_LIVE}), up from {rl(p, True)} at the "
                      f"end of {season_label(LAST_COMPLETE)}.",
                      f"He has passed {n} player{'s' if n != 1 else ''} this season; the most decorated of them is "
                      f"{name(q)} ({signed(total.get(q, comp[q]))})."],
             "link": {"text": f"{name(p)}'s page", "href": plink(p)},
-            "more": {"text": "Career W − L board (completed seasons)", "href": f"lists/wins-minus-losses.html?hl={ids[p]['slug']}#p-{ids[p]['slug']}"},
+            "more": {"text": f"Career W − L board ({B.SCOPE_LIVE})", "href": f"lists/wins-minus-losses.html?hl={ids[p]['slug']}#p-{ids[p]['slug']}"},
             "line": f"{name(p)} has passed {n} players on the career W − L list this season."}))
     # (c) a team crossed 10 wins in the games a player missed (stricter cutoff: 8+ each side)
     prev_ow = state.get("ow", {})

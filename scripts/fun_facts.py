@@ -120,44 +120,22 @@ def build(date):
             else f"on {nice_md(through)}")
 
     # ---- 1. passed someone on a career board last night (wins, W - L) -------------------------
-    data = B.compact(d, cur)
-    comp_w, comp_wl = {}, {}
-    for row in data["p"]:
-        m = B.player_metrics(row, data["t"], {})
-        comp_w[row[0]], comp_wl[row[0]] = m["w"], m["w"] - m["l"]
-    cur_w = {p: sum(x["w"] for x in sts) for p, sts in cur["players"].items()}
-    cur_l = {p: sum(x["l"] for x in sts) for p, sts in cur["players"].items()}
-    for board, title, comp, now_of in (
-            ("career-wins", "career wins", comp_w, lambda p: cur_w.get(p, 0)),
-            ("wins-minus-losses", "career wins minus losses", comp_wl, lambda p: cur_w.get(p, 0) - cur_l.get(p, 0))):
-        now = dict(comp)
-        for p in cur["players"]:
-            if p in ids:
-                now[p] = now.get(p, 0) + now_of(p)
-        prev = dict(now)
-        for p, (w, l) in delta.items():
-            if p in prev:
-                prev[p] -= w if board == "career-wins" else (w - l)
-        order = sorted(now, key=lambda p: (-now[p], ids.get(p, {}).get("name", "")))
-        rank = {p: i + 1 for i, p in enumerate(order)}
-        best = None
-        for p in delta:
-            if p not in now or rank[p] > PASS_MAX_RANK or p not in ids:
-                continue
-            passed = [q for q in order[:rank[p] + 60] if q != p and prev[q] >= prev[p] and now[q] < now[p]]
-            if passed:
-                q = min(passed, key=lambda q: rank[q])
-                if best is None or rank[p] < best[0]:
-                    best = (rank[p], p, q, len(passed))
-        if best:
-            r, p, q, n = best
-            val = f"{now[p]:,}" if board == "career-wins" else signed(now[p])
-            more = f" and {n - 1} other{'s' if n > 2 else ''}" if n > 1 else ""
-            add(1, r, f"pass:{board}:{slug(p)}:{slug(q)}",
-                [plink(p), T(" passed "), plink(q, False), T(f"{more} {when} for "),
-                 L(f"No. {r} in {title}", f"lists/{board}.html?hl={slug(p)}#p-{slug(p)}"),
-                 T(f" ({val} in his games).")],
-                f"lists/{board}.html?hl={slug(p)}#p-{slug(p)}", pid=p)
+    # the board's own ranks (default view, incl. the season to date; ties shown as T-)
+    data = B.compact(A.Data(live=True), cur, load_json(os.path.join(DATA, "help.json"), {}))
+    for board, title in (("career-wins", "career wins"), ("wins-minus-losses", "career wins minus losses")):
+        got = [x for x in B.passes(data, board, delta) if x[0] in ids and x[1][0] <= PASS_MAX_RANK]
+        if not got:
+            continue
+        p, (r, tied, v), passed = got[0]
+        q = passed[0][0]
+        n = len(passed)
+        val = f"{v:,}" if board == "career-wins" else signed(v)
+        more = f" and {n - 1} other{'s' if n > 2 else ''}" if n > 1 else ""
+        href = f"lists/{board}.html?hl={slug(p)}#p-{slug(p)}"
+        add(1, r, f"pass:{board}:{slug(p)}:{slug(q)}",
+            [plink(p), T(" passed "), plink(q, False), T(f"{more} {when} for "),
+             L(f"{B.rank_label(r, tied)} in {title}", href),
+             T(f" ({val} in his games, {B.SCOPE_LIVE}).")], href, pid=p)
 
     # ---- 2. a team's best / worst start through N games since a season ------------------------
     at_n = defaultdict(list)          # N -> [(sy, f, wins)]
@@ -310,7 +288,9 @@ def build(date):
         for i in range(min(len(rows), 10)):
             n, p, a = rows[(k + i) % min(len(rows), 10)]
             rk = 1 + sum(1 for x in rows if x[0] > n)
-            tag = "the longest active streak" if rk == 1 else f"No. {rk} among active players"
+            tie = sum(1 for x in rows if x[0] == n) > 1
+            tag = ("the longest active streak" if rk == 1 and not tie else
+                   f"{B.rank_label(rk, tie)} among active players")
             href = f"player/{slug(p)}.html#cap-seasons"
             if kind == "winning":
                 parts = [plink(p), T("'s teams have had a winning record in each of his last "),
