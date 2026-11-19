@@ -1,59 +1,31 @@
 {
- "cutoff": "2026-11-17",
+ "cutoff": "2026-11-18",
  "date": "2026-11-19",
  "facts": [
   {
-   "href": "seasons/2026-27.html#t-MIL",
-   "key": "start:worst:MIL:14|The Milwaukee Bucks/ are 1–13, the franchise's worst start through 14 games since the /1974-75 Milwaukee Bucks/ (also 1–13).",
+   "href": "seasons/2026-27.html#t-SAS",
+   "key": "start:best:SAS:15|The San Antonio Spurs/ are 12–3, the franchise's best start through 15 games since the /2016-17 San Antonio Spurs/ (also 12–3).",
    "parts": [
     [
-     "The Milwaukee Bucks",
-     "seasons/2026-27.html#t-MIL",
+     "The San Antonio Spurs",
+     "seasons/2026-27.html#t-SAS",
      1
     ],
     [
-     " are 1–13, the franchise's worst start through 14 games since the "
+     " are 12–3, the franchise's best start through 15 games since the "
     ],
     [
-     "1974-75 Milwaukee Bucks",
-     "seasons/1974-75.html#t-MIL",
+     "2016-17 San Antonio Spurs",
+     "seasons/2016-17.html#t-SAS",
      0
     ],
     [
-     " (also 1–13)."
+     " (also 12–3)."
     ]
    ],
    "pid": null,
    "team": [
-    "MIL",
-    2027
-   ],
-   "type": "start"
-  },
-  {
-   "href": "seasons/2026-27.html#t-SAC",
-   "key": "start:worst:SAC:13|The Sacramento Kings/ are 1–12, the franchise's worst start through 13 games since the /1990-91 Sacramento Kings/ (also 1–12).",
-   "parts": [
-    [
-     "The Sacramento Kings",
-     "seasons/2026-27.html#t-SAC",
-     1
-    ],
-    [
-     " are 1–12, the franchise's worst start through 13 games since the "
-    ],
-    [
-     "1990-91 Sacramento Kings",
-     "seasons/1990-91.html#t-SAC",
-     0
-    ],
-    [
-     " (also 1–12)."
-    ]
-   ],
-   "pid": null,
-   "team": [
-    "SAC",
+    "SAS",
     2027
    ],
    "type": "start"
@@ -132,42 +104,60 @@
    "type": "onthisday"
   },
   {
-   "href": "seasons/2026-27.html#t-PHI",
-   "key": "start:best:PHI:15|The Philadelphia 76ers/ are 12–3, the franchise's best start through 15 games since the /2000-01 Philadelphia 76ers/ (13–2).",
+   "href": "seasons/1968-69.html#t-BOS",
+   "key": "onthisday:1969:BOS|On this date in 1968-69, the /Boston Celtics/ were 11–4. They finished 48–34 and won the title.",
    "parts": [
     [
-     "The Philadelphia 76ers",
-     "seasons/2026-27.html#t-PHI",
+     "On this date in 1968-69, the "
+    ],
+    [
+     "Boston Celtics",
+     "seasons/1968-69.html#t-BOS",
      1
     ],
     [
-     " are 12–3, the franchise's best start through 15 games since the "
-    ],
-    [
-     "2000-01 Philadelphia 76ers",
-     "seasons/2000-01.html#t-PHI",
-     0
-    ],
-    [
-     " (13–2)."
+     " were 11–4. They finished 48–34 and won the title."
     ]
    ],
    "pid": null,
    "team": [
-    "PHI",
-    2027
+    "BOS",
+    1969
    ],
-   "type": "start"
+   "type": "onthisday"
+  },
+  {
+   "href": "seasons/1975-76.html#t-BOS",
+   "key": "onthisday:1976:BOS|On this date in 1975-76, the /Boston Celtics/ were 6–5. They finished 54–28 and won the title.",
+   "parts": [
+    [
+     "On this date in 1975-76, the "
+    ],
+    [
+     "Boston Celtics",
+     "seasons/1975-76.html#t-BOS",
+     1
+    ],
+    [
+     " were 6–5. They finished 54–28 and won the title."
+    ]
+   ],
+   "pid": null,
+   "team": [
+    "BOS",
+    1976
+   ],
+   "type": "onthisday"
   }
  ],
  "history": {
   "2026-11-19": [
-   "start:worst:MIL:14|The Milwaukee Bucks/ are 1–13, the franchise's worst start through 14 games since the /1974-75 Milwaukee Bucks/ (also 1–13).",
-   "start:worst:SAC:13|The Sacramento Kings/ are 1–12, the franchise's worst start through 13 games since the /1990-91 Sacramento Kings/ (also 1–12).",
+   "start:best:SAS:15|The San Antonio Spurs/ are 12–3, the franchise's best start through 15 games since the /2016-17 San Antonio Spurs/ (also 12–3).",
    "streak:winning:jalen-brunson|Jalen Brunson/'s teams have had a winning record in each of his last /7 seasons/ (2019-20 to 2025-26), T-9 among active players.",
    "streak:drought:tre-mann|Tre Mann/ has not been on a playoff team in his last /5 seasons/ (2021-22 to 2025-26), T-7 among active players.",
    "onthisday:1958:ATL|On this date in 1957-58, the /St. Louis Hawks/ were 7–5. They finished 41–31 and won the title.",
-   "start:best:PHI:15|The Philadelphia 76ers/ are 12–3, the franchise's best start through 15 games since the /2000-01 Philadelphia 76ers/ (13–2)."
+   "onthisday:1969:BOS|On this date in 1968-69, the /Boston Celtics/ were 11–4. They finished 48–34 and won the title.",
+   "onthisday:1976:BOS|On this date in 1975-76, the /Boston Celtics/ were 6–5. They finished 54–28 and won the title."
   ]
  }
 }
