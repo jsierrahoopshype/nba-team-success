@@ -107,6 +107,25 @@
     return a;
   }
   function r1(x) { return x === null || x === undefined ? null : parseFloat(fix1(x)); }
+  // build_site.py SB_LINKS / sb_hrefs(): the category opens its board with both players
+  // highlighted (?hl=a,b), each value his own row; outside the board's group, his page
+  var SB = {
+    "Career record": ["career-wins", "sort=pct", function (c) { return c.w + c.l >= 400; }],
+    "W \u2212 L": ["wins-minus-losses", "", function () { return true; }],
+    "Titles": ["titles", "", function () { return true; }],
+    "Playoff trips": ["playoff-trips", "", function () { return true; }],
+    "Deepest run": ["deepest-run", "", function () { return true; }],
+    "Average finish": ["average-finish", "", function (c) { return c.seasons >= 5; }],
+    "With vs without": ["gap-career", "", function (c) { return c.w + c.l >= 200 && (c.gm || 0) >= 50; }]
+  };
+  function sbHrefs(lab, ca, cb) {
+    var sp = SB[lab];
+    if (!sp) return [up + "comparison-rules.html#teammate-help", up + "player/" + ca.slug + ".html#cap-help", up + "player/" + cb.slug + ".html#cap-help"];
+    var q = sp[1] ? sp[1] + "&" : "", hl = [ca, cb].filter(sp[2]).map(function (c) { return c.slug; });
+    var cat = up + "lists/" + sp[0] + ".html" + (hl.length ? "?" + q + "hl=" + hl.join(",") : (sp[1] ? "?" + sp[1] : ""));
+    function one(c) { return sp[2](c) ? up + "lists/" + sp[0] + ".html?" + q + "hl=" + c.slug + "#p-" + c.slug : up + "player/" + c.slug + ".html"; }
+    return [cat, one(ca), one(cb)];
+  }
   function scoreboard(ca, cb) {
     var na = shortName(ca.name, cb.name), nb = shortName(cb.name, ca.name);
     var sec = el("section", undefined, "sboard");
@@ -144,13 +163,17 @@
         else if ((c[2] < c[3]) === c[6]) { ka = "la"; la++; }
         else { kb = "lb"; lb++; }
       }
-      var tr = el("tr", undefined, c[0] === "Deepest run" ? "txt" : undefined), th = el("th", c[0]);
+      var tr = el("tr", undefined, c[0] === "Deepest run" ? "txt" : undefined), th = el("th");
       th.scope = "row";
+      var hr = sbHrefs(c[0], ca, cb), la_ = el("a", c[0], "cl");
+      la_.href = hr[0]; th.appendChild(la_);
       if (c[1]) th.appendChild(el("small", c[1]));
       tr.appendChild(th);
-      [[c[4], ka], [c[5], kb]].forEach(function (v) {
-        var d = el("td", undefined, v[1] || undefined);
-        if (typeof v[0] === "string") d.textContent = v[0]; else d.appendChild(v[0]);
+      [[c[4], ka, hr[1]], [c[5], kb, hr[2]]].forEach(function (v) {
+        var d = el("td", undefined, v[1] || undefined), a = el("a", undefined, "cl");
+        a.href = v[2];
+        if (typeof v[0] === "string") a.textContent = v[0]; else a.appendChild(v[0]);
+        d.appendChild(a);
         tr.appendChild(d);
       });
       tb.appendChild(tr);

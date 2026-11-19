@@ -227,11 +227,15 @@
     var res = compute(f);
     var tbody = document.querySelector("#board tbody");
     while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
-    var hlAt = -1;
-    if (f.hl) res.rows.forEach(function (m, i) { if (m.slug === f.hl) hlAt = i; });
-    var lim = Math.min(shown, res.rows.length);
-    for (var i = 0; i < lim; i++) tbody.appendChild(row(res.rows[i], i === hlAt));
-    if (hlAt >= lim) {
+    // ?hl=a or ?hl=a,b: highlight one or two players; rows beyond the list show with context
+    var hls = (f.hl || "").split(",").filter(Boolean), at = [];
+    res.rows.forEach(function (m, i) { if (hls.indexOf(m.slug) >= 0) at.push(i); });
+    var isHl = function (i) { return at.indexOf(i) >= 0; };
+    var lim = Math.min(shown, res.rows.length), last = lim - 1, i;
+    for (i = 0; i < lim; i++) tbody.appendChild(row(res.rows[i], isHl(i)));
+    at.filter(function (x) { return x >= lim; }).forEach(function (x) {
+      var from = Math.max(last + 1, x - 3), to = Math.min(res.rows.length, x + 4);
+      if (from >= to) return;
       var gap = document.createElement("tr");
       gap.className = "gaprow";
       var g = document.createElement("td");
@@ -239,8 +243,10 @@
       g.textContent = "…";
       gap.appendChild(g);
       tbody.appendChild(gap);
-      for (i = Math.max(lim, hlAt - 3); i < Math.min(res.rows.length, hlAt + 4); i++) tbody.appendChild(row(res.rows[i], i === hlAt));
-    }
+      for (i = from; i < to; i++) tbody.appendChild(row(res.rows[i], isHl(i)));
+      last = to - 1;
+    });
+    var hlAt = at.length ? at[0] : -1;           // scroll to the higher-ranked one
     // sort state in the header (visible on phones too)
     var ths = document.querySelectorAll("#board thead th[data-sort]");
     for (i = 0; i < ths.length; i++) {
@@ -263,7 +269,7 @@
     var st = document.getElementById("board-status");
     if (st) st.textContent = res.rows.length + " players, ranked by " + DEF.sorts[res.sort][0];
     if (hlAt >= 0) {
-      var el = document.getElementById("p-" + f.hl);
+      var el = document.getElementById("p-" + res.rows[hlAt].slug);
       if (el) el.scrollIntoView({ block: "center" });
     }
   }

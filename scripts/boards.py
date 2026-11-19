@@ -84,12 +84,12 @@ BOARDS = {
         "cols": ["adj", "avg", "seasons"],
     },
     "no-allstar-teammate": {
-        "title": "Winning without an All-Star teammate: NBA career leaderboard",
-        "h1": "Winning without an All-Star teammate",
+        "title": "Most wins without an All-Star teammate: NBA career leaderboard",
+        "h1": "Most wins without an All-Star teammate",
         "desc": "His teams' record in his games, counting only team-seasons in which no teammate who shared a game with him that season was an All-Star that season.",
         "card": "Without an All-Star teammate",
-        "sorts": {"w": ("Wins", "desc", {}), "pct": ("Win %", "desc", {"cg": 500})},
-        "cols": ["rec", "pct", "wl", "seasons", "gp"],
+        "sorts": {"w": ("Wins", "desc", {}), "wl": ("W − L", "desc", {}), "pct": ("Win %", "desc", {"cg": 500})},
+        "cols": ["w", "wl", "pct", "rec", "gp", "seasons"],
         "noas": True,
     },
     "gap-career": {
@@ -101,7 +101,7 @@ BOARDS = {
         "cols": ["with", "without", "gap", "gp", "gm"],
     },
 }
-COL_LABEL = {"w": "Wins", "l": "Losses", "pct": "Win %", "gp": "Games", "wl": "W − L",
+COL_LABEL = {"w": "Wins", "l": "Losses", "pct": "Win %", "gp": "Games in this view", "wl": "W − L",
              "rec": "W–L", "winning": "Winning seasons", "seasons": "Seasons", "wshare": "Share",
              "trips": "Playoff trips", "tshare": "Share", "deep": "Deepest run", "deepn": "Times",
              "titles": "Titles", "years": "Title seasons", "avg": "Raw average",
