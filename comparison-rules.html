@@ -40,6 +40,16 @@
 <h2>Suggested peers</h2>
 <p>Every player with 300 or more career games gets three suggested peers, chosen from the same pool by four measures: era (the game-weighted middle of the career, within 4 seasons), help (average per season, within a log distance of 0.35), his own honors per season (within 0.5) and career length (games, within a log distance of 0.7). The three with the smallest combined distance (era / 4 + help / 0.35 + career length / 0.7 + honors / 0.5) are shown. When fewer than three pass those limits, the closest players within 6 seasons of era fill the list and say so.</p>
 <p>Each suggestion states the numbers it was matched on. Comparisons align the two careers by career season (season 1 with season 1), so players from different eras can be compared the same way. A comparison states records and finishes, not what a player caused.</p>
+<h2 id="how-this-works">How the head-to-head scoreboard works</h2>
+<ul>
+<li><strong>Categories.</strong> Career record (win % in his games), W − L, titles, playoff trips, deepest run, average final finish (adjusted for league size, on a 30-team scale), with vs without, and help per season.</li>
+<li><strong>The leader's cell is tinted</strong>: the larger number, except average finish and help, where the smaller one leads (a better finish is a lower number; less help means he won with fewer honored teammates).</li>
+<li><strong>With vs without is shown, never counted.</strong> It is the win-rate gap in percentage points between the games he played and missed, for reference only.</li>
+<li><strong>The tally</strong> ("Jordan leads 5 of 7") counts the seven lead categories; equal values, or a missing value on one side, count as even.</li>
+<li><strong>Less help</strong> names the player whose teammates were honored less, with both averages: help is the Teammates Score of the teammates he shared games with, per season.</li>
+<li>These are team records and finishes. They do not measure who was the better player.</li>
+</ul>
+<p><a href="compare/">Compare any two players</a>: pick both sides; the same scoreboard and season table are built in the page from each player's data file.</p>
 <h2>Cohort lists</h2>
 <ul>
 <li><a href="lists/low-help-all-stars.html">Best finishes among low-help All-Stars</a>: All-Stars with 300+ games and 5+ seasons whose average help is in the lowest quarter of that group, ranked by average final finish adjusted for league size (30-team scale, raw average alongside); a second table uses help entering the season.</li>
@@ -47,12 +57,12 @@
 <li>On every player page: his best and worst final finish among the seasons with help within 25% of his median.</li>
 </ul>
 <h2>Share images</h2>
-<p>Each player's three suggested comparisons (players with 300+ games) have their own page and social card. On any comparison, the "Download image" button builds a card in your browser from the page's data, with this site's fonts and headshots.</p>
+<p>Each player's three suggested comparisons (players with 300+ games) have their own page. Every comparison, suggested or picked on the <a href="compare/">compare page</a>, and every player has a social card in the Player Comparison card style; "Download image" saves that same card.</p>
 </section>
 <form class="finder bottom" role="search" data-mode="go" data-up="" data-index="assets/players.json" action="players/a.html">
 <label for="pf2">Find a player</label><input id="pf2" type="search" autocomplete="off" placeholder="Find a player, e.g. Bill Russell">
 <ul class="results"></ul></form>
-<nav class="crumbs" aria-label="Team Success"><a href="index.html">Team Success home</a> <a href="how-we-count.html">How we count</a> <a href="players/a.html">Players A-Z</a></nav>
+<nav class="crumbs" aria-label="Team Success"><a href="index.html">Team Success home</a> <a href="compare/">Compare two players</a> <a href="how-we-count.html">How we count</a> <a href="players/a.html">Players A-Z</a></nav>
 <p class="terms"><a href="https://hoopsmatic.com/terms">Terms</a></p>
 </div>
 <script src="assets/ts.js" defer></script>

@@ -424,3 +424,32 @@ details[open]>summary{margin-bottom:.35rem}
 .mchip .gtog{white-space:nowrap}
 .latest .l2 .mono{color:var(--text)}
 @media(min-width:700px){.tmn>a[title],.tmn>.tn{white-space:nowrap}}
+/* Round 4. Fun facts strip: the Milestones "More from last night" list (face 32px, one sentence a row) */
+.facts{margin-top:1.2rem}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:.3rem 1rem;flex-wrap:wrap;margin:0 0 .5rem;padding-bottom:.35rem;border-bottom:2px solid var(--text)}
+.section-head h2{font-size:1rem;font-weight:700;letter-spacing:-.01em;margin:0;padding:0;border:0}
+.section-head .sub{font-family:var(--mono);font-size:.66rem;font-weight:500}
+.hls{list-style:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.15rem .8rem}
+.hl{display:flex;gap:.6rem;align-items:flex-start;padding:.5rem 0;border-bottom:1px solid var(--surface-hover);font-size:.86rem;line-height:1.45}
+.hl:last-child{border-bottom:none}
+.hl>.hs.sm{width:32px;height:32px;flex-shrink:0;margin-top:.05rem}
+.hl a{text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:2px}
+.hl a:hover{text-decoration-color:var(--text)}
+.hl .tlogo{background:var(--surface);display:inline-flex;align-items:center;justify-content:center}
+.hl .tlogo .lg{position:static;width:24px;height:24px;margin:0}
+@media(min-width:900px){.hls{columns:2;column-gap:1.6rem}.hl{break-inside:avoid}}
+/* "Compare X with..." block right under the player lead */
+.cmpblock{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.2rem .85rem .8rem;margin:1rem 0}
+.cmpblock>h2{margin-top:.7rem}
+.cmpblock .finder{margin-bottom:.5rem}
+.fchips{list-style:none;display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.35rem}
+.fchips a{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--border);border-radius:999px;padding:.2rem .7rem .2rem .25rem;font-size:.8rem;font-weight:600;background:var(--surface);min-height:2.4rem}
+.fchips a:hover{background:var(--surface-hover);text-decoration:none}
+.fchips .hs.sm{width:32px;height:32px}
+/* compare page: two pickers side by side on wide screens */
+.cmppick{display:grid;gap:.4rem;margin:1rem 0}
+.cmppick>.vs{justify-self:center;font-family:var(--mono);font-size:.72rem;color:var(--text-secondary)}
+@media(min-width:760px){.cmppick{grid-template-columns:1fr auto 1fr;align-items:start}.cmppick>.vs{margin-top:2.1rem}}
+.cmppick .finder{margin:0}
+.picked{font-size:.74rem;color:var(--text-secondary);margin-top:.3rem;min-height:1.1em}
+.more-btn.dl{margin-right:.4rem}

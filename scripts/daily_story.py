@@ -22,6 +22,7 @@ from collections import defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import analysis as A  # noqa: E402
 import boards as B  # noqa: E402
+import picks  # noqa: E402
 from common import (CURRENT_SEASON, DATA, LAST_COMPLETE, ROOT, dump_json, era_lookup,  # noqa: E402
                     franchise_name, load_json, season_label)
 
@@ -30,6 +31,7 @@ EN, MINUS = "–", "−"
 MIN_ABSENCE = 8          # homepage cutoff: 8+ games played AND 8+ missed (boards use 5)
 MATCHUP_MIN = 15         # regular-season games against that franchise
 MATCHUP_MAX_PCT = 0.40
+REPEAT_DAYS = 30         # a lead (rule + players) never repeats within 30 days
 
 
 def signed(n):
@@ -84,11 +86,21 @@ def build(date):
     ids = dict(d.ids)
     ids.update(cur.get("newIds", {}))
     stories = load_json(os.path.join(DATA, "stories.json"), {"stories": []})
-    if any(s["date"] == date for s in stories["stories"]):
-        print("UNCHANGED story for", date, "already written")
-        return False
     state = load_json(os.path.join(DATA, "stories_state.json"), {})
     through = cur["through"]
+    today = [x for x in stories["stories"] if x["date"] == date]
+    if today and today[0]["cutoff"] >= through:
+        print("UNCHANGED story for", date, "already written with data through", today[0]["cutoff"])
+        return False
+    if today:
+        # an earlier run today wrote the story from older data: rewrite it, comparing with the
+        # state from before that run (the previous date's), not with the earlier run's
+        stories["stories"] = [x for x in stories["stories"] if x["date"] != date]
+        state = state.get("base", {}) if state.get("date") == date else state
+    base_state = {k: v for k, v in state.items() if k != "base"}
+    # leads of the last 30 days: the same story (rule + players) never leads twice in 30 days
+    recent = {(x["rule"], tuple(x.get("players", []))) for x in stories["stories"]
+              if 0 < (dt.date.fromisoformat(date) - dt.date.fromisoformat(x["date"])).days <= REPEAT_DAYS}
     data = B.compact(d, cur)
     comp = {}
     for row in data["p"]:
@@ -108,8 +120,23 @@ def build(date):
         return f"player/{ids[p]['slug']}.html"
 
     cands = []
-    # (a) passed someone on the career W - L board since yesterday
-    prev = state.get("total")
+    # (a) passed someone on the career W - L board in the games of the last game date, worked out
+    # from the season's game log (not from the previous run's totals, which code changes can move);
+    # only when those games are newer than the previous story's cutoff
+    last_cut = max((x["cutoff"] for x in stories["stories"] if x["date"] < date), default="")
+    prev = None
+    if through > last_cut and cur.get("log"):
+        delta = defaultdict(int)
+        lg_ = cur["log"]
+        for gid, gd, h, a, hs, as_ in lg_["games"]:
+            if gd != through:
+                continue
+            hp_, ap_ = lg_["app"].get(gid, [[], []])
+            for q in hp_:
+                delta[str(q)] += 1 if hs > as_ else -1
+            for q in ap_:
+                delta[str(q)] += 1 if as_ > hs else -1
+        prev = {q: v - delta.get(q, 0) for q, v in total.items()}
     if prev:
         for p in cur["players"]:
             if p not in prev or p not in total:
@@ -235,19 +262,19 @@ def build(date):
             "link": {"text": f"{season_label(CURRENT_SEASON)} with and without board", "href": "lists/winning-without-him.html"},
             "line": f"Biggest gap this season ({MIN_ABSENCE}+ games each side): the {tn} are {wl(st['w'], st['l'])} with "
                     f"{name(p)} and {wl(st['ow'], st['ol'])} without."}))
-    # (d) quiet day: a historical comparison from the suggested peers (rotates by date)
+    # (d) quiet day: comparison from the comparison-of-the-day pool (picks.py), half a cycle away
+    # from the homepage's pair; then the next pairs in the cycle if a pair led in the last 30 days
     hp = load_json(os.path.join(DATA, "help.json"), {"peers": {}, "avg": {}})
-    pairs = sorted({tuple(sorted((a, b))) for a, lst in hp["peers"].items() for b, dist in lst
-                    if dist < 100 and hp["avg"].get(a, {}).get("g", 0) >= 800 and hp["avg"].get(b, {}).get("g", 0) >= 800})
-    for extra in (0, 1):          # today's pair leads a quiet day; the next one is a spare supporting link
-        if not pairs:
-            break
-        k = (dt.date.fromisoformat(date).toordinal() + extra) % len(pairs)
-        a, b = pairs[k]
+    pool = picks.pair_pool(d, hp)
+    for step in range(len(pool)):
+        day = (dt.date.fromisoformat(date) + dt.timedelta(days=step)).isoformat()
+        a, b = picks.pair_of_day(pool, day, half_cycle=True)
+        if ("compare", (ids[a]["slug"], ids[b]["slug"])) in recent:
+            continue
         sa, sb = A.summary(d, a), A.summary(d, b)
         x, y = sorted((ids[a]["slug"], ids[b]["slug"]))
-        cands.append((5 + extra, 0, {
-            "rule": "compare" if not extra else "compare2",
+        cands.append((5, 0, {
+            "rule": "compare",
             "players": [ids[a]["slug"], ids[b]["slug"]],
             "headline": f"{name(a)} and {name(b)}: same era, similar teammate help",
             "body": [f"{name(a)}'s teams went {wl(sa['w'], sa['l'])} in his games with an average final finish of "
@@ -255,30 +282,54 @@ def build(date):
                      f"Teammate help: {hp['avg'][a]['help']:.1f} and {hp['avg'][b]['help']:.1f} points per season."],
             "link": {"text": "The two careers, season by season", "href": f"compare/{x}--{y}.html"},
             "line": f"{name(a)} vs {name(b)}: {wl(sa['w'], sa['l'])} vs {wl(sb['w'], sb['l'])}."}))
+        break
     cands.sort(key=lambda c: (c[0], c[1]))
-    if not cands:
+    cands = [c for c in cands if c[2]["rule"] != "board" and (c[2]["rule"], tuple(c[2]["players"])) not in recent] + \
+        [c for c in cands if c[2]["rule"] == "board"]
+    leads = [c for c in cands if c[2]["rule"] != "board"]
+    if not leads:
         print("UNCHANGED no candidate")
         return False
-    lead = dict(cands[0][2])
-    seen = {lead["rule"]}
-    more = []
-    for _, _, c in cands[1:]:
-        if c["rule"] in seen:
-            continue
-        seen.add(c["rule"])
-        more.append({"text": c["line"], "href": c["link"]["href"]})
-        if len(more) == 2:
-            break
+    lead = dict(leads[0][2])
+    more = related_links(lead, ids, d)
     lead.update({"date": date, "cutoff": through, "supporting": more, "schedule": gdate if games else None,
                  "img": f"stories/img/{date}.png"})
     stories["stories"].insert(0, lead)
     dump_json(os.path.join(DATA, "stories.json"), stories, compact=False)
     dump_json(os.path.join(DATA, "stories_state.json"),
               {"date": date, "total": total, "ow": {p: ([x for x in s if x.get("endTeam")] or s[-1:])[0]["ow"]
-                                                    for p, s in cur["players"].items()}})
+                                                    for p, s in cur["players"].items()},
+               "base": base_state})
     draw(lead, ids)
     print("CHANGED story for", date, lead["rule"])
     return True
+
+
+def related_links(lead, ids, d):
+    """The two supporting links: about the lead's own players and board, never a random pair."""
+    by_slug = {v["slug"]: k for k, v in ids.items()}
+    sl = lead.get("players", [])
+    pid = [by_slug.get(x) for x in sl]
+
+    def page(i, text=None):
+        return {"text": text or f"{ids[pid[i]]['name']}: every season and every opponent",
+                "href": f"player/{sl[i]}.html"}
+
+    def cmp(text=None):
+        return {"text": text or f"{ids[pid[0]]['name']} vs {ids[pid[1]]['name']}, season by season",
+                "href": f"compare/?a={sl[0]}&b={sl[1]}"}
+    r = lead["rule"]
+    if r in ("pass", "climb") and len(sl) == 2:
+        return [cmp(), page(1)]
+    if r == "matchup":
+        return [page(0, f"{ids[pid[0]]['name']}'s record against every franchise"),
+                {"text": f"{season_label(CURRENT_SEASON)} with and without board", "href": "lists/winning-without-him.html"}]
+    if r == "absence":
+        return [page(0), {"text": f"{season_label(CURRENT_SEASON)} standings so far",
+                          "href": f"seasons/{season_label(CURRENT_SEASON)}.html"}]
+    if r == "compare" and len(sl) == 2:
+        return [page(0), page(1)]
+    return [page(i) for i in range(min(2, len(sl)))]
 
 
 def draw(story, ids):

@@ -94,3 +94,22 @@ Every factual sentence is a template filled from data; the rules are in `docs/st
 - Tables and cards name teams by city that season (`city_of`); headings, titles and prose keep full names.
 - `tests/layout.js` also fails on a lone ":" "," or "·" line in tables/cards and on a team name that wraps
   inside a word (390 and 1366 px).
+
+## Round 4 (Nov 2026)
+
+- Nightly: four slots a day (11:37, 14:37, 18:37, 23:37 UTC). Ramiro's Parquet files land around
+  13:00-13:30 UTC, after the old single 11:15 slot, and GitHub delays or skips scheduled runs. The
+  first run of a date writes the story and fun facts; a later run rewrites them only when newer
+  games arrive; nothing is committed otherwise. `data/current.json` now carries the season's game
+  log (`log`), so "last night" passes come from the games, not from the previous run's totals.
+- Fun facts strip under the homepage title (`scripts/fun_facts.py` -> `data/facts.json`), rules in
+  `docs/story-rules.md`. Daily story: no lead repeats within 30 days, quiet days always have a
+  comparison, supporting links are about the story's players.
+- Compare any two players: `compare/?a=<slug>&b=<slug>` (`compare/index.html`, `assets/compare.js`),
+  noindex, canonical `compare/` or the pre-built pair page. Player pages: "Compare X with..." block
+  under the lead; `?peer=` links redirect there (ts.js). Pre-built pair pages unchanged otherwise.
+- "Download image" links the og-card PNG (`/og/team-success/compare/<a>--<b>.png`,
+  `/og/team-success/player/<slug>.png`); the canvas card is gone.
+- Homepage with/without: 10+ played and 8+ missed, career leaders when fewer than 3 qualify.
+  Comparison of the day: `scripts/picks.py` (300+ games each, one All-Star, same era, 120-day cycle).
+- Result wording: "Missed playoffs", "Lost in play-in".

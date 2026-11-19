@@ -1,14 +1,15 @@
 // (c) 2026 HoopsMatic. All rights reserved.
-// Team Success peer comparison and share card, hm-ts-7f3a91c2-compare.
-// - Player pages: "Compare with anyone" builds the comparison in the page (no pop-up) from
-//   assets/board.json and both players' assets/pg/<slug>.json; ?peer=<slug> keeps it in the URL
-//   (a noindex variant).
-// - "Download image" draws the share card on a canvas with this site's own fonts and headshots,
-//   (the pages' social cards come from hoopsmatic-og-card; no PNGs are pre-rendered here).
+// Team Success comparison of any two players, hm-ts-7f3a91c2-compare.
+// compare/?a=<slug>&b=<slug>: the same scoreboard, tally and season table as the pre-built pages
+// (build_site.py scoreboard() and compare_page(); keep the two in step), built in the page from
+// assets/board.json and both players' assets/pg/<slug>.json. The two pickers (ts.js finders,
+// data-mode="side") call TSCompare.set(). "Download image" links the share card the
+// hoopsmatic-og-card Worker draws (/og/team-success/compare/<a>--<b>.png, same site); no canvas.
+// The canonical points at the pre-built page when the pair has one.
 // Every value goes in through textContent; nothing is parsed as HTML.
 (function () {
   var EN = "–", MINUS = "−";
-  var PO = ["Missed the playoffs", "Lost in the play-in", "First round", "Conference semifinals", "Conference finals", "NBA Finals", "Won the title"];
+  var PO = ["Missed playoffs", "Lost in play-in", "First round", "Conference semifinals", "Conference finals", "NBA Finals", "Won the title"];
   var DEPTH = [0, 0, 1, 2, 3, 4, 5];
   function label(sy) { return (sy - 1) + "-" + String(sy).slice(-2); }
   // one decimal exactly like Python's f"{x:.1f}" (build_site.py): the double's exact decimal
@@ -26,84 +27,12 @@
   function signed(n) { return (n > 0 ? "+" : (n < 0 ? MINUS : "")) + Math.abs(n).toLocaleString("en-US"); }
   function hfmt(v, p) { if (v === null || v === undefined) return "N/A"; return (v === 0 ? "0" : fix1(v)) + (p ? "+" : ""); }
 
-  // ---- share card (1200 x 630) -------------------------------------------------------------
-  var fontsReady = null;
-  function fonts(up) {
-    if (fontsReady) return fontsReady;
-    var a = new FontFace("DM Sans", "url(" + up + "assets/fonts/dm-sans-latin.woff2)", { weight: "100 1000" });
-    var b = new FontFace("JetBrains Mono", "url(" + up + "assets/fonts/jetbrains-mono-latin.woff2)", { weight: "400 800" });
-    fontsReady = Promise.all([a.load(), b.load()]).then(function (f) { f.forEach(function (x) { document.fonts.add(x); }); });
-    return fontsReady;
-  }
-  function img(src) {
-    return new Promise(function (res) {
-      if (!src) return res(null);
-      var i = new Image();
-      i.onload = function () { res(i); };
-      i.onerror = function () { res(null); };
-      i.src = src;
-    });
-  }
-  function fit(ctx, text, size, weight, family, max) {
-    var s = size;
-    do { ctx.font = weight + " " + s + "px '" + family + "'"; s -= 2; } while (ctx.measureText(text).width > max && s > 14);
-  }
-  function draw(card, up) {
-    return fonts(up).then(function () {
-      return Promise.all(card.map(function (c) { return img(c.hs ? up + "assets/hs/" + c.hs : null); }));
-    }).then(function (pics) {
-      var cv = document.createElement("canvas");
-      cv.width = 1200; cv.height = 630;
-      var x = cv.getContext("2d");
-      x.fillStyle = "#f5f5f7"; x.fillRect(0, 0, 1200, 630);
-      x.fillStyle = "#ffffff";
-      x.beginPath(); x.roundRect(36, 36, 1128, 558, 24); x.fill();
-      x.strokeStyle = "#d1d1d6"; x.lineWidth = 2; x.stroke();
-      x.fillStyle = "#6e6e73"; x.font = "600 24px 'DM Sans'"; x.fillText("Team Success", 76, 92);
-      x.fillStyle = "#1d1d1f";
-      var title = card[0].name + " vs " + card[1].name;
-      fit(x, title, 50, "700", "DM Sans", 1048); x.fillText(title, 76, 150);
-      card.forEach(function (c, i) {
-        var X = 76 + i * 548, Y = 200;
-        x.save();
-        x.beginPath(); x.arc(X + 56, Y + 56, 56, 0, Math.PI * 2); x.closePath();
-        x.fillStyle = "#e8e8ed"; x.fill(); x.clip();
-        if (pics[i]) x.drawImage(pics[i], X, Y, 112, 112);
-        x.restore();
-        x.fillStyle = "#1d1d1f"; fit(x, c.name, 34, "700", "DM Sans", 380); x.fillText(c.name, X + 132, Y + 50);
-        x.fillStyle = "#6e6e73"; x.font = "500 22px 'DM Sans'"; x.fillText(c.span, X + 132, Y + 84);
-        var lines = [wl(c.w, c.l) + " (" + pct1(c.pct) + ")", "W " + MINUS + " L " + signed(c.wl),
-          "Average finish " + (c.adj30 !== undefined ? fix1(c.adj30) + " of 30" : fix1(c.avg)), c.titles + " titles, " + c.trips + " playoff trips",
-          "Help " + (c.help === null || c.help === undefined ? "N/A" : fix1(c.help)) + " per season"];
-        x.fillStyle = "#1d1d1f";
-        lines.forEach(function (t, k) { x.font = (k === 0 ? "700 32px" : "500 26px") + " 'JetBrains Mono'"; x.fillText(t, X, Y + 158 + k * 40); });
-      });
-      x.fillStyle = "#6e6e73"; x.font = "500 19px 'DM Sans'";
-      x.fillText("Regular seasons through 2025-26. Records are his teams' in his games; help is Teammates Score points per season.", 76, 572);
-      x.fillStyle = "#3b82f6"; x.font = "600 20px 'DM Sans'";
-      x.textAlign = "right"; x.fillText("hoopsmatic.com/team-success", 1124, 92);
-      return cv;
-    });
-  }
-  function download(card, up) {
-    draw(card, up).then(function (cv) {
-      cv.toBlob(function (b) {
-        var a = document.createElement("a");
-        a.href = URL.createObjectURL(b);
-        a.download = card[0].slug + "-vs-" + card[1].slug + ".png";
-        document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
-      }, "image/png");
-    });
-  }
-  window.TSCompare = { draw: draw, download: download };
-  var dl = document.getElementById("card-dl");
-  if (dl) dl.addEventListener("click", function () { download(JSON.parse(dl.getAttribute("data-card")), dl.getAttribute("data-up")); });
-
-  // ---- in-page comparison (player pages) -----------------------------------------------------
+  // ---- the comparison -----------------------------------------------------------------------
   var box = document.getElementById("cmp");
   if (!box) return;
-  var up = box.getAttribute("data-up"), A = box.getAttribute("data-a");
+  var up = box.getAttribute("data-up"), A = null;
+  var OG = "https://hoopsmatic.com/og/team-success/";
+  var SB_NOTE = "Lower is better for finish and help. With vs without isn't counted. Team results, not who was better.";
   var board = null, names = null;
   function getJSON(u) { return fetch(u, { credentials: "same-origin" }).then(function (r) { return r.json(); }); }
   function rowsFor(slug, pg) {
@@ -180,7 +109,7 @@
   function scoreboard(ca, cb) {
     var na = shortName(ca.name, cb.name), nb = shortName(cb.name, ca.name);
     var sec = el("section", undefined, "sboard");
-    var h = el("h3", "Head to head"); h.id = "cap-sb-peer"; sec.appendChild(h);
+    var h = el("h2", "Head to head"); h.id = "cap-sb-peer"; sec.appendChild(h);
     var head = el("div", undefined, "sbhead");
     [[ca, "a"], [cb, "b"]].forEach(function (p, i) {
       var d = el("div", undefined, "sbp " + p[1]);
@@ -229,11 +158,10 @@
     sec.appendChild(el("p", na + " leads " + la + " of " + n + " · " + nb + " leads " + lb + " of " + n + (even ? " · " + even + " even" : ""), "tally"));
     if (ca.help !== null && cb.help !== null && r1(ca.help) !== r1(cb.help)) {
       var lo = ca.help < cb.help ? ca : cb, hi = lo === ca ? cb : ca;
-      sec.appendChild(el("p", "Less help: " + shortName(lo.name, hi.name) + " (" + fix1(lo.help) + " per season vs " + fix1(hi.help) +
-        "). Help is the Teammates Score of the teammates he shared games with; the smaller number is tinted.", "note"));
+      sec.appendChild(el("p", "Less help: " + shortName(lo.name, hi.name) + " (" + fix1(lo.help) + " per season vs " + fix1(hi.help) + ").", "note"));
     }
-    sec.appendChild(el("p", "The leader's cell is tinted: the larger number, except average finish and help, where the smaller one leads. " +
-      "With vs without is shown for reference and is not counted. These are team records and finishes, not a measure of who was better.", "note"));
+    var nt = el("p", SB_NOTE + " ", "note"), how = el("a", "How this works");
+    how.href = up + "comparison-rules.html#how-this-works"; nt.appendChild(how); sec.appendChild(nt);
     return sec;
   }
   function seasonTable(ca, cb, ra, rb) {
@@ -282,35 +210,69 @@
     }
     tbl.appendChild(tb); wide.appendChild(tbl);
     var frag = document.createDocumentFragment();
-    frag.appendChild(el("h3", "Season by season"));
+    frag.appendChild(el("h2", "Season by season"));
     frag.appendChild(el("p", "Career season 1 next to career season 1. Each player's season is the team he played the most games for; W" + EN +
       "L is his teams' record in his games that season. The tinted finish is the team that finished higher that season, on the " +
       "league-size-adjusted scale; the last column keeps the running count.", "note"));
     frag.appendChild(wide); frag.appendChild(cards);
     return frag;
   }
+  function pairSlugs(a, b) { return a < b ? [a, b] : [b, a]; }
   function render(B, pa, pb) {
     while (box.firstChild) box.removeChild(box.firstChild);
     var ca = pa.sum, cb = pb.sum, ra = rowsFor(A, pa), rb = rowsFor(B, pb);
     box.appendChild(scoreboard(ca, cb));
-    var btn = el("button", "Download image", "more-btn");
-    btn.type = "button";
-    btn.addEventListener("click", function () { download([ca, cb], up); });
-    var bp = el("p"); bp.appendChild(btn); box.appendChild(bp);
-    box.appendChild(seasonTable(ca, cb, ra, rb));
+    var ps = pairSlugs(A, B), bp = el("p"), dl = el("a", "Download image", "more-btn dl");
+    dl.href = OG + "compare/" + ps[0] + "--" + ps[1] + ".png"; dl.setAttribute("download", ps[0] + "-vs-" + ps[1] + ".png");
+    bp.appendChild(dl); box.appendChild(bp);
+    var sec = el("section"); sec.appendChild(seasonTable(ca, cb, ra, rb)); box.appendChild(sec);
     box.appendChild(el("p", "Records and finishes, not what a player caused. Help counts honors won that season by teammates who shared a game with him.", "note"));
+    var more = el("p", undefined, "more");
+    [[A, ca.name], [B, cb.name]].forEach(function (x, i) {
+      if (i) more.appendChild(document.createTextNode(" · "));
+      var a = el("a", x[1]); a.href = up + "player/" + encodeURIComponent(x[0]) + ".html"; more.appendChild(a);
+    });
+    box.appendChild(more);
+    document.title = ca.name + " vs " + cb.name + ": team success compared | HoopsMatic";
+    // canonical: the pre-built page when this pair has one
+    var can = document.querySelector('link[rel="canonical"]'), rel = "compare/" + ps[0] + "--" + ps[1] + ".html";
+    fetch(up + rel, { method: "HEAD", credentials: "same-origin" }).then(function (r) {
+      if (r.ok && can) can.href = "https://hoopsmatic.com/team-success/" + rel;
+    }).catch(function () {});
   }
-  function pick(B) {
-    if (!B || B === A) return;
-    var q = new URLSearchParams(location.search);
-    q.set("peer", B);
-    history.replaceState(null, "", location.pathname + "?" + q.toString() + "#compare");
-    Promise.all([board ? board : getJSON(up + "assets/board.json"), names ? names : getJSON(up + "assets/teamnames.json"),
-      getJSON(up + "assets/pg/" + encodeURIComponent(A) + ".json"), getJSON(up + "assets/pg/" + encodeURIComponent(B) + ".json")])
-      .then(function (x) { board = x[0]; names = x[1]; render(B, x[2], x[3]); box.scrollIntoView({ block: "start" }); })
-      .catch(function () { while (box.firstChild) box.removeChild(box.firstChild); box.appendChild(el("p", "No completed seasons to compare for that player yet.", "note")); });
+  var sides = { a: null, b: null };
+  function showPicked(k, txt, nm) {
+    var p = document.getElementById("picked-" + k), inp = document.getElementById("cmp-" + k);
+    if (p) p.textContent = txt;
+    if (inp && nm && !inp.value) inp.value = nm;       // opened from a link: show who is on each side
   }
-  window.TSCompare.pick = pick;
-  var peer = new URLSearchParams(location.search).get("peer");
-  if (peer) pick(peer);
+  function load() {
+    var q = new URLSearchParams();
+    if (sides.a) q.set("a", sides.a);
+    if (sides.b) q.set("b", sides.b);
+    history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q.toString() : ""));
+    var need = [sides.a, sides.b].filter(Boolean);
+    Promise.all([board ? board : getJSON(up + "assets/board.json"), names ? names : getJSON(up + "assets/teamnames.json")]
+      .concat(need.map(function (x) { return getJSON(up + "assets/pg/" + encodeURIComponent(x) + ".json").catch(function () { return null; }); })))
+      .then(function (x) {
+        board = x[0]; names = x[1];
+        var pa = sides.a ? x[2] : null, pb = sides.b ? x[sides.a ? 3 : 2] : null;
+        if (sides.a) showPicked("a", pa ? pa.sum.span : "No completed season yet for that player.", pa && pa.sum.name);
+        if (sides.b) showPicked("b", pb ? pb.sum.span : "No completed season yet for that player.", pb && pb.sum.name);
+        if (pa && pb && sides.a !== sides.b) { A = sides.a; render(sides.b, pa, pb); }
+        else {
+          while (box.firstChild) box.removeChild(box.firstChild);
+          box.appendChild(el("p", sides.a && sides.a === sides.b ? "Pick two different players." :
+            "Pick two players. Players need one completed season.", "note"));
+        }
+      })
+      .catch(function () {
+        while (box.firstChild) box.removeChild(box.firstChild);
+        box.appendChild(el("p", "That comparison could not be loaded.", "note"));
+      });
+  }
+  window.TSCompare = { set: function (k, slug) { sides[k] = slug; load(); } };
+  var q0 = new URLSearchParams(location.search);
+  sides.a = q0.get("a"); sides.b = q0.get("b");
+  if (sides.a || sides.b) load();
 })();

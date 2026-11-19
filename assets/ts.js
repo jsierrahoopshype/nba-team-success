@@ -6,6 +6,13 @@
 //    <th>, aria-sort on the sorted header only, raw values from data-value, Intl.Collator for text,
 //    existing rows moved (never re-rendered), one role="status" message per sort.
 (function () {
+  // old in-page comparison links (player/<slug>.html?peer=<slug>) now open the compare page
+  var pr = document.querySelector("[data-peer-redirect]"), peer = new URLSearchParams(location.search).get("peer");
+  if (pr && peer) {
+    location.replace(pr.getAttribute("data-up") + "compare/?a=" + encodeURIComponent(pr.getAttribute("data-peer-redirect")) +
+      "&b=" + encodeURIComponent(peer));
+    return;
+  }
   if (location.search && !document.querySelector('meta[name="robots"]')) {
     var m = document.createElement("meta");
     m.name = "robots";
@@ -80,7 +87,8 @@
 // 3) Player finder (combobox + listbox, WAI-ARIA pattern). The suggestions render IN THE PAGE
 //    FLOW under the input (they push content down; no pop-up, no floating dropdown). Arrow keys
 //    move, Enter opens, Esc clears. Headshots and years/teams tell same-name players apart.
-//    data-mode="go" opens the player page; data-mode="peer" hands the slug to the comparison.
+//    data-mode="go" opens the player page; "cmp" opens compare/?a=<data-a>&b=<slug>; "side" fills
+//    one side of the compare page (TSCompare.set).
 (function () {
   var boxes = document.querySelectorAll(".finder");
   if (!boxes.length) return;
@@ -112,7 +120,13 @@
     list.setAttribute("role", "listbox");
     function choose(h) {
       if (!h) return;
-      if (mode === "peer" && window.TSCompare) { window.TSCompare.pick(h.s); clear(); return; }
+      if (mode === "cmp") {            // player page block: open the compare page with him on the left
+        location.href = up + "compare/?a=" + encodeURIComponent(box.getAttribute("data-a")) + "&b=" + encodeURIComponent(h.s);
+        return;
+      }
+      if (mode === "side" && window.TSCompare) {   // compare page: fill one side, stay on the page
+        input.value = h.n; clear(); window.TSCompare.set(box.getAttribute("data-side"), h.s); return;
+      }
       location.href = up + "player/" + encodeURIComponent(h.s) + ".html";
     }
     function clear() {

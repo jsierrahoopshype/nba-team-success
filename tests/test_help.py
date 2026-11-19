@@ -70,7 +70,10 @@ def test_compare_pages_use_og_cards_not_local_pngs():
     assert not os.path.exists(os.path.join(ROOT, "compare", "img"))       # no pre-rendered PNGs in the repo
     t = read("compare/charles-barkley--michael-jordan.html")
     assert 'og:image" content="https://hoopsmatic.com/og/team-success/compare/charles-barkley--michael-jordan.png"' in t
-    assert 'id="card-dl"' in t                                            # the in-browser button stays
+    # "Download image" is the same og card (same site), no in-browser canvas
+    assert ('href="https://hoopsmatic.com/og/team-success/compare/charles-barkley--michael-jordan.png" '
+            'download="charles-barkley-vs-michael-jordan.png"') in t
+    assert 'id="card-dl"' not in t and "toBlob" not in read("assets/compare.js")
 
 
 def test_player_page_links_its_three_comparisons():

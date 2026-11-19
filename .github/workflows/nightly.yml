@@ -1,6 +1,10 @@
 # (c) 2026 HoopsMatic. All rights reserved.
 # Team Success nightly refresh, hm-ts-7f3a91c2-nightly.
-# 11:15 UTC, after US games end and the data repos update. Pulls ONLY the current season
+# Four slots a day (11:37, 14:37, 18:37, 23:37 UTC). Ramiro's Parquet files are refreshed around
+# 13:00-13:30 UTC (Nov 18 2026: 13:19 UTC), after the old single 11:15 slot, and GitHub runs
+# scheduled jobs late or not at all at busy times, so one slot was not enough. The first run of a
+# UTC date writes that date's story and fun facts (a quiet-day item if nothing new); a later run
+# with newer games rewrites them; a run with nothing new commits nothing. Pulls ONLY the current season
 # (Ramiro's 2026-27 Parquet files; nba-boxscores' season folder once it exists), writes the day's
 # "Today in Team Success" story (tonight's schedule from cdn.nba.com, public JSON), rebuilds the site
 # (career totals and ranks include the season to date, so every page can move; about 40 seconds)
@@ -8,7 +12,10 @@
 name: Nightly current season
 on:
   schedule:
-    - cron: "15 11 * * *"
+    - cron: "37 11 * * *"
+    - cron: "37 14 * * *"
+    - cron: "37 18 * * *"
+    - cron: "37 23 * * *"
   workflow_dispatch: {}
 permissions:
   contents: write
@@ -41,14 +48,20 @@ jobs:
           out=$(python scripts/daily_story.py)
           echo "$out"
           if echo "$out" | grep -q '^CHANGED'; then echo "changed=yes" >> "$GITHUB_OUTPUT"; fi
+      - name: Fun facts
+        id: facts
+        run: |
+          out=$(python scripts/fun_facts.py)
+          echo "$out"
+          if echo "$out" | grep -q '^CHANGED'; then echo "changed=yes" >> "$GITHUB_OUTPUT"; fi
       - name: Rebuild touched pages
-        if: steps.update.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes'
+        if: steps.update.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes' || steps.facts.outputs.changed == 'yes'
         run: python scripts/build_site.py
       - name: Tests
-        if: steps.update.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes'
+        if: steps.update.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes' || steps.facts.outputs.changed == 'yes'
         run: python -m pytest tests/ -q
       - name: Commit if changed
-        if: steps.update.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes'
+        if: steps.update.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes' || steps.facts.outputs.changed == 'yes'
         run: |
           git config user.name "team-success-bot"
           git config user.email "actions@users.noreply.github.com"

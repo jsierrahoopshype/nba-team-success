@@ -247,8 +247,18 @@ def build(sy=CURRENT_SEASON):
         for pt in sts:
             pt.setdefault("sw", 0)
             pt.setdefault("sl", 0)
+    # game log of the season so far: [gid, date, home, away, home score, away score] and who
+    # appeared for each side (person IDs). daily_story.py / fun_facts.py use it for "last night".
+    glog = []
+    gapp = defaultdict(lambda: [[], []])
+    for (pid, gid), fr in app.items():
+        g = games[gid]
+        gapp[gid][0 if fr == g["h"] else 1].append(int(pid))
+    for g in sorted(games.values(), key=lambda x: (x["date"], x["gid"])):
+        glog.append([g["gid"], g["date"], g["h"], g["a"], int(g["hs"]), int(g["as"])])
+    log = {"games": glog, "app": {gid: [sorted(v[0]), sorted(v[1])] for gid, v in sorted(gapp.items())}}
     doc = {"season": sy, "source": source, "start": start, "through": through, "teams": trec,
-           "cutoff30": cutoff, "games": len(games), "players": out, "newIds": new_ids}
+           "cutoff30": cutoff, "games": len(games), "players": out, "newIds": new_ids, "log": log}
     changed = dump_json(os.path.join(DATA, "current.json"), doc)
     print("CHANGED" if changed else "UNCHANGED", f"{len(games)} games through {through}")
     return changed
