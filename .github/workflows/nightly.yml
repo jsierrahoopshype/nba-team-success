@@ -5,8 +5,10 @@
 # scheduled jobs late or not at all at busy times, so one slot was not enough. The first run of a
 # UTC date writes that date's story and fun facts (a quiet-day item if nothing new); a later run
 # with newer games rewrites them; a run with nothing new commits nothing. Pulls ONLY the current season
-# (Ramiro's 2026-27 Parquet files; nba-boxscores' season folder once it exists), writes the day's
-# "Today in Team Success" story (tonight's schedule from cdn.nba.com, public JSON), rebuilds the site
+# (Ramiro's 2026-27 Parquet files; nba-boxscores' season folder once it exists), re-reads honors only
+# when nba-player-data's awards.json changed (scripts/awards_refresh.py), writes the day's "Last night"
+# list (tonight's schedule from nba-editorial-bots' public schedule CSV, the file nba-head-to-head
+# reads for "Tonight's duels"; cdn.nba.com refuses GitHub's runners), rebuilds the site
 # (career totals and ranks include the season to date, so every page can move; about 40 seconds)
 # and commits only what changed. No secrets, no tokens.
 name: Nightly current season
@@ -42,6 +44,12 @@ jobs:
           out=$(python scripts/update_current.py)
           echo "$out"
           if echo "$out" | grep -q '^CHANGED'; then echo "changed=yes" >> "$GITHUB_OUTPUT"; fi
+      - name: Honors (only when nba-player-data's awards.json changed)
+        id: awards
+        run: |
+          out=$(python scripts/awards_refresh.py)
+          echo "$out"
+          if echo "$out" | grep -q '^CHANGED'; then echo "changed=yes" >> "$GITHUB_OUTPUT"; fi
       - name: Today in Team Success
         id: story
         run: |
@@ -55,17 +63,17 @@ jobs:
           echo "$out"
           if echo "$out" | grep -q '^CHANGED'; then echo "changed=yes" >> "$GITHUB_OUTPUT"; fi
       - name: Rebuild touched pages
-        if: steps.update.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes' || steps.facts.outputs.changed == 'yes'
+        if: steps.update.outputs.changed == 'yes' || steps.awards.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes' || steps.facts.outputs.changed == 'yes'
         run: python scripts/build_site.py
       - name: Tests
-        if: steps.update.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes' || steps.facts.outputs.changed == 'yes'
+        if: steps.update.outputs.changed == 'yes' || steps.awards.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes' || steps.facts.outputs.changed == 'yes'
         run: python -m pytest tests/ -q
       - name: Commit if changed
-        if: steps.update.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes' || steps.facts.outputs.changed == 'yes'
+        if: steps.update.outputs.changed == 'yes' || steps.awards.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes' || steps.facts.outputs.changed == 'yes'
         run: |
           git config user.name "team-success-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add -A data assets player players lists stories seasons compare index.html how-we-count.html comparison-rules.html sitemap.xml
+          git add -A data docs assets player players lists stories seasons compare index.html how-we-count.html comparison-rules.html sitemap.xml
           if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
           git commit -q -m "Nightly: current season through $(python -c "import json;print(json.load(open('data/current.json'))['through'])")"
           for i in 1 2 3; do git push && exit 0; git pull --rebase -q; done

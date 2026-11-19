@@ -131,3 +131,30 @@ def test_full_board_defaults_match_js():
     for gp, gm, hid in rows:                          # flagged when a side is under 5
         pass
     assert "small sample" in t or all(int(a) >= 5 and int(b) >= 5 for a, b, _ in rows)
+
+
+def test_tonight_uses_the_head_to_head_schedule():
+    import sys
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    import daily_story as D
+    assert D.SCHEDULE == "https://jsierrahoopshype.github.io/nba-editorial-bots/data/schedule_{season}.csv"
+    assert D.season_slug(2027) == "2026-27"
+    for f in ("daily_story.py", "fun_facts.py"):
+        assert "cdn.nba.com" not in read(f"scripts/{f}")
+    for it in json.loads(read("data/stories.json"))["stories"][0]["items"]:
+        if it["type"] == "tonight":
+            assert "?vs=" in it["href"] and "#vs-" in it["href"]
+            n = int(re.search(r"in his (\d+) regular-season games", "".join(p[0] for p in it["parts"])).group(1))
+            assert n >= 15
+
+
+def test_awards_refresh_runs_only_on_change():
+    y = read(".github/workflows/nightly.yml")
+    assert y.index("scripts/awards_refresh.py") < y.index("scripts/daily_story.py") < y.index("scripts/build_site.py")
+    assert "steps.awards.outputs.changed == 'yes'" in y and "git add -A data docs " in y
+    st = json.loads(read("data/awards_source.json"))
+    assert len(st["sha256"]) == 64 and st["commit"]
+    src = read("scripts/awards_refresh.py")
+    for step in ('["build_history.py", "--awards-only"]', '["build_help.py"]', '["step0_report.py"]'):
+        assert step in src
+    assert 'if old.get("sha256") == sha:' in src

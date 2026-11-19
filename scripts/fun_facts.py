@@ -8,7 +8,7 @@ python scripts/fun_facts.py [--date 2026-11-19]   # nightly Action, after daily_
 Every fact is a template filled from data; each carries the link that proves it, and a face
 (person ID) or a team logo (franchise + season). Sources: committed data (game logs, boards,
 help.json), data/current.json (with its game log, for "last night") and tonight's schedule from
-cdn.nba.com (if it cannot be read, the matchup facts are skipped).
+nba-editorial-bots' schedule CSV, read like nba-head-to-head's "Tonight's duels" (if it cannot be read, the matchup facts are skipped).
 
 One set per UTC date. A later run the same date rewrites the set only when the data cutoff moved
 (newer games). Keys of past sets are kept 60 days: a fact never repeats the next day, and
