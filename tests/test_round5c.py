@@ -38,7 +38,8 @@ def test_no_allstar_board_labels():
         b = read(f"lists/{key}.html")
         assert "<legend>Games in this filtered sample</legend>" in b and "Career All-Star (any season)" in b
         assert "All-Star that season (pick one season)" in b and 'name="from"' in b
-        assert "<legend>Career games</legend>" not in b
+        assert "<legend>Career games</legend>" not in b and "+ career games" not in b
+    assert "+ career games" not in read("assets/boards.js")
 
 
 def test_long_sentence_nowhere():

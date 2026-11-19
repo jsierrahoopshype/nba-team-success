@@ -2216,7 +2216,7 @@ def career_board_page(s, key):
                        ensure_ascii=False, separators=(",", ":"))
     mtxt = []
     if mins.get("cg", 1) > 1:
-        mtxt.append(f"{mins['cg']:,}+ career games")
+        mtxt.append(f"{mins['cg']:,}+ games in this view")
     if mins.get("ms"):
         mtxt.append(f"{mins['ms']}+ seasons")
     if mins.get("mp"):
