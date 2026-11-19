@@ -2,38 +2,153 @@
  "stories": [
   {
    "body": [
-    "Rudy Gobert's teams are +159 in his regular-season games: +151 through 2025-26 and +8 in 2026-27.",
-    "That is T-155 on the career W − L board (incl. 2026-27 to date), ahead of Bill Wennington (+158)."
+    "Rudy Gobert passed Joe Dumars (6-time All-Star) and 5 others for T-155 in career W − L (+159, incl. 2026-27 to date).",
+    "Kevon Looney passed Billy Cunningham (4-time All-Star) and 4 others for T-203 in career W − L (+139, incl. 2026-27 to date).",
+    "The Utah Jazz are 2–13, the franchise's worst start through 15 games since 2013-14 (1–14).",
+    "The San Antonio Spurs are 12–3, the franchise's best start through 15 games since 2016-17 (12–3)."
    ],
    "cutoff": "2026-11-17",
    "date": "2026-11-19",
-   "headline": "Rudy Gobert passes Bill Wennington on the career wins-minus-losses list",
+   "games": 5,
+   "games_date": "2026-11-17",
+   "headline": "Last night in Team Success · Nov. 17 games",
    "img": "stories/img/2026-11-19.png",
-   "line": "Rudy Gobert passed Bill Wennington on the career W − L list.",
-   "link": {
-    "href": "player/rudy-gobert.html",
-    "text": "Rudy Gobert's page"
-   },
-   "more": {
-    "href": "lists/wins-minus-losses.html?hl=rudy-gobert#p-rudy-gobert",
-    "text": "Career W − L board (incl. 2026-27 to date)"
-   },
-   "players": [
-    "rudy-gobert",
-    "bill-wennington"
-   ],
-   "rule": "pass",
-   "schedule": null,
-   "supporting": [
+   "items": [
     {
-     "href": "compare/?a=rudy-gobert&b=bill-wennington",
-     "text": "Rudy Gobert vs Bill Wennington, season by season"
+     "href": "lists/wins-minus-losses.html?hl=rudy-gobert#p-rudy-gobert",
+     "key": "career W − L-pass:rudy-gobert:joe-dumars",
+     "parts": [
+      [
+       "Rudy Gobert",
+       "player/rudy-gobert.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "Joe Dumars",
+       "player/joe-dumars.html",
+       0
+      ],
+      [
+       " (6-time All-Star) and 5 others for "
+      ],
+      [
+       "T-155 in career W − L",
+       "lists/wins-minus-losses.html?hl=rudy-gobert#p-rudy-gobert",
+       0
+      ],
+      [
+       " (+159, incl. 2026-27 to date)."
+      ]
+     ],
+     "pid": "203497",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "career W − L-pass"
     },
     {
-     "href": "player/bill-wennington.html",
-     "text": "Bill Wennington: every season and every opponent"
+     "href": "lists/wins-minus-losses.html?hl=kevon-looney#p-kevon-looney",
+     "key": "career W − L-pass:kevon-looney:billy-cunningham",
+     "parts": [
+      [
+       "Kevon Looney",
+       "player/kevon-looney.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "Billy Cunningham",
+       "player/billy-cunningham.html",
+       0
+      ],
+      [
+       " (4-time All-Star) and 4 others for "
+      ],
+      [
+       "T-203 in career W − L",
+       "lists/wins-minus-losses.html?hl=kevon-looney#p-kevon-looney",
+       0
+      ],
+      [
+       " (+139, incl. 2026-27 to date)."
+      ]
+     ],
+     "pid": "1626172",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "career W − L-pass"
+    },
+    {
+     "href": "seasons/2026-27.html#t-UTA",
+     "key": "start:worst:UTA:15",
+     "parts": [
+      [
+       "The Utah Jazz",
+       "seasons/2026-27.html#t-UTA",
+       1
+      ],
+      [
+       " are 2–13, the franchise's worst start through 15 games since "
+      ],
+      [
+       "2013-14",
+       "seasons/2013-14.html#t-UTA",
+       0
+      ],
+      [
+       " (1–14)."
+      ]
+     ],
+     "pid": null,
+     "scope": "2026-27 to date",
+     "team": [
+      "UTA",
+      2027
+     ],
+     "type": "start"
+    },
+    {
+     "href": "seasons/2026-27.html#t-SAS",
+     "key": "start:best:SAS:15",
+     "parts": [
+      [
+       "The San Antonio Spurs",
+       "seasons/2026-27.html#t-SAS",
+       1
+      ],
+      [
+       " are 12–3, the franchise's best start through 15 games since "
+      ],
+      [
+       "2016-17",
+       "seasons/2016-17.html#t-SAS",
+       0
+      ],
+      [
+       " (12–3)."
+      ]
+     ],
+     "pid": null,
+     "scope": "2026-27 to date",
+     "team": [
+      "SAS",
+      2027
+     ],
+     "type": "start"
     }
-   ]
+   ],
+   "kind": "night",
+   "players": [
+    "rudy-gobert",
+    "kevon-looney"
+   ],
+   "quiet": 0,
+   "rule": "night",
+   "stale": 0
   },
   {
    "body": [

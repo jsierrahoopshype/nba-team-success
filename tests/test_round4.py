@@ -34,7 +34,7 @@ def test_fun_facts_strip():
     t = read("index.html")
     doc = json.loads(read("data/facts.json"))
     assert 6 <= len(doc["facts"]) <= 8
-    assert t.index('<h2>Fun facts</h2>') < t.index("<h2>Today in Team Success</h2>")
+    assert t.index('<section class="night">') < t.index('<h2>Fun facts</h2>')      # round 5 order
     strip = t[t.index('<section class="facts">'):t.index("</section>", t.index('<section class="facts">'))]
     assert strip.count('<li class="hl">') == len(doc["facts"])
     for li in strip.split('<li class="hl">')[1:]:
@@ -51,6 +51,8 @@ def test_fun_facts_strip():
 
 def test_story_supporting_links_are_related():
     st = json.loads(read("data/stories.json"))["stories"][0]
+    if st.get("kind") == "night":                  # round 5: the daily list has no supporting links
+        return
     slugs = set(st["players"])
     for x in st["supporting"]:
         assert any(sl in x["href"] for sl in slugs) or x["href"].startswith(("lists/", "seasons/")), x

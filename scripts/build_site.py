@@ -118,6 +118,7 @@ def rec(w, l):
 # House formats (brief, Nov 2026): rates 65.9%, gaps +26.0 pp (from unrounded rates), records
 # with an en dash in display (706–366), empty samples N/A, minus signs as U+2212.
 HOME_MIN_PLAYED, HOME_MIN_MISSED = 10, 8     # homepage with/without boxes only
+BOARD_MIN = 5                                 # full with/without board: default minimum each side
 EN = "\u2013"
 MINUS = "\u2212"
 
@@ -2297,9 +2298,10 @@ def gap_table(s, rows, up, cap, desc_first=True):
     trs = []
     for g, pid, st in rows:
         gm = st["ow"] + st["ol"]
-        hid = " hidden" if st["g"] < 5 or gm < 5 else ""        # default minimums, 5 and 5
-        trs.append(f'<tr data-gp="{st["g"]}" data-gm="{gm}"{hid}>' + "".join([
-            td("Player", s.pic(pid, up, "sm") + " " + s.plink(pid, up), s.ids[pid]["name"]),
+        hid = " hidden" if st["g"] < BOARD_MIN or gm < BOARD_MIN else ""        # default minimums
+        small = ' <span class="aw">small sample</span>' if st["g"] < BOARD_MIN or gm < BOARD_MIN else ""
+        trs.append(f'<tr id="p-{e(s.ids[pid]["slug"])}" data-gp="{st["g"]}" data-gm="{gm}"{hid}>' + "".join([
+            td("Player", s.pic(pid, up, "sm") + " " + s.plink(pid, up) + small, s.ids[pid]["name"]),
             td("Team", s.tlink(st["f"], CURRENT_SEASON), st["f"]),
             td("Gap", pp(g), fval(g), f"mono {cls_gap(g)}"),
             td("Games he played", f'{wl(st["w"], st["l"])} <span class="sub">{pct1(A.pct(st["w"], st["l"]))}, {st["g"]} g</span>', st["g"]),
@@ -2323,9 +2325,9 @@ def board_page(s, key):
         pos = [x for x in gaps if x[0] > 0]
         neg = sorted([x for x in gaps if x[0] < 0], key=lambda x: x[0])
         body = f"""<header><h1>{e(title)}</h1><p class="subtitle">{e(desc)}</p></header>
-<form class="filters" id="minf"><label>Min games played<input name="mp" type="number" min="1" value="5" inputmode="numeric"></label>
-<label>Min games missed<input name="mm" type="number" min="1" value="5" inputmode="numeric"></label>
-<span class="note">Rows below both minimums are hidden. The homepage uses 8 and 8.</span></form>
+<form class="filters" id="minf" data-mp="{BOARD_MIN}" data-mm="{BOARD_MIN}"><label>Min games played<input name="mp" type="number" min="1" value="{BOARD_MIN}" inputmode="numeric"></label>
+<label>Min games missed<input name="mm" type="number" min="1" value="{BOARD_MIN}" inputmode="numeric"></label>
+<span class="note">Default {BOARD_MIN} and {BOARD_MIN}; rows below either minimum are hidden, and a lower minimum shows them flagged "small sample" (under {BOARD_MIN} games on a side). The homepage uses {HOME_MIN_PLAYED} played and {HOME_MIN_MISSED} missed (<a href="?mp={HOME_MIN_PLAYED}&amp;mm={HOME_MIN_MISSED}">that view</a>).</span></form>
 <p class="note">Gap = team win % in games he played minus in games he missed, in percentage points (pp). This is a different unit from on/off per 100 possessions (<a href="on-off-movers.html">last 30 days board</a>). It is a team record: it does not say what he caused.</p>
 <section><h2 id="cap-up">Higher win rate in games he played</h2>{gap_table(s, pos, up, "cap-up")}</section>
 <section><h2 id="cap-down">Higher win rate in games he missed</h2>{gap_table(s, neg, up, "cap-down", False)}</section>"""
@@ -2355,10 +2357,43 @@ def stories(s):
     return load_json(os.path.join(DATA, "stories.json"), {"stories": []})["stories"]
 
 
+def fact_rows(s, facts, up):
+    """One sentence per row with a face or a team logo (the Milestones 'from last night' list)."""
+    items = []
+    for f in facts:
+        if f.get("pid") and f["pid"] in s.ids:
+            pic = s.pic(f["pid"], up, "sm")
+        elif f.get("team"):
+            lg = s.logo(f["team"][0], f["team"][1], up)
+            pic = f'<span class="hs sm tlogo">{lg}</span>' if lg else '<span class="hs sm nohs" aria-hidden="true">NBA</span>'
+        else:
+            pic = '<span class="hs sm nohs" aria-hidden="true">NBA</span>'
+        txt = "".join((f'<a href="{up}{e(x[1])}">' + (f"<b>{e(x[0])}</b>" if x[2] else e(x[0])) + "</a>") if len(x) > 1 else e(x[0])
+                      for x in f["parts"])
+        tag = '<span class="arch">From the archive</span> ' if f.get("archive") else ""
+        items.append(f'<li class="hl">{pic}<div>{tag}{txt}</div></li>')
+    return f'<ul class="hls">{"".join(items)}</ul>'
+
+
+def night_html(s, st, up, permalink=True):
+    """The dated 'Last night in Team Success' list."""
+    stale = (f'<p class="note"><strong>No new games since the last update:</strong> this list covers the '
+             f'{e(nice_date(st["games_date"]))} games.</p>') if st.get("stale") else ""
+    quiet = ('<p class="note"><strong>Quiet night.</strong> Nothing from these games met the rules, so here are three '
+             'items from the archive.</p>') if st.get("quiet") else ""
+    perma = (f' · <a href="{up}stories/{st["date"]}.html">permalink and share image</a>' if permalink else "")
+    return (f'{stale}{quiet}{fact_rows(s, st["items"], up)}'
+            f'<p class="note">{e(nice_date(st["date"]))} · {st.get("games", 0)} games on {e(nice_date(st["games_date"]))} · '
+            f'each item is a template filled from the data and links to the row or games that prove it{perma} · '
+            f'<a href="{up}stories/index.html">earlier lists</a> · <a href="{up}how-we-count.html#facts">the rules</a></p>')
+
+
 def story_html(s, st, up, heading_level=2, permalink=True):
     """The story block: headline as normal text under the section heading (no kicker)."""
     if not st:
         return ""
+    if st.get("kind") == "night":
+        return night_html(s, st, up, permalink)
     body = " ".join(e(x) for x in st["body"])
     links = [f'<a class="next" href="{up}{e(st["link"]["href"])}">{e(st["link"]["text"])}</a>']
     if st.get("more"):
@@ -2386,7 +2421,8 @@ def story_pages(s):
             nav.append(f'<a href="{all_st[i - 1]["date"]}.html">Next story</a>')
         img = st.get("img")
         og = BASE + img if img and os.path.exists(os.path.join(ROOT, img)) else None
-        body = f"""<header><h1>Today in Team Success: {e(nice_date(st['date']))}</h1></header>
+        h1 = (f"{st['headline']}" if st.get("kind") == "night" else f"Today in Team Success: {nice_date(st['date'])}")
+        body = f"""<header><h1>{e(h1)}</h1><p class="subtitle">{e(nice_date(st['date']))}</p></header>
 {story_html(s, st, up, permalink=False)}
 {('<p><img class="storyimg" src="' + up + e(img) + '" alt="' + e(st['headline']) + '" width="1200" height="630" loading="lazy"></p>') if og else ''}
 <p class="seasonnav">{' · '.join(nav)}</p>"""
@@ -2395,10 +2431,10 @@ def story_pages(s):
     items = "".join(f'<li><a href="{x["date"]}.html"><strong>{e(x["headline"])}</strong></a>'
                     f'<span class="det">{e(nice_date(x["date"]))}. Data through {e(nice_date(x["cutoff"]))}.</span></li>'
                     for x in all_st)
-    body = f"""<header><h1>Today in Team Success: every story</h1>
-<p class="subtitle">One dated story each morning from the nightly data, newest first. Each is built from templates; the rules are published with the methodology.</p></header>
+    body = f"""<header><h1>Last night in Team Success: every list</h1>
+<p class="subtitle">One dated list each morning from the nightly data, newest first (before Nov. 19, 2026: one story a day). Each item is built from templates; the rules are published with the methodology.</p></header>
 <ul class="lists seasons">{items or '<li>No stories yet.</li>'}</ul>"""
-    out.append(("stories/index.html", page("stories/index.html", "Today in Team Success: story archive | HoopsMatic",
+    out.append(("stories/index.html", page("stories/index.html", "Last night in Team Success: archive | HoopsMatic",
                                            "Every daily Team Success story: career milestones, tonight's matchups, team "
                                            "records during absences and historical comparisons, with the data cutoff.", body, "../")))
     return out
@@ -2465,23 +2501,12 @@ def fun_facts(s, up):
     """The "Fun facts" strip under the homepage title (data/facts.json, scripts/fun_facts.py): one
     sentence per row with a face or a team logo, in the Milestones "More from last night" style."""
     doc = load_json(os.path.join(DATA, "facts.json"), {})
-    items = []
-    for f in doc.get("facts", []):
-        if f.get("pid") and f["pid"] in s.ids:
-            pic = s.pic(f["pid"], up, "sm")
-        elif f.get("team"):
-            lg = s.logo(f["team"][0], f["team"][1], up)
-            pic = f'<span class="hs sm tlogo">{lg}</span>' if lg else '<span class="hs sm nohs" aria-hidden="true">NBA</span>'
-        else:
-            pic = '<span class="hs sm nohs" aria-hidden="true">NBA</span>'
-        txt = "".join((f'<a href="{up}{e(x[1])}">' + (f"<b>{e(x[0])}</b>" if x[2] else e(x[0])) + "</a>") if len(x) > 1 else e(x[0])
-                      for x in f["parts"])
-        items.append(f'<li class="hl">{pic}<div>{txt}</div></li>')
+    items = doc.get("facts", [])
     if not items:
         return ""
     return (f'<section class="facts"><div class="section-head"><h2>Fun facts</h2>'
             f'<span class="sub">{e(nice_date(doc["date"]))} · data through {e(nice_date(doc["cutoff"]))}</span></div>'
-            f'<ul class="hls">{"".join(items)}</ul>'
+            f'{fact_rows(s, items, up)}'
             f'<p class="note">Built from templates and the nightly data; each fact links to the row that proves it. '
             f'<a href="{up}how-we-count.html#facts">The rules</a></p></section>')
 
@@ -2518,29 +2543,13 @@ def hub(s):
     gaps, movers, baseline = current_rows(s)
     st = stories(s)
     through = s.through
-    # 1. Today in Team Success: the story, its share image, the two supporting items as rows
-    today = ""
+    # 1. Last night in Team Success: the day's dated list (a legacy one-story entry renders as before)
+    night = ""
     if st:
         x = st[0]
-        img = x.get("img")
-        pic = (f'<img class="storyimg" src="{e(img)}" alt="{e(x["headline"])}" width="1200" height="630" loading="lazy">'
-               if img and os.path.exists(os.path.join(ROOT, img)) else "")
-        by_slug = {v["slug"]: k for k, v in s.ids.items()}
-        sup = []
-        for y in x.get("supporting", []):
-            m_ = (re.search(r"compare/([a-z0-9-]+?)--([a-z0-9-]+)\.html", y["href"])
-                  or re.search(r"compare/\?a=([a-z0-9-]+)&b=([a-z0-9-]+)", y["href"])
-                  or re.search(r"player/([a-z0-9-]+)\.html", y["href"]))
-            slugs = list(m_.groups()) if m_ else []
-            faces = "".join(s.pic(by_slug[g], up, "sm") for g in slugs[:2] if g in by_slug)
-            sup.append(f'<li><span class="rf">{faces}</span><span class="who"><a href="{e(y["href"])}">{e(y["text"])}</a></span></li>')
-        lead_faces = "".join(s.pic(by_slug[g], up, "md") for g in x.get("players", [])[:1] if g in by_slug)
-        today = f"""<div class="today"><div class="story"><div>
-<div class="ent">{lead_faces}<p class="story-head">{e(x['headline'])}</p></div>
-<p class="story-body">{' '.join(e(b) for b in x['body'])}</p>
-<p class="note">{e(nice_date(x['date']))} · data through {e(nice_date(x['cutoff']))} · <a href="stories/{x['date']}.html">permalink</a> · <a href="stories/index.html">earlier stories</a></p>
-<p class="story-links"><a class="next" href="{e(x['link']['href'])}">{e(x['link']['text'])}</a>{(' <a class="next" href="' + e(x['more']['href']) + '">' + e(x['more']['text']) + '</a>') if x.get('more') else ''}</p></div>
-{pic}</div>{('<ul class="rows">' + ''.join(sup) + '</ul>') if sup else ''}</div>"""
+        title = x["headline"] if x.get("kind") == "night" else "Today in Team Success"
+        night = f"""<section class="night"><div class="section-head"><h2>{e(title)}</h2>
+<span class="sub">{e(nice_date(x['date']))}</span></div>{story_html(s, x, up)}</section>"""
 
     def gap_rows(rows):
         out = []
@@ -2551,34 +2560,23 @@ def hub(s):
             out.append(prow(s, pid, up, f'{s.logo(t["f"], CURRENT_SEASON, up)}{wl(t["w"], t["l"])} in {t["g"]} played · '
                             f'{wl(t["ow"], t["ol"])} in {gm} missed', f'{pp(g)}<small>points</small>', None, "up" if g > 0 else "down"))
         return out
-    # homepage only: 10+ games played and 8+ missed (the full board keeps its own minimums)
+    # 2026-27 only, one threshold source (HOME_MIN_PLAYED / HOME_MIN_MISSED) for the rows, the text
+    # and the full-board link; never career rows under this heading
     ok = [x for x in gaps if x[2]["g"] >= HOME_MIN_PLAYED and x[2]["ow"] + x[2]["ol"] >= HOME_MIN_MISSED]
     missed = sorted([x for x in ok if x[0] < 0], key=lambda x: x[0])[:5]
     played = [x for x in ok if x[0] > 0][:5]
-    career = A.list_gap_career(s.d, 1947, 1)
+    full = f"lists/winning-without-him.html?mp={HOME_MIN_PLAYED}&amp;mm={HOME_MIN_MISSED}"
 
-    def career_rows(rows):
-        return [prow(s, r["pid"], up, f'{wl(r["w"], r["l"])} in {r["w"] + r["l"]:,} played · {wl(r["ow"], r["ol"])} in '
-                     f'{r["ow"] + r["ol"]:,} missed', f'{pp(r["gap"])}<small>points</small>', None,
-                     "up" if r["gap"] > 0 else "down") for r in rows if r["pid"] in s.ids]
-
-    def ww_box(title, rows, fallback):
-        if len(rows) >= 3:
-            return (f'<div class="box"><div class="boxhead">{title} <a href="lists/winning-without-him.html">full board</a></div>'
-                    f'<ul class="rows">{"".join(gap_rows(rows))}</ul></div>')
-        fell.append(len(rows))
-        return (f'<div class="box"><div class="boxhead">{title}: career <a href="lists/gap-career.html">full list</a></div>'
-                f'<ul class="rows">{"".join(career_rows(fallback))}</ul></div>')
-    fell = []
-    box_missed = ww_box("Higher win rate in games he missed", missed, sorted(career, key=lambda r: r["gap"])[:5])
-    box_played = ww_box("Higher win rate in games he played", played, career[:5])
+    def ww_box(title, rows):
+        empty = "" if rows else '<p class="empty">Nobody yet.</p>'
+        return (f'<div class="box"><div class="boxhead">{title} <a href="{full}">full board</a></div>'
+                f'<ul class="rows">{"".join(gap_rows(rows))}</ul>{empty}</div>')
+    box_missed = ww_box("Higher win rate in games he missed", missed)
+    box_played = ww_box("Higher win rate in games he played", played)
     ww_why = ""
-    if fell:
-        side = "either side" if len(fell) == 2 else "one side"
-        ww_why = (f'<p class="note"><strong>Career leaders shown</strong>: fewer than 3 players have {HOME_MIN_PLAYED}+ games '
-                  f'played and {HOME_MIN_MISSED}+ missed this season on {side}, so {"those boxes show" if len(fell) == 2 else "that box shows"} '
-                  f'the career with and without leaders (200+ games played, 50+ missed). '
-                  f'<a href="lists/winning-without-him.html">This season\'s full board</a> uses 5 and 5.</p>')
+    if len(missed) < 3 or len(played) < 3:
+        ww_why = (f'<p class="note"><strong>Too early: only {len(ok)} player{"s have" if len(ok) != 1 else " has"} played '
+                  f'{HOME_MIN_PLAYED}+ games and missed {HOME_MIN_MISSED}+ so far.</strong></p>')
     mov = []
     for ch, pid, t, now, base, info in movers[:5]:
         if pid in s.ids:
@@ -2604,12 +2602,13 @@ def hub(s):
     feat = featured_pair(s, up, st[0]["date"] if st else dt.date.today().isoformat())
     body = f"""<header><h1>Team Success</h1>
 <p class="subtitle">How much every NBA player won and how much help he had. Records in his games, final finishes, teammate help, every opponent, since 1946-47. Games through {e(nice_date(through))}.</p></header>
+{night or '<p class="note">The first list appears after the next nightly update.</p>'}
 {fun_facts(s, up)}
-<section><h2>Today in Team Success</h2>{today or '<p class="note">The first story appears after the next nightly update.</p>'}</section>
+<section><h2>Comparison of the day</h2>{feat}</section>
 <section><h2>{season_label(CURRENT_SEASON)} so far: with and without</h2>
 <div class="dgrid">{box_missed}
 {box_played}</div>
-{ww_why}<p class="note">Team win % in the games he played minus in the games he missed, in points; {HOME_MIN_PLAYED}+ games played and {HOME_MIN_MISSED}+ missed. A team record, not what he caused. The full board lets you set your own minimums.</p></section>
+{ww_why}<p class="note">{season_label(CURRENT_SEASON)} games only: team win % in the games he played minus in the games he missed, in points, with both records. {HOME_MIN_PLAYED}+ games played and {HOME_MIN_MISSED}+ missed; the <a href="{full}">full board</a> opens with the same minimums and lets you change them. A team record, not what he caused. <a href="lists/gap-career.html">Career with and without</a></p></section>
 <section><h2>Last 30 days: on/off movers</h2>
 <div class="box"><div class="boxhead">Biggest change in on/off per 100 possessions <a href="lists/on-off-movers.html">full board</a></div><ul class="rows">{''.join(mov)}</ul></div>
 <p class="note">Last 30 days ({mover_windows(s, baseline)[0] if s.cur else ''}) vs {'earlier this season' if baseline == 'earlier' else 'his ' + season_label(LAST_COMPLETE) + ' season'}, with the on-court possessions behind each number. Possession-based: a different unit from the win-rate gaps.</p></section>
@@ -2619,11 +2618,10 @@ def hub(s):
 <section><h2>Leaderboards</h2>
 <div class="dgrid three">{board_preview(s, 'career-wins', up)}{board_preview(s, 'wins-minus-losses', up)}{board_preview(s, 'titles', up)}
 {board_preview(s, 'no-allstar-teammate', up)}{list_preview(s, up, 'Bad Luck Index', 'lists/bad-luck.html', bad)}{list_preview(s, up, 'Played for the worst team the most', 'lists/worst-team.html', worst)}</div>
-<p class="note">Career boards count {season_label(CURRENT_SEASON)} games to date. <a href="lists/winning-seasons.html">Winning seasons</a> · <a href="lists/playoff-trips.html">Playoff trips</a> · <a href="lists/average-finish.html">Average finish</a> · <a href="lists/gap-career.html">With vs without</a> · <a href="lists/low-help-all-stars.html">Low-help All-Stars</a> · <a href="seasons/index.html">Every season's standings</a></p></section>
-<section><h2>Comparison of the day</h2>{feat}</section>
+<p class="note">Career wins and W {MINUS} L {B.SCOPE_LIVE}; titles {B.SCOPE_DONE}. <a href="lists/winning-seasons.html">Winning seasons</a> · <a href="lists/playoff-trips.html">Playoff trips</a> · <a href="lists/average-finish.html">Average finish</a> · <a href="lists/gap-career.html">Career with and without</a> · <a href="lists/low-help-all-stars.html">Low-help All-Stars</a> · <a href="seasons/index.html">Every season's standings</a></p></section>
 <p class="az">Players A-Z: {az}</p>"""
     desc = ("How much every NBA player won and how much help he had: team records in his games, final NBA finishes, "
-            "teammate help, every opponent and a daily story, since 1946-47.")
+            "teammate help, every opponent and a daily list from last night's games, since 1946-47.")
     return "index.html", page("index.html", "Team Success: NBA team records with and without every player | HoopsMatic",
                               desc, body, up)
 
@@ -2763,7 +2761,7 @@ def how_page(s):
 <p>Every list covers regular seasons {season_label(1947)} through {season_label(LAST_COMPLETE)} and has three eras: all-time, since 1976-77 and since 1996-97. "Winning seasons" and "playoff droughts" count the seasons he played, in a row; a season he missed entirely neither breaks nor extends a streak. The Accolade score uses the Teammates Score weights; the formula is on the <a href="lists/bad-luck.html">Bad Luck Index</a> page.</p>
 <h2 id="facts">Fun facts, the daily story and the comparison of the day</h2>
 <p>Every sentence is a template filled from the nightly data, never written by a model. The nightly job runs four times a day; the first run of a date writes that day's fun facts and story, and a later run rewrites them only when newer games arrive. Fun facts (6 to 8 a day) come from six kinds of templates: a player who passed another on the career wins or W {MINUS} L list in the last game date's games; a team's best or worst start through that many games since a given season; a team unbeaten or winless in the games a player played or missed (only with 10+ games played and 8+ missed); tonight's games where an active player has a record of .700+ or .350 or lower against the opponent (20+ games); winning-season streaks and playoff droughts still alive; and title-winning or 60-win-pace teams on this date. Each links to the row that proves it. The same fact never appears two days running, and a streak or on-this-day fact never repeats within 30 days.</p>
-<p>The daily story never repeats a lead within 30 days; on a day with no games it is a comparison. Its two supporting links are about the story's own players. The comparison of the day pairs two players from the same era with 300+ games each, at least one of them an All-Star, from a pool of 120 pairs that rotates daily (no pair repeats within 120 days).</p>
+<p><strong>Last night in Team Success</strong> lists 4 to 10 noteworthy items from the last game date's games: career wins and W {MINUS} L milestones, a move into the top 25 in career win % (500+ games), passes of notable players (top 100 on that board or a 2+ time All-Star, by players in that board's top 250), franchise-best or worst starts and streaks, with and without splits with 10+ games played and 8+ missed, and notable records against tonight's opponent (15+ games). A night with nothing noteworthy says "Quiet night" and shows three items labeled "From the archive"; when no new games have arrived, the list says which games it covers. The comparison of the day pairs two players from the same era with 300+ games each, at least one of them an All-Star, from a pool of 120 pairs that rotates daily (no pair repeats within 120 days).</p>
 <h2>What is missing or corrected</h2>
 <ul>
 <li>One 1953-54 Milwaukee Hawks vs Baltimore Bullets game is missing from the box scores, and eight games from 1946-47 to 1953-54 have results that disagree with the official standings. Team records use the standings; with/without uses the games we have.</li>
