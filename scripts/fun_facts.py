@@ -343,16 +343,24 @@ def build(date):
 
     # ---- pick: caps per type, then fill to 8 --------------------------------------------------
     cands.sort(key=lambda c: (c[0], c[1]))
-    caps = {"pass": 2, "start": 2, "split": 2, "matchup": 2, "streak": 2, "onthisday": 1}
+    # passes moved to the daily "Last night" list (daily_story.py); fun facts keep the season-scale items
+    caps = {"pass": 0, "start": 2, "split": 2, "matchup": 2, "streak": 2, "onthisday": 1}
     # the day's story already covers its players: they get no fun fact
     story = [x for x in load_json(os.path.join(DATA, "stories.json"), {"stories": []})["stories"] if x["date"] == date]
     by_slug = {v["slug"]: k for k, v in ids.items()}
     picked, count, seen = [], defaultdict(int), {by_slug[x] for x in (story[0]["players"] if story else []) if x in by_slug}
+    skip = set()
+    # teams and archive items already in the day's list get no fun fact either
+    for it in (story[0].get("items", []) if story else []):
+        if it.get("team") and it["team"][1] == CURRENT_SEASON:
+            seen.add(it["team"][0])
+        if it.get("archive"):
+            skip.add("onthisday:" + it["key"].split(":", 1)[1])
     for _, _, f in cands:
         if len(picked) >= MAX_FACTS:
             break
         who = f["pid"] or (f["team"][0] if f["team"] and f["team"][1] == CURRENT_SEASON else None)
-        if who and who in seen:                 # one fact per player (or current team) a day
+        if (who and who in seen) or f["key"].rsplit("|", 1)[0] in skip:   # one fact per player / team a day
             continue
         if count[f["type"]] < caps[f["type"]]:
             picked.append(f)
@@ -363,7 +371,7 @@ def build(date):
         if len(picked) >= MIN_FACTS:
             break
         who = f["pid"] or (f["team"][0] if f["team"] and f["team"][1] == CURRENT_SEASON else None)
-        if f not in picked and not (who and who in seen):
+        if f not in picked and not (who and who in seen) and f["key"].rsplit("|", 1)[0] not in skip:
             picked.append(f)
     hist[date] = [f["key"] for f in picked]
     out = {"date": date, "cutoff": through, "facts": picked, "history": dict(sorted(hist.items()))}

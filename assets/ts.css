@@ -461,3 +461,6 @@ details[open]>summary{margin-bottom:.35rem}
 .tabs [role=tab][aria-selected=true]{background:var(--text);color:var(--surface);border-color:var(--text)}
 table.opp[data-k="2"] .ser{display:none}
 .mchip .hp{font-size:.7rem;font-weight:700;margin-left:.2rem}
+.night{margin-top:1.2rem}
+.hl .arch{display:inline-block;font-family:var(--mono);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-secondary);border:1px solid var(--border);border-radius:6px;padding:0 .35rem;margin-right:.3rem}
+table.minfilter tr.hl td{background:var(--accent-dim)}

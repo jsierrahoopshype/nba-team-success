@@ -221,9 +221,14 @@
     history.replaceState(null, "", location.pathname + "?" + p.toString());
   }
   f.addEventListener("input", apply);
+  // ?hl=<slug>: highlight that player's row (links from the homepage list)
+  var hl = q.get("hl"), hr = hl && document.getElementById("p-" + hl);
+  if (hr) { hr.classList.add("hl"); setTimeout(function () { if (!hr.hidden) hr.scrollIntoView({ block: "center" }); }, 50); }
   f.addEventListener("submit", function (ev) { ev.preventDefault(); apply(); });
+  // the defaults come from the page (data-mp / data-mm, the same constants as the initial HTML)
   if (q.get("mp") || q.get("mm")) apply(); else {
+    var dmp = +f.getAttribute("data-mp") || 1, dmm = +f.getAttribute("data-mm") || 1;
     var rows = document.querySelectorAll("table.minfilter tbody tr");
-    for (var i = 0; i < rows.length; i++) rows[i].hidden = (+rows[i].getAttribute("data-gp") < 5) || (+rows[i].getAttribute("data-gm") < 5);
+    for (var i = 0; i < rows.length; i++) rows[i].hidden = (+rows[i].getAttribute("data-gp") < dmp) || (+rows[i].getAttribute("data-gm") < dmm);
   }
 })();

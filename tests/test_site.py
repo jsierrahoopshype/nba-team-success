@@ -256,7 +256,7 @@ def test_noindex_pages():
 
 def test_today_on_hub():
     t = read("index.html")
-    assert "<h2>Today in Team Success</h2>" in t and '<p class="story-head">' in t
+    assert "<h2>Last night in Team Success · " in t and '<section class="night">' in t
     assert "data through" in t
 
 

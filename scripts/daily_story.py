@@ -1,14 +1,18 @@
 # (c) 2026 HoopsMatic. All rights reserved.
-# Team Success daily lead ("Today in Team Success"). Fingerprint: hm-ts-7f3a91c2-daily
-"""Pick today's story by the rules in docs/story-rules.md and write it to data/stories.json.
+# Team Success daily list ("Last night in Team Success"). Fingerprint: hm-ts-7f3a91c2-daily
+"""Pick the noteworthy items from the last game date by the rules in docs/story-rules.md and write
+the day's list to data/stories.json (one entry per UTC date, newest first).
 
-python scripts/daily_story.py [--date 2026-11-18]   # nightly Action, after update_current.py
+python scripts/daily_story.py [--date 2026-11-19]   # nightly Action, after update_current.py
 
-Every sentence is a template filled from data. Sources: committed data (career boards, game logs,
-current.json, help.json) and tonight's schedule from cdn.nba.com (public JSON, no key; if it cannot
-be fetched, the matchup candidates are skipped). Keeps data/stories_state.json (yesterday's career
-W - L and absence records) to detect passes and thresholds. One story per date; a date that already
-has a story is left alone. Also draws stories/img/<date>.png with Pillow and the site's fonts.
+Every item is one sentence from a template filled from data, with a face or a logo, its scope and
+the link to the board row or games that prove it. Ranks use the board's own rule (boards.py:
+default view, qualifying group, standard competition ranking with T- ties). "Last night" = the
+games of the last game date in data/current.json (its game log), never the previous run's totals.
+
+No item qualifies: "Quiet night" and three items labeled "From the archive". No new games since
+the previous list: the list says which games it covers. A later run the same date rewrites the list
+only when newer games arrive. Also draws stories/img/<date>.png (the share card).
 Prints CHANGED or UNCHANGED.
 """
 import argparse
@@ -22,16 +26,22 @@ from collections import defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import analysis as A  # noqa: E402
 import boards as B  # noqa: E402
-import picks  # noqa: E402
 from common import (CURRENT_SEASON, DATA, LAST_COMPLETE, ROOT, dump_json, era_lookup,  # noqa: E402
                     franchise_name, load_json, season_label)
 
 SCHEDULE = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
 EN, MINUS = "–", "−"
-MIN_ABSENCE = 8          # homepage cutoff: 8+ games played AND 8+ missed (boards use 5)
-MATCHUP_MIN = 15         # regular-season games against that franchise
-MATCHUP_MAX_PCT = 0.40
-REPEAT_DAYS = 30         # a lead (rule + players) never repeats within 30 days
+MAX_ITEMS, MIN_ITEMS, ARCHIVE_N = 10, 4, 3
+WINS_STEP, WINS_FROM = 100, 300            # career wins milestones: 300, 400, ... 1,000, ...
+WL_STEP = 100                              # career W - L milestones: +100, +200, ... (and -100, ...)
+PCT_MIN_GAMES, PCT_TOP = 500, 25           # career win %: players with 500+ games, top 25
+NOTABLE_RANK, NOTABLE_AS = 100, 2          # a passed player is notable: top 100 on that board or a 2+ time All-Star
+PASS_MAX_RANK, PASS_CAP = 250, 4           # the passer is in that board's top 250; at most 4 pass items a night
+WW_PLAYED, WW_MISSED = 10, 8               # with/without this season: a real sample
+WW_GAP = 0.40                              # ... and a gap of 40+ points, or one side unbeaten / winless
+START_MIN, START_GAP = 8, 10               # team start: 8+ games, franchise best/worst since 10+ seasons ago
+STREAK_MIN, STREAK_GAP = 5, 10             # team streak: 5+ games, the franchise's longest since 10+ seasons ago
+MATCHUP_MIN, MATCHUP_HI, MATCHUP_LO = 15, 0.700, 0.350
 
 
 def signed(n):
@@ -52,6 +62,10 @@ def nice_date(iso):
     return f"{mon} {d}, {y}"
 
 
+def nice_md(iso):
+    return nice_date(iso).rsplit(",", 1)[0]
+
+
 def schedule():
     """[(home franchise, away franchise)] for tonight, or None if the feed cannot be read."""
     try:
@@ -67,327 +81,394 @@ def schedule():
             if h and a and g.get("gameStatus", 1) == 1:
                 out.append((h[0], a[0]))
         return out, doc["scoreboard"].get("gameDate")
-    except Exception as e:  # network, format: the story falls back to other candidates
+    except Exception as e:  # network, format: the matchup items are skipped
         print(f"schedule not available ({type(e).__name__})", file=sys.stderr)
         return None, None
 
 
-def opp_record(pid, logs_by_pid, opp):
-    w = l = 0
-    for won, o in logs_by_pid.get(pid, ()):
-        if o == opp:
-            w, l = w + won, l + (not won)
-    return w, l
+def T(text):
+    return [text]
+
+
+def L(text, href, bold=False):
+    return [text, href, 1 if bold else 0]
+
+
+def text_of(parts):
+    return "".join(p[0] for p in parts)
+
+
+def gamelogs():
+    for sy in range(1947, LAST_COMPLETE + 1):
+        yield sy, load_json(os.path.join(DATA, "gamelog", f"{sy}.json"))
+
+
+def on_this_day(d, date):
+    """Title-winning and 60-win-pace team-seasons with 5+ games by this calendar date."""
+    mmdd = date[5:]
+    out = []
+    for sy, lg in gamelogs():
+        yr = sy - 1 if int(mmdd[:2]) >= 8 else sy
+        day = f"{yr}-{mmdd}"
+        recs = defaultdict(lambda: [0, 0])
+        for gid, dd, h, a, hc, ac, hs, as_ in lg["games"]:
+            if gid[2] != "2" or dd > day:
+                continue
+            recs[h][0 if hs > as_ else 1] += 1
+            recs[a][0 if as_ > hs else 1] += 1
+        for f, (w, l) in recs.items():
+            t = d.team(f, sy)
+            if not t or w + l < 5:
+                continue
+            champ = t["po"] == "Champion"
+            if champ or t["w"] / max(1, t["w"] + t["l"]) >= 60 / 82:
+                out.append((sy, f, w, l, t, champ))
+    return out
 
 
 def build(date):
-    d = A.Data()
+    d = A.Data(live=True)
     cur = load_json(os.path.join(DATA, "current.json"))
+    help_doc = load_json(os.path.join(DATA, "help.json"), {})
     ids = dict(d.ids)
     ids.update(cur.get("newIds", {}))
     stories = load_json(os.path.join(DATA, "stories.json"), {"stories": []})
-    state = load_json(os.path.join(DATA, "stories_state.json"), {})
     through = cur["through"]
     today = [x for x in stories["stories"] if x["date"] == date]
     if today and today[0]["cutoff"] >= through:
-        print("UNCHANGED story for", date, "already written with data through", today[0]["cutoff"])
+        print("UNCHANGED list for", date, "already written with games through", today[0]["cutoff"])
         return False
-    if today:
-        # an earlier run today wrote the story from older data: rewrite it, comparing with the
-        # state from before that run (the previous date's), not with the earlier run's
-        stories["stories"] = [x for x in stories["stories"] if x["date"] != date]
-        state = state.get("base", {}) if state.get("date") == date else state
-    base_state = {k: v for k, v in state.items() if k != "base"}
-    # leads of the last 30 days: the same story (rule + players) never leads twice in 30 days
-    recent = {(x["rule"], tuple(x.get("players", []))) for x in stories["stories"]
-              if 0 < (dt.date.fromisoformat(date) - dt.date.fromisoformat(x["date"])).days <= REPEAT_DAYS}
-    data = B.compact(d, cur)
-    comp = {}
-    for row in data["p"]:
-        m = B.player_metrics(row, data["t"], {})
-        comp[row[0]] = m["w"] - m["l"]
-    cur_wl = {pid: sum(x["w"] - x["l"] for x in sts) for pid, sts in cur["players"].items()}
-    total = dict(comp)
-    for pid, v in cur_wl.items():
-        total[pid] = total.get(pid, 0) + v
-    # ranks: the career W - L board's own rule (default view incl. the season to date, its
-    # qualifying group, standard competition ranking with ties), the same as the player cards
-    bdata = B.compact(A.Data(live=True), cur, load_json(os.path.join(DATA, "help.json"), {}))
-    now_rk = {m["pid"]: (r, t) for r, t, m in B.compute(bdata, "wins-minus-losses")[0]}
-    base_rk = {m["pid"]: (r, t) for r, t, m in B.compute(bdata, "wins-minus-losses", {"to": LAST_COMPLETE})[0]}
-    rank = {p: v[0] for p, v in now_rk.items()}
-    for p in total:
-        rank.setdefault(p, 10 ** 6)
+    stories["stories"] = [x for x in stories["stories"] if x["date"] != date]
+    last_cut = max((x["cutoff"] for x in stories["stories"] if x["date"] < date), default="")
+    stale = through <= last_cut                 # no new games since the previous list
+    data = B.compact(d, cur, help_doc)
 
-    def rl(p, base=False):
-        r = (base_rk if base else now_rk).get(p)
-        return B.rank_label(*r) if r else "unranked"
+    def slug(p):
+        return ids[p]["slug"]
 
     def name(p):
         return ids[p]["name"]
 
-    def plink(p):
-        return f"player/{ids[p]['slug']}.html"
+    def plink(p, bold=True):
+        return L(name(p), f"player/{slug(p)}.html", bold)
 
-    cands = []
-    # (a) passed someone on the career W - L board in the games of the last game date, worked out
-    # from the season's game log (not from the previous run's totals, which code changes can move);
-    # only when those games are newer than the previous story's cutoff
-    last_cut = max((x["cutoff"] for x in stories["stories"] if x["date"] < date), default="")
-    prev = None
-    if through > last_cut and cur.get("log"):
-        delta = defaultdict(int)
-        lg_ = cur["log"]
-        for gid, gd, h, a, hs, as_ in lg_["games"]:
-            if gd != through:
+    def tname(f, sy=CURRENT_SEASON):
+        t = d.team(f, sy)
+        return (t["name"] if t else None) or franchise_name(f, sy) or f
+
+    def notable(q, board, rank):
+        n_as = len(d.players.get(q, {}).get("as", []))
+        return rank <= NOTABLE_RANK or n_as >= NOTABLE_AS
+
+    def who_note(q):
+        n_as = len(d.players.get(q, {}).get("as", []))
+        return f" ({n_as}-time All-Star)" if n_as >= NOTABLE_AS else ""
+
+    items = []
+
+    def add(pri, order, key, parts, href, pid=None, team=None, scope=None):
+        items.append((pri, order, {"key": key, "type": key.split(":")[0], "parts": parts, "href": href,
+                                   "pid": pid, "team": team, "scope": scope}))
+
+    # ---- last night's games ------------------------------------------------------------------
+    log = cur.get("log", {"games": [], "app": {}})
+    night = [g for g in log["games"] if g[1] == through]
+    delta = defaultdict(lambda: [0, 0])
+    played = set()
+    for gid, gd, h, a, hs, as_ in night:
+        played |= {h, a}
+        hp, ap = log["app"].get(gid, [[], []])
+        for p in hp:
+            delta[str(p)][0 if hs > as_ else 1] += 1
+        for p in ap:
+            delta[str(p)][0 if as_ > hs else 1] += 1
+    delta = {p: v for p, v in delta.items() if p in ids}
+
+    # ---- 1. career wins: round numbers and notable passes --------------------------------------
+    def board_items(board, flt, what, fmt, step_fn, link_q=""):
+        before, after = B.ranks_before(data, board, delta, flt)
+        href = lambda p: f"lists/{board}.html?{link_q}hl={slug(p)}#p-{slug(p)}"  # noqa: E731
+        done = set()
+        for p in delta:
+            if p not in after or p not in before:
                 continue
-            hp_, ap_ = lg_["app"].get(gid, [[], []])
-            for q in hp_:
-                delta[str(q)] += 1 if hs > as_ else -1
-            for q in ap_:
-                delta[str(q)] += 1 if as_ > hs else -1
-        prev = {q: v - delta.get(q, 0) for q, v in total.items()}
-    if prev:
-        for p in cur["players"]:
-            if p not in prev or p not in total:
+            r, tied, v = after[p]
+            v0 = before[p][2]
+            m = step_fn(v0, v)
+            if m is not None:
+                add(1, r, f"{'wins' if board == 'career-wins' else 'wl'}-mark:{slug(p)}:{m}",
+                    [plink(p), T(f" reached {fmt(m)} {B.BOARDS[board]['h1'].lower() if board != 'career-wins' else 'career wins in his games'}: "),
+                     L(f"{fmt(v)}, {B.rank_label(r, tied)}", href(p)), T(f" on the board ({B.scope_label(board, flt)}).")],
+                    href(p), pid=p, scope=B.scope_label(board, flt))
+                done.add(p)
+        for p, (r, tied, v), passed in B.passes(data, board, delta, flt):
+            if p in done or p not in ids or r > PASS_MAX_RANK:
                 continue
-            passed = [q for q in prev if q != p and prev[p] <= prev[q] and total[p] > total.get(q, prev[q])]
-            if passed and rank[p] <= 200:
-                q = min(passed, key=lambda q: rank.get(q, 10 ** 6))
-                cands.append((1, rank[p], {
-                    "rule": "pass",
-                    "players": [ids[p]["slug"], ids[q]["slug"]],
-                    "headline": f"{name(p)} passes {name(q)} on the career wins-minus-losses list",
-                    "body": [f"{name(p)}'s teams are {signed(total[p])} in his regular-season games: {signed(comp.get(p, 0))} "
-                             f"through {season_label(LAST_COMPLETE)} and {signed(cur_wl[p])} in {season_label(CURRENT_SEASON)}.",
-                             f"That is {rl(p)} on the career W − L board ({B.SCOPE_LIVE}), ahead of {name(q)} "
-                             f"({signed(total.get(q, prev[q]))})."],
-                    "link": {"text": f"{name(p)}'s page", "href": plink(p)},
-                    "more": {"text": f"Career W − L board ({B.SCOPE_LIVE})", "href": f"lists/wins-minus-losses.html?hl={ids[p]['slug']}#p-{ids[p]['slug']}"},
-                    "line": f"{name(p)} passed {name(q)} on the career W − L list."}))
-    # (b) tonight's matchup against his toughest franchise
+            nq = [(q, a) for q, a in passed if q in ids and notable(q, board, a[0])]
+            if not nq:
+                continue
+            q, (rq, tq, vq) = nq[0]
+            more = f" and {len(passed) - 1} other{'s' if len(passed) > 2 else ''}" if len(passed) > 1 else ""
+            add(2, r, f"{'wins' if board == 'career-wins' else 'wl'}-pass:{slug(p)}:{slug(q)}",
+                [plink(p), T(" passed "), plink(q, False), T(f"{who_note(q)}{more} for "),
+                 L(f"{B.rank_label(r, tied)} in {what}", href(p)), T(f" ({fmt(v)}, {B.scope_label(board, flt)}).")],
+                href(p), pid=p, scope=B.scope_label(board, flt))
+
+    def round_up(step, start=None):
+        def f(v0, v):
+            if v is None or v0 is None:
+                return None
+            for m in range((int(v0) // step + 1) * step, int(v) + 1, step):
+                if m >= (start or step) and v0 < m <= v:
+                    return m
+            return None
+        return f
+
+    def wl_mark(v0, v):
+        for m in range(-2000, 2001, WL_STEP):
+            if m and ((v0 < m <= v) if m > 0 else (v0 > m >= v)):
+                return m
+        return None
+    board_items("career-wins", {}, "career wins", lambda x: f"{x:,}", round_up(WINS_STEP, WINS_FROM))
+    board_items("wins-minus-losses", {}, "career W − L", signed, wl_mark)
+
+    # ---- 2. career win %, 500+ games: into the top 25, or a notable pass ----------------------
+    pflt = {"sort": "pct", "cg": PCT_MIN_GAMES}
+    before, after = B.ranks_before(data, "career-wins", delta, pflt)
+    for p in delta:
+        if p in after and after[p][0] <= PCT_TOP and (p not in before or before[p][0] > PCT_TOP):
+            r, tied, v = after[p]
+            href = f"lists/career-wins.html?sort=pct&cg={PCT_MIN_GAMES}&hl={slug(p)}#p-{slug(p)}"
+            add(1, r, f"pct-top:{slug(p)}",
+                [plink(p), T(f" moved into the top {PCT_TOP} in career win % in his games: "),
+                 L(f"{pct1(v)}, {B.rank_label(r, tied)}", href),
+                 T(f" among players with {PCT_MIN_GAMES}+ games ({B.SCOPE_LIVE}).")], href, pid=p, scope=B.SCOPE_LIVE)
+    for p, (r, tied, v), passed in B.passes(data, "career-wins", delta, pflt):
+        if any(x[2]["key"] == f"pct-top:{slug(p)}" for x in items) or r > NOTABLE_RANK:
+            continue
+        nq = [(q, a) for q, a in passed if q in ids and notable(q, "pct", a[0])]
+        if nq:
+            q = nq[0][0]
+            href = f"lists/career-wins.html?sort=pct&cg={PCT_MIN_GAMES}&hl={slug(p)}#p-{slug(p)}"
+            add(2, r, f"pct-pass:{slug(p)}:{slug(q)}",
+                [plink(p), T(" passed "), plink(q, False), T(f"{who_note(q)} in career win % in his games: "),
+                 L(f"{pct1(v)}, {B.rank_label(r, tied)}", href),
+                 T(f" among players with {PCT_MIN_GAMES}+ games ({B.SCOPE_LIVE}).")], href, pid=p, scope=B.SCOPE_LIVE)
+
+    # ---- 3. teams that played last night: starts and streaks ---------------------------------
+    at_n = defaultdict(list)                   # N -> [(sy, f, wins through N)]
+    streaks = defaultdict(list)                # f -> [(sy, longest win streak, longest losing streak)]
+    for sy, lg in gamelogs():
+        seq = defaultdict(list)
+        for gid, dd, h, a, hc, ac, hs, as_ in sorted(lg["games"], key=lambda g: (g[1], g[0])):
+            if gid[2] == "2":
+                seq[h].append(hs > as_)
+                seq[a].append(as_ > hs)
+        for f, res in seq.items():
+            w = 0
+            bw = bl = cw = cl = 0
+            for i, x in enumerate(res):
+                w += x
+                if i < 82:
+                    at_n[i + 1].append((sy, f, w))
+                cw, cl = (cw + 1, 0) if x else (0, cl + 1)
+                bw, bl = max(bw, cw), max(bl, cl)
+            streaks[f].append((sy, bw, bl))
+    tlog = defaultdict(list)
+    for gid, gd, h, a, hs, as_ in log["games"]:
+        tlog[h].append(hs > as_)
+        tlog[a].append(as_ > hs)
+    for f in sorted(played):
+        res = tlog.get(f, [])
+        w, n = sum(res), len(res)
+        tn = tname(f)
+        href = f"seasons/{season_label(CURRENT_SEASON)}.html#t-{f}"
+        if n >= START_MIN:
+            own = [x for x in at_n.get(n, []) if x[1] == f]
+            for kind in ("best", "worst"):
+                hit = [x for x in own if (x[2] >= w if kind == "best" else x[2] <= w)]
+                if len(own) < START_GAP:
+                    continue
+                if not hit:
+                    add(3, -len(own), f"start:{kind}:{f}:{n}",
+                        [L(f"The {tn}", href, True), T(f" are {wl(w, n - w)}, the franchise's {kind} start through {n} games "
+                                                       f"in {len(own) + 1} seasons ({season_label(CURRENT_SEASON)} to date).")],
+                        href, team=[f, CURRENT_SEASON], scope=f"{season_label(CURRENT_SEASON)} to date")
+                else:
+                    sy = max(x[0] for x in hit)
+                    if CURRENT_SEASON - sy >= START_GAP:
+                        w2 = [x for x in hit if x[0] == sy][0][2]
+                        add(3, -(CURRENT_SEASON - sy), f"start:{kind}:{f}:{n}",
+                            [L(f"The {tn}", href, True), T(f" are {wl(w, n - w)}, the franchise's {kind} start through {n} games since "),
+                             L(f"{season_label(sy)}", f"seasons/{season_label(sy)}.html#t-{f}"), T(f" ({wl(w2, n - w2)}).")],
+                            href, team=[f, CURRENT_SEASON], scope=f"{season_label(CURRENT_SEASON)} to date")
+        k = 0
+        for x in reversed(res):
+            if x == res[-1]:
+                k += 1
+            else:
+                break
+        if res and k >= STREAK_MIN:
+            won = res[-1]
+            hist = [(sy, bw if won else bl) for sy, bw, bl in streaks.get(f, [])]
+            longer = [sy for sy, v in hist if v >= k]
+            word = "winning" if won else "losing"
+            if not longer and len(hist) >= START_GAP:
+                tail = f", the longest in franchise history ({len(hist) + 1} seasons)."
+            elif longer and CURRENT_SEASON - max(longer) >= STREAK_GAP:
+                tail = f", the franchise's longest since {season_label(max(longer))}."
+            else:
+                tail = None
+            if tail:
+                add(3, -k, f"streak:{f}:{word}:{k}",
+                    [L(f"The {tn}", href, True), T(f" have a {k}-game {word} streak{tail}")],
+                    href, team=[f, CURRENT_SEASON], scope=f"{season_label(CURRENT_SEASON)} to date")
+
+    # ---- 4. with / without this season, a real sample, his team played last night -------------
+    for p, sts in cur["players"].items():
+        if p not in ids:
+            continue
+        st = ([x for x in sts if x.get("endTeam")] or sts[-1:])[0]
+        gm = st["ow"] + st["ol"]
+        if st["f"] not in played or st["g"] < WW_PLAYED or gm < WW_MISSED:
+            continue
+        gap = st["w"] / st["g"] - st["ow"] / gm
+        if not (abs(gap) >= WW_GAP or st["ow"] in (0, gm) or st["w"] in (0, st["g"])):
+            continue
+        tn = tname(st["f"])
+        href = f"lists/winning-without-him.html?mp={WW_PLAYED}&mm={WW_MISSED}&hl={slug(p)}#p-{slug(p)}"
+        add(4, -abs(gap), f"ww:{slug(p)}",
+            [T(f"The {tn} are "), L(f"{wl(st['ow'], st['ol'])} without ", href), plink(p),
+             T(f" and {wl(st['w'], st['l'])} with him ({season_label(CURRENT_SEASON)} to date, {st['g']} played, {gm} missed).")],
+            href, pid=p, scope=f"{season_label(CURRENT_SEASON)} to date")
+
+    # ---- 5. tonight: a notable record against tonight's opponent (15+ games) -------------------
     games, gdate = schedule()
     if games:
-        logs = defaultdict(list)
-        for sy in range(1947, LAST_COMPLETE + 1):
-            lg = load_json(os.path.join(DATA, "gamelog", f"{sy}.json"))
+        playing = {}
+        for h, a in games:
+            playing[h], playing[a] = a, h
+        want = {p for p, sts in cur["players"].items() if p in d.players and p in ids and
+                ([x for x in sts if x.get("endTeam")] or sts[-1:])[0]["f"] in playing}
+        rec = defaultdict(lambda: defaultdict(lambda: [0, 0]))
+        for sy, lg in gamelogs():
             for gid, dd, h, a, hc, ac, hs, as_ in lg["games"]:
                 if gid[2] != "2":
                     continue
                 hp, ap = lg["app"][gid]
                 for q in hp:
-                    logs[str(q)].append((hs > as_, a))
+                    if str(q) in want:
+                        rec[str(q)][a][0 if hs > as_ else 1] += 1
                 for q in ap:
-                    logs[str(q)].append((as_ > hs, h))
-        playing = {}
-        for h, a in games:
-            playing[h] = a
-            playing[a] = h
-        for p, sts in cur["players"].items():
-            if p not in comp:
-                continue
-            team = [x for x in sts if x.get("endTeam")] or sts[-1:]
-            f = team[0]["f"]
-            if f not in playing or sum(1 for _ in logs.get(p, ())) < 300:
-                continue
+                    if str(q) in want:
+                        rec[str(q)][h][0 if as_ > hs else 1] += 1
+        for p in want:
+            f = ([x for x in cur["players"][p] if x.get("endTeam")] or cur["players"][p][-1:])[0]["f"]
             opp = playing[f]
-            by = defaultdict(lambda: [0, 0])
-            for won, o in logs[p]:
-                by[o][0 if won else 1] += 1
-            w, l = by.get(opp, [0, 0])
-            if w + l < MATCHUP_MIN or w / (w + l) > MATCHUP_MAX_PCT:
+            w, l = rec[p].get(opp, [0, 0])
+            if w + l < MATCHUP_MIN or MATCHUP_LO < w / (w + l) < MATCHUP_HI:
                 continue
-            lowest = min((v[0] / (v[0] + v[1]), o) for o, v in by.items() if v[0] + v[1] >= MATCHUP_MIN)[1] == opp
-            on = franchise_name(opp, CURRENT_SEASON)
-            tn = franchise_name(f, CURRENT_SEASON)
-            cands.append((2, w / (w + l), {
-                "rule": "matchup",
-                "players": [ids[p]["slug"]],
-                "headline": f"Tonight: {name(p)} and the {tn} face the {on}",
-                "body": [f"In his {w + l} regular-season games against the {on} franchise, his teams are {wl(w, l)} "
-                         f"({pct1(w / (w + l))})" + (", his lowest win rate against any franchise he has faced "
-                                                     f"{MATCHUP_MIN}+ times." if lowest else ".")],
-                "link": {"text": f"{name(p)} against the {on}, game by game", "href": f"{plink(p)}?vs={opp}#vs-{opp}"},
-                "line": f"Tonight: {name(p)} is {wl(w, l)} against the {on} in his games."}))
-    # (a') climbed the most places on the career W - L list this season
-    base = sorted(comp, key=lambda p: (-comp[p], ids.get(p, {}).get("name", "")))
-    base_rank = {p: v[0] for p, v in base_rk.items()}
-    climbs = []
-    for p in cur["players"]:
-        if p in base_rank and rank[p] <= 300:
-            gain = base_rank[p] - rank[p]
-            if gain > 0:
-                passed = [q for q in comp if comp[q] >= comp[p] and total.get(q, comp[q]) < total[p] and q != p]
-                if passed:
-                    # the passed player named in the story: highest Accolade score (Teammates Score weights)
-                    top = max(passed, key=lambda q: (d.players.get(q, {}).get("acc", 0), -base_rank[q]))
-                    # a top-100 player's climb comes first (best rank), then the biggest climb
-                    key = (0, rank[p]) if rank[p] <= 100 else (1, -gain)
-                    climbs.append((key, rank[p], p, len(passed), top))
-    if climbs:
-        g, r, p, n, q = min(climbs)
-        cands.append((3, r, {
-            "rule": "climb",
-            "players": [ids[p]["slug"], ids[q]["slug"]],
-            "headline": f"{name(p)} moves past {name(q)} on the career wins-minus-losses list",
-            "body": [f"His teams are {signed(cur_wl[p])} in his {season_label(CURRENT_SEASON)} games, which takes his career "
-                     f"total to {signed(total[p])}: {rl(p)} on the career W − L board ({B.SCOPE_LIVE}), up from {rl(p, True)} at the "
-                     f"end of {season_label(LAST_COMPLETE)}.",
-                     f"He has passed {n} player{'s' if n != 1 else ''} this season; the most decorated of them is "
-                     f"{name(q)} ({signed(total.get(q, comp[q]))})."],
-            "link": {"text": f"{name(p)}'s page", "href": plink(p)},
-            "more": {"text": f"Career W − L board ({B.SCOPE_LIVE})", "href": f"lists/wins-minus-losses.html?hl={ids[p]['slug']}#p-{ids[p]['slug']}"},
-            "line": f"{name(p)} has passed {n} players on the career W − L list this season."}))
-    # (c) a team crossed 10 wins in the games a player missed (stricter cutoff: 8+ each side)
-    prev_ow = state.get("ow", {})
-    for p, sts in cur["players"].items():
-        st = ([x for x in sts if x.get("endTeam")] or sts[-1:])[0]
-        if st["g"] < MIN_ABSENCE or st["ow"] + st["ol"] < MIN_ABSENCE:
+            href = f"player/{slug(p)}.html?vs={opp}#vs-{opp}"
+            add(5, -abs(w / (w + l) - 0.5), f"tonight:{slug(p)}:{opp}",
+                [T(f"Tonight vs the {tname(opp)}: "), plink(p), T("'s teams are "),
+                 L(f"{wl(w, l)} ({pct1(w / (w + l))})", href), T(f" in his {w + l} regular-season games against them ({B.SCOPE_DONE}).")],
+                href, pid=p, scope=B.SCOPE_DONE)
+
+    # ---- pick ---------------------------------------------------------------------------------
+    items.sort(key=lambda x: (x[0], x[1]))
+    picked, seen, npass = [], set(), 0
+    for _, _, it in items:
+        who = it["pid"] or (it["team"][0] if it["team"] else None)
+        if who in seen:
             continue
-        if st["ow"] >= 10 > prev_ow.get(p, 10 ** 6):
-            tn = franchise_name(st["f"], CURRENT_SEASON)
-            cands.append((4, -st["ow"], {
-                "rule": "absence",
-                "players": [ids[p]["slug"]],
-                "headline": f"The {tn} reach 10 wins in the games {name(p)} has missed",
-                "body": [f"They are {wl(st['ow'], st['ol'])} without him and {wl(st['w'], st['l'])} in his {st['g']} games "
-                         f"this season (minimum {MIN_ABSENCE} games each side for this page)."],
-                "link": {"text": f"{season_label(CURRENT_SEASON)} with and without board", "href": "lists/winning-without-him.html"},
-                "line": f"The {tn} are {wl(st['ow'], st['ol'])} in games {name(p)} missed."}))
-    # (e) supporting only: biggest win-rate gap on the current board, stricter cutoff (8+ each side)
-    gaps = []
-    for p, sts in cur["players"].items():
-        st = ([x for x in sts if x.get("endTeam")] or sts[-1:])[0]
-        if st["g"] >= MIN_ABSENCE and st["ow"] + st["ol"] >= MIN_ABSENCE and p in ids:
-            gaps.append((st["w"] / st["g"] - st["ow"] / (st["ow"] + st["ol"]), p, st))
-    if gaps:
-        gp, p, st = max(gaps, key=lambda x: (abs(x[0]), x[1]))
-        tn = franchise_name(st["f"], CURRENT_SEASON)
-        word = "played" if gp > 0 else "missed"
-        cands.append((6, 0, {
-            "rule": "board", "players": [ids[p]["slug"]],
-            "headline": f"The {tn}: {wl(st['w'], st['l'])} with {name(p)}, {wl(st['ow'], st['ol'])} without",
-            "body": [f"The biggest win-rate gap on the {season_label(CURRENT_SEASON)} board among players with "
-                     f"{MIN_ABSENCE}+ games each side, higher in the games he {word}."],
-            "link": {"text": f"{season_label(CURRENT_SEASON)} with and without board", "href": "lists/winning-without-him.html"},
-            "line": f"Biggest gap this season ({MIN_ABSENCE}+ games each side): the {tn} are {wl(st['w'], st['l'])} with "
-                    f"{name(p)} and {wl(st['ow'], st['ol'])} without."}))
-    # (d) quiet day: comparison from the comparison-of-the-day pool (picks.py), half a cycle away
-    # from the homepage's pair; then the next pairs in the cycle if a pair led in the last 30 days
-    hp = load_json(os.path.join(DATA, "help.json"), {"peers": {}, "avg": {}})
-    pool = picks.pair_pool(d, hp)
-    for step in range(len(pool)):
-        day = (dt.date.fromisoformat(date) + dt.timedelta(days=step)).isoformat()
-        a, b = picks.pair_of_day(pool, day, half_cycle=True)
-        if ("compare", (ids[a]["slug"], ids[b]["slug"])) in recent:
-            continue
-        sa, sb = A.summary(d, a), A.summary(d, b)
-        x, y = sorted((ids[a]["slug"], ids[b]["slug"]))
-        cands.append((5, 0, {
-            "rule": "compare",
-            "players": [ids[a]["slug"], ids[b]["slug"]],
-            "headline": f"{name(a)} and {name(b)}: same era, similar teammate help",
-            "body": [f"{name(a)}'s teams went {wl(sa['w'], sa['l'])} in his games with an average final finish of "
-                     f"{sa['rnk']:.1f}; {name(b)}'s went {wl(sb['w'], sb['l'])}, average finish {sb['rnk']:.1f}.",
-                     f"Teammate help: {hp['avg'][a]['help']:.1f} and {hp['avg'][b]['help']:.1f} points per season."],
-            "link": {"text": "The two careers, season by season", "href": f"compare/{x}--{y}.html"},
-            "line": f"{name(a)} vs {name(b)}: {wl(sa['w'], sa['l'])} vs {wl(sb['w'], sb['l'])}."}))
-        break
-    cands.sort(key=lambda c: (c[0], c[1]))
-    cands = [c for c in cands if c[2]["rule"] != "board" and (c[2]["rule"], tuple(c[2]["players"])) not in recent] + \
-        [c for c in cands if c[2]["rule"] == "board"]
-    leads = [c for c in cands if c[2]["rule"] != "board"]
-    if not leads:
-        print("UNCHANGED no candidate")
-        return False
-    lead = dict(leads[0][2])
-    more = related_links(lead, ids, d)
-    lead.update({"date": date, "cutoff": through, "supporting": more, "schedule": gdate if games else None,
-                 "img": f"stories/img/{date}.png"})
-    stories["stories"].insert(0, lead)
+        if it["type"].endswith("-pass"):
+            if npass >= PASS_CAP:
+                continue
+            npass += 1
+        picked.append(it)
+        seen.add(who)
+        if len(picked) >= MAX_ITEMS:
+            break
+    quiet = not picked
+    if len(picked) < MIN_ITEMS:
+        # a quiet night (or a short one): items from the archive, clearly labeled, never repeated
+        # within 30 days
+        used = {it["key"] for x in stories["stories"]
+                if 0 < (dt.date.fromisoformat(date) - dt.date.fromisoformat(x["date"])).days <= 30
+                for it in x.get("items", [])}
+        hc = on_this_day(d, date)
+        k = dt.date.fromisoformat(date).toordinal()
+        need = ARCHIVE_N if quiet else MIN_ITEMS - len(picked)
+        for i in range(len(hc)):
+            if need <= 0:
+                break
+            sy, f, w, l, t, champ = hc[(k * 7 + i * 13) % len(hc)]
+            key = f"archive:{sy}:{f}"
+            if key in used:
+                continue
+            end = (f"finished {wl(t['w'], t['l'])} and won the title" if champ else
+                   f"finished {wl(t['w'], t['l'])}, a {round(82 * t['w'] / (t['w'] + t['l']))}-win pace over 82 games")
+            href = f"seasons/{season_label(sy)}.html#t-{f}"
+            picked.append({"key": key, "type": "archive", "archive": 1, "pid": None, "team": [f, sy],
+                           "parts": [T(f"On this date in {season_label(sy)}, the "), L(t["name"], href, True),
+                                     T(f" were {wl(w, l)}. They {end}.")], "href": href, "scope": season_label(sy)})
+            used.add(key)
+            need -= 1
+    head = f"Last night in Team Success · {nice_md(through)} games"
+    entry = {"date": date, "kind": "night", "cutoff": through, "games_date": through, "stale": 1 if stale else 0,
+             "quiet": 1 if quiet else 0, "games": len(night), "items": picked, "headline": head,
+             "body": [text_of(it["parts"]) for it in picked],
+             "players": [slug(it["pid"]) for it in picked if it.get("pid")],
+             "rule": "night", "img": f"stories/img/{date}.png"}
+    stories["stories"].insert(0, entry)
+    stories["stories"].sort(key=lambda x: x["date"], reverse=True)
     dump_json(os.path.join(DATA, "stories.json"), stories, compact=False)
-    dump_json(os.path.join(DATA, "stories_state.json"),
-              {"date": date, "total": total, "ow": {p: ([x for x in s if x.get("endTeam")] or s[-1:])[0]["ow"]
-                                                    for p, s in cur["players"].items()},
-               "base": base_state})
-    draw(lead, ids)
-    print("CHANGED story for", date, lead["rule"])
+    draw(entry)
+    print("CHANGED list for", date, f"({nice_md(through)} games):", ", ".join(it["type"] for it in picked) or "quiet")
     return True
 
 
-def related_links(lead, ids, d):
-    """The two supporting links: about the lead's own players and board, never a random pair."""
-    by_slug = {v["slug"]: k for k, v in ids.items()}
-    sl = lead.get("players", [])
-    pid = [by_slug.get(x) for x in sl]
-
-    def page(i, text=None):
-        return {"text": text or f"{ids[pid[i]]['name']}: every season and every opponent",
-                "href": f"player/{sl[i]}.html"}
-
-    def cmp(text=None):
-        return {"text": text or f"{ids[pid[0]]['name']} vs {ids[pid[1]]['name']}, season by season",
-                "href": f"compare/?a={sl[0]}&b={sl[1]}"}
-    r = lead["rule"]
-    if r in ("pass", "climb") and len(sl) == 2:
-        return [cmp(), page(1)]
-    if r == "matchup":
-        return [page(0, f"{ids[pid[0]]['name']}'s record against every franchise"),
-                {"text": f"{season_label(CURRENT_SEASON)} with and without board", "href": "lists/winning-without-him.html"}]
-    if r == "absence":
-        return [page(0), {"text": f"{season_label(CURRENT_SEASON)} standings so far",
-                          "href": f"seasons/{season_label(CURRENT_SEASON)}.html"}]
-    if r == "compare" and len(sl) == 2:
-        return [page(0), page(1)]
-    return [page(i) for i in range(min(2, len(sl)))]
-
-
-def draw(story, ids):
+def draw(story):
+    """The day's share card: the list's headline and its first three items."""
     from PIL import Image, ImageDraw, ImageFont
     W, H = 1200, 630
     fd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
 
-    def font(size, weight=400, mono=False):
-        f = ImageFont.truetype(os.path.join(fd, "JetBrainsMono.ttf" if mono else "DMSans.ttf"), size)
+    def font(size, weight=400):
+        f = ImageFont.truetype(os.path.join(fd, "DMSans.ttf"), size)
         try:
             f.set_variation_by_axes([weight])
         except Exception:
             pass
         return f
+
+    def wrap(g, text, f, width):
+        words, lines, cur = text.split(), [], ""
+        for wd in words:
+            t = (cur + " " + wd).strip()
+            if g.textlength(t, font=f) > width:
+                lines.append(cur)
+                cur = wd
+            else:
+                cur = t
+        lines.append(cur)
+        return lines
     im = Image.new("RGB", (W, H), "#f5f5f7")
     g = ImageDraw.Draw(im)
     g.rounded_rectangle((36, 36, W - 36, H - 36), 24, fill="#ffffff", outline="#d1d1d6", width=2)
-    g.text((76, 70), f"Today in Team Success · {nice_date(story['date'])}", font=font(26, 600), fill="#6e6e73")
-    # headline, wrapped
-    hf = font(52, 700)
-    words, lines, cur = story["headline"].split(), [], ""
-    for wd in words:
-        t = (cur + " " + wd).strip()
-        if g.textlength(t, font=hf) > W - 152:
-            lines.append(cur)
-            cur = wd
-        else:
-            cur = t
-    lines.append(cur)
-    y = 130
-    for ln in lines[:3]:
-        g.text((76, y), ln, font=hf, fill="#1d1d1f")
-        y += 64
-    bf = font(28, 500)
-    words, blines, cur = story["body"][0].split(), [], ""
-    for wd in words:
-        t = (cur + " " + wd).strip()
-        if g.textlength(t, font=bf) > W - 152:
-            blines.append(cur)
-            cur = wd
-        else:
-            cur = t
-    blines.append(cur)
-    y += 20
-    for ln in blines[:4]:
-        g.text((76, y), ln, font=bf, fill="#1d1d1f")
-        y += 40
-    g.text((76, H - 92), f"Data through {nice_date(story['cutoff'])}. Records are his teams' in his games.",
+    g.text((76, 66), story["headline"], font=font(34, 700), fill="#1d1d1f")
+    y = 132
+    bf = font(26, 500)
+    for txt in story["body"][:3]:
+        lines = wrap(g, txt, bf, W - 190)[:3]
+        g.ellipse((78, y + 10, 90, y + 22), fill="#1d1d1f")
+        for ln in lines:
+            g.text((108, y), ln, font=bf, fill="#1d1d1f")
+            y += 36
+        y += 18
+        if y > H - 150:
+            break
+    g.text((76, H - 92), f"Games through {nice_date(story['cutoff'])}. Records are his teams' in his games.",
            font=font(22, 500), fill="#6e6e73")
     g.text((W - 76, H - 92), "hoopsmatic.com/team-success", font=font(22, 600), fill="#3b82f6", anchor="ra")
     out = os.path.join(ROOT, story["img"])
@@ -398,8 +479,7 @@ def draw(story, ids):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default=dt.datetime.now(dt.timezone.utc).date().isoformat())
-    a = ap.parse_args()
-    build(a.date)
+    build(ap.parse_args().date)
 
 
 if __name__ == "__main__":
