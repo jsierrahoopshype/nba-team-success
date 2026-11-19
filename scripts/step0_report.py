@@ -38,7 +38,7 @@ def main():
     w("|---|---|---|")
     src = s["sources"]
     w(f"| aderoa/nba-boxscores | {src['nba-boxscores']} | every game and box score, 1946-47 to 2025-26 |")
-    w(f"| jsierrahoopshype/nba-player-data | {src['nba-player-data']} | RS-Stats.csv (names), Awards.csv |")
+    w(f"| jsierrahoopshype/nba-player-data | {src['nba-player-data']} | RS-Stats.csv (names), awards.json (honors) |")
     w(f"| jsierrahoopshype/hh-teammates | {src['hh-teammates']} | accolade weights (`scores`) and the scoring rules |")
     w(f"| ramirobentes/nbadatar (data in ramirobentes/nba_data releases) | Parquet files of 2026-11-18 | lineups and possessions, 1996-97 on |")
     w(f"| jsierrahoopshype/nba-headshots | {src['nba-headshots']} | face-fill headshots, team slugs |")
@@ -184,6 +184,19 @@ def main():
 
     # d
     g = s["minutes_groups"]
+    aw = s.get("awards")
+    if aw:
+        w("## Honors: awards.json")
+        w("")
+        w(f"- Source: `{aw['file']}` in nba-player-data ({aw['rows']:,} rows, {season_label(aw['first'])} to "
+          f"{season_label(aw['last'])}), the same file the Player Comparison tool reads. It replaced Awards.csv, "
+          "which stops at 2024-25. Fields: \"PLAYER / COACH\", \"AWARD\", \"YEAR\", \"TEAM\".")
+        w("- Rows by season: " + ", ".join(f"{season_label(int(y))} {n}" for y, n in sorted(aw["rows_by_season"].items()))
+          + "; All-Stars: " + ", ".join(f"{season_label(int(y))} {n}" for y, n in sorted(aw["allstars_by_season"].items())) + ".")
+        w("- Names are matched to players on the RS-Stats name (else the display name), as before. "
+          "Player names in the newest seasons that match no player (coach awards left out): "
+          + "; ".join(f"{season_label(int(y))}: {', '.join(n) or 'none'}" for y, n in sorted(aw["unmatched"].items())) + ".")
+        w("")
     w("## d. \"Did he play?\"")
     w("")
     w("Rule: appeared = minutes > 0 OR any counting stat > 0; when minutes were never recorded, "

@@ -4,7 +4,7 @@
 
 Reads (see scripts/fetch_sources.sh):
   _src/nba-boxscores/data/<season>/games.ndjson + boxscores.ndjson   every game, 1947-2026
-  _src/nba-player-data/RS-Stats.csv, Awards.csv                     names, awards
+  _src/nba-player-data/RS-Stats.csv, awards.json                    names, awards
   _src/ramiro/*.parquet                                              lineups/possessions, 1997+
   data/team_standings.csv                                           records, RNK, playoff finish
 
@@ -16,6 +16,9 @@ Writes (all committed):
   data/step0.json           numbers behind docs/step0-report.md and tests/
 
 Run: python scripts/build_history.py            (about 3-5 minutes)
+     python scripts/build_history.py --awards-only
+        re-reads only awards.json (and the hh-teammates weights) into the committed
+        data/players.json, step0.json and meta.json; needs only _src/nba-player-data and hh-teammates.
 """
 import csv
 import datetime as dt
@@ -56,6 +59,7 @@ ROUND_ORDER = {"": 0, "Play-In": 0.5, "First Round": 1, "Conf Semis": 2,
 step0 = {}
 ZERO_MIN = set()     # (pid, gid, franchise): 0-minute rows in games where minutes were kept
 AWARDS_BY_YEAR = {}  # (RS-Stats name, season) -> [awards with a Teammates Score weight]
+AWARDS_ROWS = []     # raw awards.json rows, for the unmatched-name report
 
 
 def log(*a):
@@ -458,15 +462,19 @@ def load_awards():
     alldef = {"All-Defensive First Team", "All-Defensive Second Team"}
     by = defaultdict(lambda: defaultdict(list))
     allstar = defaultdict(set)
-    with open(os.path.join(PDATA, "Awards.csv"), encoding="utf-8-sig") as fh:
-        for r in csv.DictReader(fh):
-            a = (r.get("AWARD") or "").strip()
-            p = (r.get("PLAYER / COACH") or "").strip()
-            y = (r.get("YEAR") or "").strip()
-            if p and a in scores and y.isdigit():
-                by[p][int(y)].append(a)
-            if p and a == "All-Star" and y.isdigit():
-                allstar[p].add(int(y))
+    # awards.json: same fields as the old Awards.csv ("PLAYER / COACH", "AWARD", "YEAR", "TEAM"),
+    # but kept current (the Player Comparison tool reads it); Awards.csv stopped at 2024-25.
+    with open(os.path.join(PDATA, "awards.json"), encoding="utf-8-sig") as fh:
+        rows = json.load(fh)
+    for r in rows:
+        a = str(r.get("AWARD") or "").strip()
+        p = str(r.get("PLAYER / COACH") or "").strip()
+        y = str(r.get("YEAR") or "").strip()
+        if p and a in scores and y.isdigit():
+            by[p][int(y)].append(a)
+        if p and a == "All-Star" and y.isdigit():
+            allstar[p].add(int(y))
+    AWARDS_ROWS[:] = rows
     AWARDS_BY_YEAR.clear()
     for p, years in by.items():
         for y, aws in years.items():
@@ -1013,16 +1021,11 @@ def build():
         if not info:
             continue
         d = sorted(duos.get(pid, []), key=lambda x: (-(x[2] / x[1]), -x[1], x[0]))[:10]
-        aw = awards.get(info["rsName"] or info["name"], {"score": 0, "counts": {}, "byYear": {}, "allstar": []})
         seas = sorted(p["seasons"], key=lambda x: (x["s"], x.get("first") or "9999"))
         out_players[str(pid)] = {"seasons": seas,
-                                 "duos": [[a, g, w] for a, g, w in d],
-                                 "acc": aw["score"], "accY": aw["byYear"], "awards": aw["counts"],
-                                 "as": aw.get("allstar", []),
-                                 # honors by season (Teammates Score awards), for "the help behind a score"
-                                 "awY": {str(y): sorted(AWARDS_BY_YEAR[(info["rsName"] or info["name"], y)])
-                                         for y in range(1946, LAST_COMPLETE + 2)
-                                         if (info["rsName"] or info["name"], y) in AWARDS_BY_YEAR}}
+                                 "duos": [[a, g, w] for a, g, w in d]}
+        out_players[str(pid)].update(award_fields(info, awards))
+    step0["awards"] = awards_report(pid_ids)
     dump_json(os.path.join(DATA, "players.json"), out_players)
     write_gamelogs(games, rows)
     ts_out = {f"{f}-{s}": r for (f, s), r in sorted(tseasons.items())}
@@ -1034,5 +1037,62 @@ def build():
     log("done.")
 
 
+
+def award_fields(info, awards):
+    """The award fields of one players.json row, matched on the RS-Stats name (else display name)."""
+    key = info["rsName"] or info["name"]
+    aw = awards.get(key, {"score": 0, "counts": {}, "byYear": {}, "allstar": []})
+    return {"acc": aw["score"], "accY": aw["byYear"], "awards": aw["counts"],
+            "as": aw.get("allstar", []),
+            # honors by season (Teammates Score awards), for "the help behind a score"
+            "awY": {str(y): sorted(AWARDS_BY_YEAR[(key, y)])
+                    for y in range(1946, LAST_COMPLETE + 2) if (key, y) in AWARDS_BY_YEAR}}
+
+
+def awards_report(pid_ids):
+    """step0 numbers for awards.json: rows, last season, and the newest seasons' player names that
+    match no player (coach-only awards left out)."""
+    keys = {(v.get("rsName") or v["name"]) for v in pid_ids.values()}
+    coach = re.compile(r"Coach|Executive|Hall of Fame")
+    years = Counter(int(r["YEAR"]) for r in AWARDS_ROWS if str(r.get("YEAR", "")).strip().isdigit())
+    unmatched = {}
+    for sy in (LAST_COMPLETE, LAST_COMPLETE + 1):
+        miss = sorted({str(r["PLAYER / COACH"]).strip() for r in AWARDS_ROWS
+                       if str(r.get("YEAR")).strip() == str(sy) and not coach.search(str(r.get("AWARD")))
+                       and str(r["PLAYER / COACH"]).strip() not in keys})
+        unmatched[str(sy)] = miss
+    allstars = Counter(int(r["YEAR"]) for r in AWARDS_ROWS
+                       if r.get("AWARD") == "All-Star" and str(r.get("YEAR", "")).isdigit())
+    return {"file": "awards.json", "rows": len(AWARDS_ROWS), "first": min(years), "last": max(years),
+            "rows_by_season": {str(y): years[y] for y in (LAST_COMPLETE - 1, LAST_COMPLETE, LAST_COMPLETE + 1)},
+            "allstars_by_season": {str(y): allstars[y] for y in (LAST_COMPLETE - 1, LAST_COMPLETE, LAST_COMPLETE + 1)},
+            "unmatched": unmatched}
+
+
+def awards_only():
+    """Re-read awards.json into the committed data, leaving every non-award field untouched."""
+    from common import load_json
+    pid_ids = load_json(os.path.join(DATA, "player_ids.json"))
+    players = load_json(os.path.join(DATA, "players.json"))
+    step0.update(load_json(os.path.join(DATA, "step0.json")))
+    meta = load_json(os.path.join(DATA, "meta.json"))
+    scores, awards = load_awards()
+    for pid, row in players.items():
+        info = pid_ids.get(pid)
+        if info:
+            row.update(award_fields(info, awards))
+    step0["awards"] = awards_report(pid_ids)
+    vers = source_versions()
+    for name in ("nba-player-data", "hh-teammates"):
+        step0["sources"][name] = vers[name]
+    meta["accolade_weights"] = scores
+    dump_json(os.path.join(DATA, "players.json"), players)
+    dump_json(os.path.join(DATA, "meta.json"), meta, compact=False)
+    dump_json(os.path.join(DATA, "step0.json"), step0, compact=False)
+    log("awards.json:", step0["awards"]["rows"], "rows,", step0["awards"]["first"], "to", step0["awards"]["last"])
+    for sy, names in step0["awards"]["unmatched"].items():
+        log(f"  {sy} names with no player match: {', '.join(names) or 'none'}")
+
+
 if __name__ == "__main__":
-    build()
+    awards_only() if "--awards-only" in sys.argv else build()

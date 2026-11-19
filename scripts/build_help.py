@@ -46,7 +46,7 @@ def build():
     pts = {pid: {int(y): v for y, v in p.get("accY", {}).items()} for pid, p in players.items()}
     aw = {pid: p.get("awY", {}) for pid, p in players.items()}
     matched = {pid for pid, v in d.ids.items() if v.get("rsName")}
-    # seasons whose honors are not in the awards file yet (2025-26 on 2026-11-18): every help
+    # seasons whose honors are not in awards.json yet (none through 2025-26 on 2026-11-19): every help
     # score there is partial, never a real zero
     have = set()
     for v in aw.values():

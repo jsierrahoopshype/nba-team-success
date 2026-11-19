@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 import analysis as A  # noqa: E402
 import boards as B  # noqa: E402
-from common import LAST_COMPLETE, season_label  # noqa: E402
+from common import CURRENT_SEASON, LAST_COMPLETE, season_label  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -127,20 +127,20 @@ def test_no_allstar_board_sanity(data):
     assert top["Dirk Nowitzki"] == (544, 422, 14)
     assert top["Andre Miller"][:2] == (529, 548)
     r4 = {m["name"]: (m["w"], m["l"]) for _, _, m in r[:4]}
-    assert r4["Nikola Jokic"] == (452, 293)          # 2025-26 (43-22) is left out: no honors data yet
+    assert r4["Nikola Jokic"] == (452, 293)          # 2025-26 (43-22) is out: Jamal Murray was an All-Star
     r, srt, _ = B.compute(data, "no-allstar-teammate", {"to": 2026, "sort": "pct"})
     assert [m["name"] for _, _, m in r[:3]] == ["Tim Duncan", "James Harden", "Rasheed Wallace"]
     assert (r[0][2]["w"], r[0][2]["l"]) == (360, 155)
 
 
 def test_no_allstar_board_leaves_out_seasons_without_honors(data, d):
-    """2025-26 and the season in progress have no honors rows yet: they are left out, not counted
-    as "no All-Star teammate", and the board says so. Seasons with no All-Star Game (1946-47 to
+    """The season in progress (no All-Stars named yet) is left out, not counted as "no All-Star
+    teammate", and the board says so; 2025-26 is counted now that awards.json has it. Seasons with no All-Star Game (1946-47 to
     1949-50, 1998-99) still have honors, so they count."""
     with open(os.path.join(ROOT, "data", "help.json"), encoding="utf-8") as fh:
         h = json.load(fh)
     miss = B.honors_missing(d, h)
-    assert 2026 in miss and 1947 not in miss and 1999 not in miss
+    assert 2026 not in miss and 1947 not in miss and 1999 not in miss
     for row in data["p"]:
         for st in row[5]:
             assert st[12] == (1 if st[0] in miss else 0)
@@ -148,7 +148,10 @@ def test_no_allstar_board_leaves_out_seasons_without_honors(data, d):
     b, _, _ = B.compute(data, "no-allstar-teammate", {"to": min(miss) - 1})
     assert [(x[2]["slug"], x[2]["w"], x[2]["l"]) for x in a[:200]] == [(x[2]["slug"], x[2]["w"], x[2]["l"]) for x in b[:200]]
     t = read("lists/no-allstar-teammate.html")
-    assert f"{season_label(min(miss))} onward not counted yet: honors missing from the awards data" in t
+    if miss == [CURRENT_SEASON]:
+        assert f"{season_label(CURRENT_SEASON)} is left out until its All-Stars are named." in t
+    else:
+        assert f"{season_label(min(miss))} onward not counted yet: honors missing from the awards data" in t
 
 
 def test_average_finish_defaults_to_league_size_adjusted(d):

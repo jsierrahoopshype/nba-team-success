@@ -7,7 +7,7 @@ Read-only checks on the sources, run before building the pages. Every number bel
 | Source | Version used | What we take |
 |---|---|---|
 | aderoa/nba-boxscores | 05efb8f 2026-11-17 | every game and box score, 1946-47 to 2025-26 |
-| jsierrahoopshype/nba-player-data | 17a4cf5 2026-11-18 | RS-Stats.csv (names), Awards.csv |
+| jsierrahoopshype/nba-player-data | caf7829 2026-11-18 | RS-Stats.csv (names), awards.json (honors) |
 | jsierrahoopshype/hh-teammates | b9767c3 2026-11-17 | accolade weights (`scores`) and the scoring rules |
 | ramirobentes/nbadatar (data in ramirobentes/nba_data releases) | Parquet files of 2026-11-18 | lineups and possessions, 1996-97 on |
 | jsierrahoopshype/nba-headshots | 9d46952d 2026-11-16 | face-fill headshots, team slugs |
@@ -119,6 +119,12 @@ Box-score players (personId + name) matched to RS-Stats.csv names per season + f
   - Alijah Martin (23 games, personId 1642918)
 - Single seasons with 20+ games that did not match by name for that team (85 rows). The player is still identified by personId from his other seasons; these are mostly 1950s RS-Stats rows filed under a different team or season. Full list at the end of this report.
 - `data/player_ids.json`: one stable slug per personId. Career Map rule (`Nikola Jokić` -> `nikola-jokic`), and Career Map's birth-year names for same-name players (`charles-smith-1965`). 50 slugs carry a year or id suffix: bob-duffy-1922, bob-duffy-1940, bobby-jones-1984, brandon-williams-1975, cedric-henderson-1965, cedric-henderson-1975, charles-jones-1957, charles-jones-1962, charles-jones-1975, charles-smith-1965, charles-smith-1967, charles-smith-1975, chris-smith-1970, chris-smith-1987, chris-wright-1988, chris-wright-1989, dee-brown-1968, dee-brown-1984, don-smith-1920, don-smith-1951, freddie-lewis-1921, freddie-lewis-1943, george-johnson-1948, george-johnson-1956, george-king-1928, greg-smith-1947, greg-smith-1991, jack-turner-1930, jack-turner-1939, johnny-davis-1955, ken-johnson-1962, ken-johnson-1978, kevin-porter-1950, larry-johnson-1954, larry-johnson-1969, mark-davis-1963, mark-davis-1973, mark-jones-1961, mark-jones-1975, michael-smith-1965, michael-smith-1972, mike-brown-1963, mike-davis-1946, mike-davis-1956, mike-james-1975, mike-james-1990, reggie-williams-1964, reggie-williams-1986, tony-mitchell-1989, tony-mitchell-1992.
+
+## Honors: awards.json
+
+- Source: `awards.json` in nba-player-data (10,652 rows, 1946-47 to 2026-27), the same file the Player Comparison tool reads. It replaced Awards.csv, which stops at 2024-25. Fields: "PLAYER / COACH", "AWARD", "YEAR", "TEAM".
+- Rows by season: 2024-25 203, 2025-26 207, 2026-27 8; All-Stars: 2024-25 26, 2025-26 28, 2026-27 0.
+- Names are matched to players on the RS-Stats name (else the display name), as before. Player names in the newest seasons that match no player (coach awards left out): 2025-26: Deriq Queen; 2026-27: none.
 
 ## d. "Did he play?"
 
