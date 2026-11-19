@@ -35,7 +35,7 @@ MAX_ITEMS, MIN_ITEMS, ARCHIVE_N = 10, 4, 3
 WINS_STEP, WINS_FROM = 100, 300            # career wins milestones: 300, 400, ... 1,000, ...
 WL_STEP = 100                              # career W - L milestones: +100, +200, ... (and -100, ...)
 PCT_MIN_GAMES, PCT_TOP = 500, 25           # career win %: players with 500+ games, top 25
-NOTABLE_RANK, NOTABLE_AS = 100, 2          # a passed player is notable: top 100 on that board or a 2+ time All-Star
+NOTABLE_RANK, NOTABLE_AS = 100, 3          # a passed player is notable: top 100 on that board, a Hall of Famer or a 3+ time All-Star
 PASS_MAX_RANK, PASS_CAP = 250, 4           # the passer is in that board's top 250; at most 4 pass items a night
 WW_PLAYED, WW_MISSED = 10, 8               # with/without this season: a real sample
 WW_GAP = 0.40                              # ... and a gap of 40+ points, or one side unbeaten / winless
@@ -157,18 +157,28 @@ def build(date):
         return (t["name"] if t else None) or franchise_name(f, sy) or f
 
     def notable(q, board, rank):
-        n_as = len(d.players.get(q, {}).get("as", []))
-        return rank <= NOTABLE_RANK or n_as >= NOTABLE_AS
+        p = d.players.get(q, {})
+        return rank <= NOTABLE_RANK or bool(p.get("hof")) or len(p.get("as", [])) >= NOTABLE_AS
+
+    def most_notable(cands):
+        """The most notable passed player: Hall of Famer first, then All-Star selections, then rank."""
+        return min(cands, key=lambda x: (-d.players.get(x[0], {}).get("hof", 0),
+                                         -len(d.players.get(x[0], {}).get("as", [])), x[1][0]))
 
     def who_note(q):
-        n_as = len(d.players.get(q, {}).get("as", []))
+        p = d.players.get(q, {})
+        n_as = len(p.get("as", []))
+        if p.get("hof"):
+            return " (Hall of Famer)"
         return f" ({n_as}-time All-Star)" if n_as >= NOTABLE_AS else ""
 
     items = []
 
-    def add(pri, order, key, parts, href, pid=None, team=None, scope=None):
-        items.append((pri, order, {"key": key, "type": key.split(":")[0], "parts": parts, "href": href,
-                                   "pid": pid, "team": team, "scope": scope}))
+    def add(pri, order, key, parts, href, pid=None, team=None, scope=None, passed=None):
+        it = {"key": key, "type": key.split(":")[0], "parts": parts, "href": href, "pid": pid, "team": team, "scope": scope}
+        if passed is not None:
+            it["passed"] = passed          # every player he passed (slug), for the "most notable" check
+        items.append((pri, order, it))
 
     # ---- last night's games ------------------------------------------------------------------
     log = cur.get("log", {"games": [], "app": {}})
@@ -207,12 +217,12 @@ def build(date):
             nq = [(q, a) for q, a in passed if q in ids and notable(q, board, a[0])]
             if not nq:
                 continue
-            q, (rq, tq, vq) = nq[0]
+            q, (rq, tq, vq) = most_notable(nq)
             more = f" and {len(passed) - 1} other{'s' if len(passed) > 2 else ''}" if len(passed) > 1 else ""
             add(2, r, f"{'wins' if board == 'career-wins' else 'wl'}-pass:{slug(p)}:{slug(q)}",
                 [plink(p), T(" passed "), plink(q, False), T(f"{who_note(q)}{more} for "),
                  L(f"{B.rank_label(r, tied)} in {what}", href(p)), T(f" ({fmt(v)}, {B.scope_label(board, flt)}).")],
-                href(p), pid=p, scope=B.scope_label(board, flt))
+                href(p), pid=p, scope=B.scope_label(board, flt), passed=[slug(x) for x, _ in passed if x in ids])
 
     def round_up(step, start=None):
         def f(v0, v):
@@ -248,12 +258,14 @@ def build(date):
             continue
         nq = [(q, a) for q, a in passed if q in ids and notable(q, "pct", a[0])]
         if nq:
-            q = nq[0][0]
+            q = most_notable(nq)[0]
+            more = f" and {len(passed) - 1} other{'s' if len(passed) > 2 else ''}" if len(passed) > 1 else ""
             href = f"lists/career-wins.html?sort=pct&cg={PCT_MIN_GAMES}&hl={slug(p)}#p-{slug(p)}"
             add(2, r, f"pct-pass:{slug(p)}:{slug(q)}",
-                [plink(p), T(" passed "), plink(q, False), T(f"{who_note(q)} in career win % in his games: "),
+                [plink(p), T(" passed "), plink(q, False), T(f"{who_note(q)}{more} in career win % in his games: "),
                  L(f"{pct1(v)}, {B.rank_label(r, tied)}", href),
-                 T(f" among players with {PCT_MIN_GAMES}+ games ({B.SCOPE_LIVE}).")], href, pid=p, scope=B.SCOPE_LIVE)
+                 T(f" among players with {PCT_MIN_GAMES}+ games ({B.SCOPE_LIVE}).")], href, pid=p, scope=B.SCOPE_LIVE,
+                passed=[slug(x) for x, _ in passed if x in ids])
 
     # ---- 3. teams that played last night: starts and streaks ---------------------------------
     at_n = defaultdict(list)                   # N -> [(sy, f, wins through N)]

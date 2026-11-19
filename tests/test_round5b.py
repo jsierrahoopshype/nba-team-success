@@ -40,12 +40,56 @@ def test_last_night_list():
         assert "No new games since the last update" in sec
 
 
+def _notable(slug):
+    import sys
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    ids = json.loads(read("data/player_ids.json"))
+    players = json.loads(read("data/players.json"))
+    pid = next(k for k, v in ids.items() if v["slug"] == slug)
+    p = players.get(pid, {})
+    return bool(p.get("hof")), len(p.get("as", []))
+
+
+def _board_rank(href, slug):
+    import sys
+    from urllib.parse import parse_qs, urlsplit
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    import boards as B
+    u = urlsplit(href)
+    q = parse_qs(u.query)
+    flt = {k: (int(v[0]) if v[0].isdigit() else v[0]) for k, v in q.items() if k in ("sort", "cg")}
+    ranked, _, _ = B.compute(json.loads(read("assets/board.json")), os.path.basename(u.path)[:-5], flt)
+    return next((r for r, t, m in ranked if m["slug"] == slug), 10 ** 6)
+
+
+def test_list_pass_names_a_notable_player():
+    """The player passed is top 100 on that board, a Hall of Famer or a 3+ time All-Star, and he is
+    the most notable of everyone passed (Hall of Famer, then All-Star selections, then rank)."""
+    st = json.loads(read("data/stories.json"))["stories"][0]
+    for it in st["items"]:
+        if not it["type"].endswith("-pass"):
+            continue
+        q = it["parts"][2][1].split("/")[-1][:-5]                    # "player/<slug>.html"
+        hof, n_as = _notable(q)
+        assert _board_rank(it["href"], q) <= 100 or hof or n_as >= 3, (it["key"], q)
+        best = (hof, n_as)
+        for other in it.get("passed", []):
+            h2, a2 = _notable(other)
+            if h2 or a2 >= 3 or _board_rank(it["href"], other) <= 100:
+                assert (h2, a2) <= best or (h2 == best[0] and a2 <= best[1]), (it["key"], other)
+        txt = "".join(p[0] for p in it["parts"])
+        n = len(it.get("passed", [])) - 1
+        if n > 0:
+            assert f" and {n} other" in txt
+
+
 def test_list_passes_are_notable():
     st = json.loads(read("data/stories.json"))["stories"][0]
     for it in st["items"]:
         if it["type"].endswith("-pass"):
             txt = "".join(p[0] for p in it["parts"])
-            r = int(re.search(r"(?:T-|#)([\d,]+) in ", txt).group(1).replace(",", ""))
+            # every pass quotes the passer's board rank: "for T-83 in career wins", "65.6%, #36 among ..."
+            r = int(re.search(r"(?:T-|#)([\d,]+)\b", txt).group(1).replace(",", ""))
             assert r <= 250
 
 
