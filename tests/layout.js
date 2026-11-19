@@ -121,6 +121,27 @@ server.listen(0, async () => {
       await page.close();
     }
   }
+  // the in-page comparison (?peer=) draws the same scoreboard and season table as the static page
+  {
+    const text = async (u, w) => {
+      const page = await browser.newPage({ viewport: { width: w, height: 900 } });
+      await page.goto(`http://localhost:${port}/${u}`, { waitUntil: 'networkidle' });
+      if (u.includes('peer=')) await page.waitForSelector('#cmp .sbt');
+      const out = await page.evaluate(() => {
+        const root = document.querySelector('#cmp') || document;
+        const t = s => [...root.querySelectorAll(s)].map(x => x.innerText.replace(/\s+/g, ' ').trim()).join(' | ');
+        return { sb: t('.sbt'), tally: t('.tally'), tint: t('.sbt td.la, .sbt td.lb'), wide: t('.cmpt tbody'), cards: t('.cmpcards') };
+      });
+      await page.close();
+      return out;
+    };
+    for (const w of [390, 1366]) {
+      const a = await text('compare/karl-malone--michael-jordan.html', w);
+      const b = await text('player/karl-malone.html?peer=michael-jordan', w);
+      for (const k of Object.keys(a)) if (a[k] !== b[k]) bad.push(`in-page compare differs from the static page at ${w}px: ${k}`);
+      n++;
+    }
+  }
   await browser.close();
   server.close();
   console.log(`${n} page/width checks, ${bad.length} problems`);
