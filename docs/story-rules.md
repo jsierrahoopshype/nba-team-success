@@ -19,14 +19,15 @@ view, qualifying group, standard competition ranking with "T-" for a shared rank
 | 1 | career wins milestone | his career wins in his games (incl. 2026-27 to date) crossed 300, 400, 500 ... | "{P} reached {M} career wins in his games: {W}, {rank} on the board (incl. 2026-27 to date)." | career wins board row |
 | 1 | W − L milestone | his career W − L crossed a multiple of 100 (+100, +200 ... or −100 ...) | "{P} reached {M} wins minus losses: ..." | W − L board row |
 | 1 | win % top 25 | among players with 500+ games, he moved into the top 25 in career win % | "{P} moved into the top 25 in career win % in his games: {pct}, {rank} among players with 500+ games (incl. 2026-27 to date)." | career wins board, win % sort, 500+ games |
-| 2 | notable pass (wins, W − L, win %) | he is in that board's top 250 (win %: top 100) and moved ahead of a notable player: top 100 on that board or a 2+ time All-Star | "{P} passed {Q} ({n}-time All-Star) [and k others] for {rank} in career wins / career W − L ({value}, incl. 2026-27 to date)." | board row |
+| 2 | notable pass (wins, W − L, win %) | the passer is in that board's top 250 (win %: top 100), AND the player passed is notable on that board: top 100 on it, a Hall of Famer or a 3+ time All-Star. Several passes for one player: only the most notable name (Hall of Famer first, then most All-Star selections, then best rank on the board) | "{P} passed {Q} (Hall of Famer / {n}-time All-Star) [and k others] for {rank} in career wins / career W − L ({value}, incl. 2026-27 to date)." | board row |
 | 3 | team start | his team played last night, 8+ games, and the record is the franchise's best (worst) through that many games since a season 10+ years ago, or ever (10+ earlier seasons) | "The {team} are {W}–{L}, the franchise's best / worst start through {n} games since {season} ({W}–{L})." | the team's row in this season's standings |
 | 3 | team streak | a current winning or losing streak of 5+ games that is the franchise's longest since a season 10+ years ago, or ever | "The {team} have a {k}-game winning / losing streak, the franchise's longest since {season}." | standings row |
 | 4 | with / without | his team played last night; 10+ games played and 8+ missed this season; one side unbeaten or winless, or a gap of 40+ points | "The {team} are {W}–{L} without {P} and {W}–{L} with him (2026-27 to date, {g} played, {m} missed)." | his row on the with and without board at 10 and 8 |
 | 5 | tonight | an active player with 15+ regular-season games against tonight's opponent (cdn.nba.com schedule) and a win rate of .700+ or .350 or lower | "Tonight vs the {opp}: {P}'s teams are {W}–{L} ({pct}) in his {n} regular-season games against them (through 2025-26)." | his opponent row |
 
 Picking: priority order (within a priority, the best board rank or the biggest number first), one
-item per player or team, at most 4 passes, up to 10 items.
+item per player or team, at most 4 passes, up to 10 items. Hall of Famers come from the "Hall of
+Fame" rows of awards.json (nba-player-data), matched to players by name like every other honor.
 
 **Quiet night**: when no item qualifies the list says "Quiet night" and shows three items labeled
 "From the archive" (title-winning or 60-win-pace teams on this calendar date, never repeated within

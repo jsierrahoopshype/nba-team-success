@@ -462,6 +462,7 @@ def load_awards():
     alldef = {"All-Defensive First Team", "All-Defensive Second Team"}
     by = defaultdict(lambda: defaultdict(list))
     allstar = defaultdict(set)
+    hof = set()                     # "Hall of Fame" rows (inductees as players or coaches)
     # awards.json: same fields as the old Awards.csv ("PLAYER / COACH", "AWARD", "YEAR", "TEAM"),
     # but kept current (the Player Comparison tool reads it); Awards.csv stopped at 2024-25.
     with open(os.path.join(PDATA, "awards.json"), encoding="utf-8-sig") as fh:
@@ -474,6 +475,8 @@ def load_awards():
             by[p][int(y)].append(a)
         if p and a == "All-Star" and y.isdigit():
             allstar[p].add(int(y))
+        if p and a == "Hall of Fame":
+            hof.add(p)
     AWARDS_ROWS[:] = rows
     AWARDS_BY_YEAR.clear()
     for p, years in by.items():
@@ -499,7 +502,9 @@ def load_awards():
                 counts[a] += 1
         out[p] = {"score": round(total, 3), "counts": dict(counts),
                   "byYear": {str(y): round(v, 3) for y, v in sorted(per_year.items()) if v},
-                  "allstar": sorted(allstar.get(p, ()))}
+                  "allstar": sorted(allstar.get(p, ())), "hof": 1 if p in hof else 0}
+    for p in hof - set(out):
+        out[p] = {"score": 0, "counts": {}, "byYear": {}, "allstar": sorted(allstar.get(p, ())), "hof": 1}
     return scores, out
 
 
@@ -1043,7 +1048,7 @@ def award_fields(info, awards):
     key = info["rsName"] or info["name"]
     aw = awards.get(key, {"score": 0, "counts": {}, "byYear": {}, "allstar": []})
     return {"acc": aw["score"], "accY": aw["byYear"], "awards": aw["counts"],
-            "as": aw.get("allstar", []),
+            "as": aw.get("allstar", []), "hof": aw.get("hof", 0),
             # honors by season (Teammates Score awards), for "the help behind a score"
             "awY": {str(y): sorted(AWARDS_BY_YEAR[(key, y)])
                     for y in range(1946, LAST_COMPLETE + 2) if (key, y) in AWARDS_BY_YEAR}}
