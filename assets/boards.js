@@ -257,7 +257,7 @@
     var pop = document.getElementById("board-pop");
     if (pop) {
       var minTxt = [];
-      if (res.mins.cg > 1) minTxt.push(res.mins.cg.toLocaleString("en-US") + "+ career games");
+      if (res.mins.cg > 1) minTxt.push(res.mins.cg.toLocaleString("en-US") + "+ games in this view");
       if (res.mins.ms) minTxt.push(res.mins.ms + "+ seasons");
       if (res.mins.mp) minTxt.push(res.mins.mp + "+ games played");
       if (res.mins.mm) minTxt.push(res.mins.mm + "+ games missed");
