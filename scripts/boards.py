@@ -21,7 +21,7 @@ from common import CURRENT_SEASON, LAST_COMPLETE  # noqa: E402
 PO = ["", "Play-In", "First Round", "Conf Semis", "Conf Finalist", "Finalist", "Champion"]
 DEPTH = [0, 0, 1, 2, 3, 4, 5]
 DEPTH_LABEL = {5: "Won the title", 4: "NBA Finals", 3: "Conference finals", 2: "Conference semifinals",
-               1: "First round", 0: "Missed the playoffs"}
+               1: "First round", 0: "Missed playoffs"}
 
 # key -> board definition. "sorts": sort key -> (label, direction, value fn name, default mins)
 BOARDS = {

@@ -24,6 +24,7 @@ import analysis as A  # noqa: E402
 import boards as B  # noqa: E402
 import charts as CH  # noqa: E402
 import leads as LEADS  # noqa: E402
+import picks  # noqa: E402
 from common import (CURRENT_SEASON, DATA, DEFUNCT, LAST_COMPLETE, RAMIRO_FIRST, ROOT, SRC,  # noqa: E402
                     dump_json, franchise_name, load_json, season_label)
 
@@ -116,6 +117,7 @@ def rec(w, l):
 
 # House formats (brief, Nov 2026): rates 65.9%, gaps +26.0 pp (from unrounded rates), records
 # with an en dash in display (706–366), empty samples N/A, minus signs as U+2212.
+HOME_MIN_PLAYED, HOME_MIN_MISSED = 10, 8     # homepage with/without boxes only
 EN = "\u2013"
 MINUS = "\u2212"
 
@@ -338,10 +340,10 @@ class Site:
 TD_RE = re.compile(r'(<td data-l="[^"]*"[^>]*>)(.*?)(</td>)', re.S)
 
 
-def page(rel, title, desc, body, up, robots=None, og=None):
+def page(rel, title, desc, body, up, robots=None, og=None, canonical=None):
     # one wrapper per card cell so phones show "label .... value" cleanly
     body = TD_RE.sub(lambda m: f'{m.group(1)}<span class="v">{m.group(2)}</span>{m.group(3)}', body)
-    url = BASE + ("" if rel == "index.html" else rel)
+    url = canonical or (BASE + ("" if rel == "index.html" else rel))
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -376,7 +378,7 @@ def page(rel, title, desc, body, up, robots=None, og=None):
 <form class="finder bottom" role="search" data-mode="go" data-up="{up}" data-index="{up}assets/players.json" action="{up}players/a.html">
 <label for="pf2">Find a player</label><input id="pf2" type="search" autocomplete="off" placeholder="Find a player, e.g. Bill Russell">
 <ul class="results"></ul></form>
-<nav class="crumbs" aria-label="Team Success"><a href="{up}index.html">Team Success home</a> <a href="{up}how-we-count.html">How we count</a> <a href="{up}players/a.html">Players A-Z</a></nav>
+<nav class="crumbs" aria-label="Team Success"><a href="{up}index.html">Team Success home</a> <a href="{up}compare/">Compare two players</a> <a href="{up}how-we-count.html">How we count</a> <a href="{up}players/a.html">Players A-Z</a></nav>
 <p class="terms"><a href="{TERMS}">Terms</a></p>
 </div>
 <script src="{up}assets/ts.js" defer></script>
@@ -429,8 +431,8 @@ def playoff_text(s, t, up):
 
 
 PO_SHORT = {"Champion": "Title", "Finalist": "Lost Finals", "Conf Finalist": "Lost conf finals",
-            "Conf Semis": "Lost conf semis", "First Round": "Lost 1st round", "Play-In": "Lost in the play-in",
-            "": "Missed the playoffs"}
+            "Conf Semis": "Lost conf semis", "First Round": "Lost 1st round", "Play-In": "Lost in play-in",
+            "": "Missed playoffs"}
 
 
 def era_code(f, sy):
@@ -639,7 +641,7 @@ def summary_cards(s, pid, up):
         deep_txt = A.PO_LABEL[t["po"]]
         deep_sub = f'Best: {season_label(t["s"])}, {e(s.city(t["f"], t["s"]))}'
     else:
-        deep_txt, deep_sub = "Missed the playoffs", "in every season"
+        deep_txt, deep_sub = "Missed playoffs", "in every season"
     gap = sm["gap"]
     sgap = (A.pct(w, l) - A.pct(sm["sw"], sm["sl"])) if (w + l) and (sm["sw"] + sm["sl"]) else None
     live = s.through and s.cur and pid in s.cur["players"]
@@ -698,7 +700,7 @@ def player_facts(s, pid):
         kind = {"Champion": "title", "Finalist": "finals", "Conf Finalist": "playoffs", "Conf Semis": "playoffs",
                 "First Round": "playoffs"}.get(po, "missed")
         pts.append({"sy": sy, "rnk": t["rnk"], "size": size, "kind": kind, "f": main["f"],
-                    "label": f"{season_label(sy)}: {t['name']}, #{t['rnk']} of {size}, {A.PO_LABEL[po] if po else 'missed the playoffs'}"})
+                    "label": f"{season_label(sy)}: {t['name']}, #{t['rnk']} of {size}, {A.PO_LABEL[po] if po else 'missed playoffs'}"})
     return {"seasons": sm["seasons"], "teams": len(teams), "w": sm["w"], "l": sm["l"], "titles": sm["titles"],
             "title_years": sm["titleYears"], "title_team": title_team, "finals": finals, "trips": sm["trips"],
             "best": best, "avg": sm["rnk"] or 0, "jump": jump}, pts
@@ -709,13 +711,13 @@ ROUND_WORDS = {"First Round": "first round", "Conf Semis": "conference semifinal
 
 
 def result_words(s, t, up):
-    """The season's playoff result in full words: 'Missed the playoffs', 'Lost in the play-in',
+    """The season's playoff result in full words: 'Missed playoffs', 'Lost in play-in',
     'Lost in the first round 1–4 to [logo] Minnesota', 'Won the title 4–2 over [logo] Utah'."""
     po = t["po"]
     if po == "":
-        return "Missed the playoffs"
+        return "Missed playoffs"
     if po == "Play-In":
-        return "Lost in the play-in"
+        return "Lost in play-in"
     if po == "Champion":
         fin = t["series"][-1] if t["series"] else None
         if not fin:
@@ -1249,27 +1251,32 @@ def compare_rel(a_slug, b_slug):
     return f"compare/{x}--{y}.html"
 
 
-def peer_section(s, pid, up):
+def compare_block(s, pid, up):
+    """Right under the lead: "Compare {name} with..." + a finder (opens compare/?a=&b=) + the three
+    suggested peers as face chips (their pre-built pages). Old ?peer= links are sent to the compare
+    page by ts.js (data-peer-redirect)."""
     peers = s.help["peers"].get(pid, [])
     slug = s.ids[pid]["slug"]
-    items = []
+    name = s.ids[pid]["name"]
+    chips = []
     for q, dist in peers:
         if q not in s.ids:
             continue
-        rel = compare_rel(slug, s.ids[q]["slug"])
-        items.append(f'<li>{s.pic(q, up, "sm")}<div><strong><a href="{up}{rel}">{e(s.ids[pid]["name"])} vs {e(s.ids[q]["name"])}</a></strong>'
-                     f'<span class="det">{e(peer_reason(s, pid, q, dist))}</span></div></li>')
-    sugg = ('<ul class="feat peers">' + "".join(items) + "</ul>") if items else \
-        '<p class="note">Suggested peers need 300+ career games. Pick anyone below.</p>'
-    return f"""<section id="compare"><h2>Compare with a peer</h2>
-{sugg}
-<form class="finder" role="search" data-mode="peer" data-up="{up}" data-index="{up}assets/players.json" action="#compare">
-<label for="peer-q">Compare {e(s.ids[pid]['name'])} with anyone</label>
-<input id="peer-q" type="search" autocomplete="off" placeholder="Type a name">
+        chips.append(f'<li><a href="{up}{compare_rel(slug, s.ids[q]["slug"])}" title="{e(peer_reason(s, pid, q, dist))}">'
+                     f'{s.pic(q, up, "sm")}<span>{e(s.ids[q]["name"])}</span></a></li>')
+    sugg = (f'<p class="sub">Suggested, same era and similar teammate help:</p><ul class="fchips">{"".join(chips)}</ul>'
+            if chips else "")
+    return f"""<section id="compare" class="cmpblock" data-peer-redirect="{e(slug)}" data-up="{up}"><h2>Compare {e(name)} with&hellip;</h2>
+<form class="finder" role="search" data-mode="cmp" data-a="{e(slug)}" data-up="{up}" data-index="{up}assets/players.json" action="{up}compare/">
+<label for="cmp-q" class="vh">Compare {e(name)} with another player</label>
+<input id="cmp-q" type="search" autocomplete="off" placeholder="Type any player's name">
 <ul class="results"></ul></form>
-<div id="cmp" data-a="{e(slug)}" data-up="{up}"></div>
-<script src="{up}assets/compare.js" defer></script>
-</section>"""
+{sugg}</section>"""
+
+
+def download_link(href, filename):
+    """The share card from hoopsmatic-og-card, same site: a plain download link, no canvas."""
+    return f'<a class="more-btn dl" href="{e(href)}" download="{e(filename)}">Download image</a>'
 
 
 def compare_summary(s, pid):
@@ -1281,7 +1288,7 @@ def compare_summary(s, pid):
     return {"name": s.ids[pid]["name"], "slug": s.ids[pid]["slug"], "hs": s.ids[pid].get("hs") or "",
             "w": sm["w"], "l": sm["l"], "wl": sm["w"] - sm["l"], "pct": A.pct(sm["w"], sm["l"]),
             "avg": sm["rnk"], "adj30": round(eq30(s.adj_avg(pid)), 4), "titles": sm["titles"], "trips": sm["trips"],
-            "seasons": sm["seasons"], "deep": deep, "deepLabel": A.PO_LABEL[deep_po] if deep else "Missed the playoffs",
+            "seasons": sm["seasons"], "deep": deep, "deepLabel": A.PO_LABEL[deep_po] if deep else "Missed playoffs",
             "gap": round(sm["gap"], 4) if sm["gap"] is not None else None,
             "help": a.get("help"), "enter": a.get("enter"),
             "span": season_label(min(r["sy"] for r in rows)) + " to " + season_label(max(r["sy"] for r in rows))}
@@ -1339,16 +1346,19 @@ def scoreboard(s, a, b, ca, cb, up):
     if ca["help"] is not None and cb["help"] is not None and round(ca["help"], 1) != round(cb["help"], 1):
         lo, hi = (ca, cb) if ca["help"] < cb["help"] else (cb, ca)
         help_line = (f'<p class="note">Less help: {e(short_name(lo["name"], hi["name"]))} '
-                     f'({lo["help"]:.1f} per season vs {hi["help"]:.1f}). Help is the Teammates Score of the '
-                     f'teammates he shared games with; the smaller number is tinted.</p>')
+                     f'({lo["help"]:.1f} per season vs {hi["help"]:.1f}).</p>')
     return f"""<section class="sboard"><h2 id="cap-sb">Head to head</h2>
 <div class="sbhead"><div class="sbp a">{s.pic(a, up, 'md')}<b>{e(ca['name'])}</b><small>{e(ca['span'])}</small></div>
 <span class="vs">vs</span><div class="sbp b">{s.pic(b, up, 'md')}<b>{e(cb['name'])}</b><small>{e(cb['span'])}</small></div></div>
 <table class="sbt" aria-labelledby="cap-sb"><thead><tr><th scope="col">Category</th><th scope="col">{e(na)}</th><th scope="col">{e(nb)}</th></tr></thead>
 <tbody>{''.join(rows)}</tbody></table>
 <p class="tally">{tally}</p>
-{help_line}<p class="note">The leader's cell is tinted: the larger number, except average finish and help, where the smaller one leads. With vs without is shown for reference and is not counted. These are team records and finishes, not a measure of who was better.</p>
+{help_line}<p class="note">{SB_NOTE} <a href="{up}comparison-rules.html#how-this-works">How this works</a></p>
 </section>"""
+
+
+# the second line under every scoreboard (static pages and compare.js); full rules on the rules page
+SB_NOTE = "Lower is better for finish and help. With vs without isn't counted. Team results, not who was better."
 
 
 def compare_page(s, a, b, dist):
@@ -1407,22 +1417,44 @@ def compare_page(s, a, b, dist):
              f'<th scope="colgroup" colspan="5" class="gb">{e(nb)}</th><th scope="col" rowspan="2">Better finish<br>{e(sna)}{EN}{e(snb)}</th></tr>'
              f'<tr>{sub}{sub}</tr></thead><tbody>{"".join(trs)}</tbody></table></div>'
              f'<ol class="cmpcards">{"".join(cards)}</ol>')
-    card_data = json.dumps([ca, cb], ensure_ascii=False, separators=(",", ":"))
     body = f"""<header class="ent">{s.pic(a, up, 'md')}{s.pic(b, up, 'md')}<div><h1>{e(na)} vs {e(nb)}</h1>
 <p class="subtitle">Team success, aligned by career season: final NBA finish, record in his games, playoffs and teammate help.</p></div></header>
 {scoreboard(s, a, b, ca, cb, up)}
-<p><button type="button" class="more-btn" id="card-dl" data-card="{e(card_data)}" data-up="{up}">Download image</button> <span class="note">Share this page's link; the image states the comparison and its scope.</span></p>
+<p>{download_link(f"{OG}compare/{sa}--{sb}.png", f"{sa}-vs-{sb}.png")} <a class="more-btn" href="./?a={e(sa)}&amp;b={e(sb)}">Swap in another player</a></p>
 <section><h2 id="cap-cmp">Season by season</h2>
 <p class="note">Career season 1 next to career season 1. Each player's season is the team he played the most games for; W–L is his teams' record in his games that season. The tinted finish is the team that finished higher that season, on the league-size-adjusted scale; the last column keeps the running count. Help counts honors won that season by teammates who shared a game with him. <a href="../comparison-rules.html">Comparison rules</a>.</p>
 {table}</section>
 <p class="note">Why these two: {e(peer_reason(s, a, b, dist))}</p>
-<p class="more">{s.plink(a, up)} · {s.plink(b, up)} · <a href="../lists/same-help-different-results.html">Same help, different results</a></p>
-<script src="../assets/compare.js" defer></script>"""
+<p class="more">{s.plink(a, up)} · {s.plink(b, up)} · <a href="./">Compare any two players</a> · <a href="../lists/same-help-different-results.html">Same help, different results</a></p>"""
     desc = (f"{na} and {nb} compared: {wl(ca['w'], ca['l'])} vs {wl(cb['w'], cb['l'])} in their games, average final finish "
             f"{ca['adj30']:.1f} vs {cb['adj30']:.1f} of 30 (adjusted for league size), help {ca['help']:.1f} vs {cb['help']:.1f} points per season.")
     og = f"{OG}compare/{sa}--{sb}.png"
     return rel, page(rel, f"{na} vs {nb}: team success compared | HoopsMatic", desc, body, up,
                      robots="noindex, follow", og=og)
+
+
+def compare_any_page(s):
+    """compare/index.html: any player vs any player, ?a=<slug>&b=<slug>. assets/compare.js renders the
+    same scoreboard, tally and season table as the pre-built pages from assets/board.json and both
+    assets/pg/<slug>.json files. noindex, follow; the canonical is compare/ and the script points it
+    at the pre-built page when that pair has one."""
+    up = "../"
+    rel = "compare/index.html"
+
+    def side(k, label, ph):
+        return f"""<form class="finder side" role="search" data-mode="side" data-side="{k}" data-up="{up}" data-index="{up}assets/players.json" action="./">
+<label for="cmp-{k}">{label}</label><input id="cmp-{k}" type="search" autocomplete="off" placeholder="{ph}">
+<ul class="results"></ul><p class="picked" id="picked-{k}" aria-live="polite"></p></form>"""
+    body = f"""<header><h1>Compare any two players</h1>
+<p class="subtitle">Team success head to head: record in his games, titles, playoff runs, final NBA finish and teammate help, then the two careers season by season.</p></header>
+<div class="cmppick">{side("a", "First player", "e.g. Michael Jordan")}<span class="vs">vs</span>{side("b", "Second player", "e.g. LeBron James")}</div>
+<div id="cmp" data-up="{up}" data-page="1"><p class="note">Pick two players. Players need one completed season ({season_label(LAST_COMPLETE)} or earlier).</p></div>
+<noscript><p class="note">This page needs JavaScript. Every player's suggested comparisons are on his page.</p></noscript>
+<script src="{up}assets/compare.js" defer></script>"""
+    desc = ("Compare any two NBA players' team success: record in their games, titles, playoff trips, final finish "
+            "adjusted for league size and teammate help, season by season.")
+    return rel, page(rel, "Compare any two NBA players: team success head to head | HoopsMatic", desc, body, up,
+                     robots="noindex, follow", canonical=BASE + "compare/")
 
 
 def comparison_rules_page(s):
@@ -1438,6 +1470,16 @@ def comparison_rules_page(s):
 <h2>Suggested peers</h2>
 <p>Every player with {300} or more career games gets three suggested peers, chosen from the same pool by four measures: era (the game-weighted middle of the career, within 4 seasons), help (average per season, within a log distance of 0.35), his own honors per season (within 0.5) and career length (games, within a log distance of 0.7). The three with the smallest combined distance (era / 4 + help / 0.35 + career length / 0.7 + honors / 0.5) are shown. When fewer than three pass those limits, the closest players within 6 seasons of era fill the list and say so.</p>
 <p>Each suggestion states the numbers it was matched on. Comparisons align the two careers by career season (season 1 with season 1), so players from different eras can be compared the same way. A comparison states records and finishes, not what a player caused.</p>
+<h2 id="how-this-works">How the head-to-head scoreboard works</h2>
+<ul>
+<li><strong>Categories.</strong> Career record (win % in his games), W {MINUS} L, titles, playoff trips, deepest run, average final finish (adjusted for league size, on a 30-team scale), with vs without, and help per season.</li>
+<li><strong>The leader's cell is tinted</strong>: the larger number, except average finish and help, where the smaller one leads (a better finish is a lower number; less help means he won with fewer honored teammates).</li>
+<li><strong>With vs without is shown, never counted.</strong> It is the win-rate gap in percentage points between the games he played and missed, for reference only.</li>
+<li><strong>The tally</strong> ("Jordan leads 5 of 7") counts the seven lead categories; equal values, or a missing value on one side, count as even.</li>
+<li><strong>Less help</strong> names the player whose teammates were honored less, with both averages: help is the Teammates Score of the teammates he shared games with, per season.</li>
+<li>These are team records and finishes. They do not measure who was the better player.</li>
+</ul>
+<p><a href="compare/">Compare any two players</a>: pick both sides; the same scoreboard and season table are built in the page from each player's data file.</p>
 <h2>Cohort lists</h2>
 <ul>
 <li><a href="lists/low-help-all-stars.html">Best finishes among low-help All-Stars</a>: All-Stars with 300+ games and 5+ seasons whose average help is in the lowest quarter of that group, ranked by average final finish adjusted for league size (30-team scale, raw average alongside); a second table uses help entering the season.</li>
@@ -1445,7 +1487,7 @@ def comparison_rules_page(s):
 <li>On every player page: his best and worst final finish among the seasons with help within 25% of his median.</li>
 </ul>
 <h2>Share images</h2>
-<p>Each player's three suggested comparisons (players with 300+ games) have their own page and social card. On any comparison, the "Download image" button builds a card in your browser from the page's data, with this site's fonts and headshots.</p>
+<p>Each player's three suggested comparisons (players with 300+ games) have their own page. Every comparison, suggested or picked on the <a href="compare/">compare page</a>, and every player has a social card in the Player Comparison card style; "Download image" saves that same card.</p>
 </section>"""
     rel = "comparison-rules.html"
     return rel, page(rel, "How teammate help and peer comparisons work | HoopsMatic",
@@ -1650,15 +1692,17 @@ def player_page(s, pid):
                f'All {best["size"]} teams ranked in {season_label(best["sy"])}, his best finish (#{best["rnk"]})</a>')
         chart = CH.finish_chart(pts, "chart-t")
         parts.append(f"""<p class="lead">{' '.join(e(x) for x in sents)}</p>
+{compare_block(s, pid, up)}
 <div class="hero">
 <section class="tl"><h2 id="chart-t">Final NBA finish, season by season</h2>
 {chart}
-<p class="note legend"><span class="key title"></span>Title <span class="key finals"></span>Finals <span class="key playoffs"></span>Other playoffs <span class="key missed"></span>Missed the playoffs. #1 = champion; the dashed line is last place that season. Each point opens that season's final standings.</p>
+<p class="note legend"><span class="key title"></span>Title <span class="key finals"></span>Finals <span class="key playoffs"></span>Other playoffs <span class="key missed"></span>Missed playoffs. #1 = champion; the dashed line is last place that season. Each point opens that season's final standings.</p>
 {nxt}</section>
 {help_panel(s, pid, up)}
 </div>
 <section class="sum"><h2>Career</h2>{summary_cards(s, pid, up)}
-<p class="note">Regular seasons {season_label(1947)} to {season_label(CURRENT_SEASON)}, games through {e(nice_date(s.through))}. Records include {season_label(CURRENT_SEASON)} to date; season counts and finishes use completed seasons. Each card opens its board. <a href="../how-we-count.html">How we count</a>.</p></section>""")
+<p class="note">Regular seasons {season_label(1947)} to {season_label(CURRENT_SEASON)}, games through {e(nice_date(s.through))}. Records include {season_label(CURRENT_SEASON)} to date; season counts and finishes use completed seasons. Each card opens its board. <a href="../how-we-count.html">How we count</a>.</p>
+<p>{download_link(f"{OG}player/{v['slug']}.png", f"{v['slug']}-team-success.png")}</p></section>""")
         parts.append(f'<section><h2>Latest completed seasons</h2>{latest_seasons(s, pid, up, pts)}</section>')
     parts.append(current_block(s, pid, up))
     if has_hist:
@@ -1671,7 +1715,6 @@ def player_page(s, pid):
 <p class="note">From the lineup data, {season_label(RAMIRO_FIRST)} on. On/off is net points per 100 possessions with him on the floor minus off, a different unit from the win-rate gaps. Started and off the bench are team records in those games; close games are those within 5 points in the last 5 minutes with him on the floor.</p>
 {sortable("cap-lineup", "", LINEUP_HEADS, lineup)}</section>""")
         parts.append(help_table(s, pid, up))
-        parts.append(peer_section(s, pid, up))
         parts.append(opponents_section(s, pid, up))
         parts.append(playoff_table(s, pid, up))
         parts.append(arrival_departure(s, pid, up))
@@ -2299,13 +2342,12 @@ def list_preview(s, up, title, href, rows):
 
 
 def featured_pair(s, up, date):
-    hp = s.help
-    pairs = sorted({tuple(sorted((a, b))) for a, lst in hp["peers"].items() for b, dist in lst
-                    if dist < 100 and hp["avg"].get(a, {}).get("g", 0) >= 800 and hp["avg"].get(b, {}).get("g", 0) >= 800})
-    if not pairs:
+    """Comparison of the day: picks.pair_pool (300+ games each, at least one All-Star, same era), a
+    120-day rotation (no repeat within 60 days)."""
+    pr = picks.pair_of_day(picks.pair_pool(s.d, s.help), date)
+    if not pr:
         return ""
-    k = (dt.date.fromisoformat(date).toordinal() + 2) % len(pairs)
-    a, b = pairs[k]
+    a, b = pr
     ca, cb = compare_summary(s, a), compare_summary(s, b)
 
     def cell(lab, va, vb, ta, tb, low=False):
@@ -2323,7 +2365,32 @@ def featured_pair(s, up, date):
     return f"""<a class="h2hrow" href="{up}{rel}"><span class="side">{s.pic(a, up)}<span class="nm">{e(ca['name'])}</span><span class="vs">{e(ca['span'])}</span></span>
 <span class="vs">vs</span><span class="side">{s.pic(b, up)}<span class="nm">{e(cb['name'])}</span><span class="vs">{e(cb['span'])}</span></span>
 <span class="h2hcells">{cells}</span></a>
-<p class="note">Same era, similar teammate help. Lower help and lower finish numbers are tinted as the leader. Tap for the two careers season by season.</p>"""
+<p class="note">Same era, similar teammate help, at least one All-Star; a new pair every day. Lower help and lower finish numbers are tinted as the leader. Tap for the two careers season by season. <a href="compare/">Compare any two players</a></p>"""
+
+
+def fun_facts(s, up):
+    """The "Fun facts" strip under the homepage title (data/facts.json, scripts/fun_facts.py): one
+    sentence per row with a face or a team logo, in the Milestones "More from last night" style."""
+    doc = load_json(os.path.join(DATA, "facts.json"), {})
+    items = []
+    for f in doc.get("facts", []):
+        if f.get("pid") and f["pid"] in s.ids:
+            pic = s.pic(f["pid"], up, "sm")
+        elif f.get("team"):
+            lg = s.logo(f["team"][0], f["team"][1], up)
+            pic = f'<span class="hs sm tlogo">{lg}</span>' if lg else '<span class="hs sm nohs" aria-hidden="true">NBA</span>'
+        else:
+            pic = '<span class="hs sm nohs" aria-hidden="true">NBA</span>'
+        txt = "".join((f'<a href="{up}{e(x[1])}">' + (f"<b>{e(x[0])}</b>" if x[2] else e(x[0])) + "</a>") if len(x) > 1 else e(x[0])
+                      for x in f["parts"])
+        items.append(f'<li class="hl">{pic}<div>{txt}</div></li>')
+    if not items:
+        return ""
+    return (f'<section class="facts"><div class="section-head"><h2>Fun facts</h2>'
+            f'<span class="sub">{e(nice_date(doc["date"]))} · data through {e(nice_date(doc["cutoff"]))}</span></div>'
+            f'<ul class="hls">{"".join(items)}</ul>'
+            f'<p class="note">Built from templates and the nightly data; each fact links to the row that proves it. '
+            f'<a href="{up}how-we-count.html#facts">The rules</a></p></section>')
 
 
 def live_season_page(s):
@@ -2368,7 +2435,9 @@ def hub(s):
         by_slug = {v["slug"]: k for k, v in s.ids.items()}
         sup = []
         for y in x.get("supporting", []):
-            m_ = re.search(r"compare/([a-z0-9-]+?)--([a-z0-9-]+)\.html", y["href"]) or re.search(r"player/([a-z0-9-]+)\.html", y["href"])
+            m_ = (re.search(r"compare/([a-z0-9-]+?)--([a-z0-9-]+)\.html", y["href"])
+                  or re.search(r"compare/\?a=([a-z0-9-]+)&b=([a-z0-9-]+)", y["href"])
+                  or re.search(r"player/([a-z0-9-]+)\.html", y["href"]))
             slugs = list(m_.groups()) if m_ else []
             faces = "".join(s.pic(by_slug[g], up, "sm") for g in slugs[:2] if g in by_slug)
             sup.append(f'<li><span class="rf">{faces}</span><span class="who"><a href="{e(y["href"])}">{e(y["text"])}</a></span></li>')
@@ -2389,9 +2458,34 @@ def hub(s):
             out.append(prow(s, pid, up, f'{s.logo(t["f"], CURRENT_SEASON, up)}{wl(t["w"], t["l"])} in {t["g"]} played · '
                             f'{wl(t["ow"], t["ol"])} in {gm} missed', f'{pp(g)}<small>points</small>', None, "up" if g > 0 else "down"))
         return out
-    ok = [x for x in gaps if x[2]["g"] >= 5 and x[2]["ow"] + x[2]["ol"] >= 5]
+    # homepage only: 10+ games played and 8+ missed (the full board keeps its own minimums)
+    ok = [x for x in gaps if x[2]["g"] >= HOME_MIN_PLAYED and x[2]["ow"] + x[2]["ol"] >= HOME_MIN_MISSED]
     missed = sorted([x for x in ok if x[0] < 0], key=lambda x: x[0])[:5]
     played = [x for x in ok if x[0] > 0][:5]
+    career = A.list_gap_career(s.d, 1947, 1)
+
+    def career_rows(rows):
+        return [prow(s, r["pid"], up, f'{wl(r["w"], r["l"])} in {r["w"] + r["l"]:,} played · {wl(r["ow"], r["ol"])} in '
+                     f'{r["ow"] + r["ol"]:,} missed', f'{pp(r["gap"])}<small>points</small>', None,
+                     "up" if r["gap"] > 0 else "down") for r in rows if r["pid"] in s.ids]
+
+    def ww_box(title, rows, fallback):
+        if len(rows) >= 3:
+            return (f'<div class="box"><div class="boxhead">{title} <a href="lists/winning-without-him.html">full board</a></div>'
+                    f'<ul class="rows">{"".join(gap_rows(rows))}</ul></div>')
+        fell.append(len(rows))
+        return (f'<div class="box"><div class="boxhead">{title}: career <a href="lists/gap-career.html">full list</a></div>'
+                f'<ul class="rows">{"".join(career_rows(fallback))}</ul></div>')
+    fell = []
+    box_missed = ww_box("Higher win rate in games he missed", missed, sorted(career, key=lambda r: r["gap"])[:5])
+    box_played = ww_box("Higher win rate in games he played", played, career[:5])
+    ww_why = ""
+    if fell:
+        side = "either side" if len(fell) == 2 else "one side"
+        ww_why = (f'<p class="note"><strong>Career leaders shown</strong>: fewer than 3 players have {HOME_MIN_PLAYED}+ games '
+                  f'played and {HOME_MIN_MISSED}+ missed this season on {side}, so {"those boxes show" if len(fell) == 2 else "that box shows"} '
+                  f'the career with and without leaders (200+ games played, 50+ missed). '
+                  f'<a href="lists/winning-without-him.html">This season\'s full board</a> uses 5 and 5.</p>')
     mov = []
     for ch, pid, t, now, base in movers[:5]:
         if pid in s.ids:
@@ -2415,11 +2509,12 @@ def hub(s):
     feat = featured_pair(s, up, st[0]["date"] if st else dt.date.today().isoformat())
     body = f"""<header><h1>Team Success</h1>
 <p class="subtitle">How much every NBA player won and how much help he had. Records in his games, final finishes, teammate help, every opponent, since 1946-47. Games through {e(nice_date(through))}.</p></header>
+{fun_facts(s, up)}
 <section><h2>Today in Team Success</h2>{today or '<p class="note">The first story appears after the next nightly update.</p>'}</section>
 <section><h2>{season_label(CURRENT_SEASON)} so far: with and without</h2>
-<div class="dgrid"><div class="box"><div class="boxhead">Higher win rate in games he missed <a href="lists/winning-without-him.html">full board</a></div><ul class="rows">{''.join(gap_rows(missed))}</ul></div>
-<div class="box"><div class="boxhead">Higher win rate in games he played <a href="lists/winning-without-him.html">full board</a></div><ul class="rows">{''.join(gap_rows(played))}</ul></div></div>
-<p class="note">Team win % in the games he played minus in the games he missed, in points; 5+ games each side. A team record, not what he caused.</p></section>
+<div class="dgrid">{box_missed}
+{box_played}</div>
+{ww_why}<p class="note">Team win % in the games he played minus in the games he missed, in points; {HOME_MIN_PLAYED}+ games played and {HOME_MIN_MISSED}+ missed. A team record, not what he caused. The full board lets you set your own minimums.</p></section>
 <section><h2>Last 30 days: on/off movers</h2>
 <div class="box"><div class="boxhead">Biggest change in on/off per 100 possessions <a href="lists/on-off-movers.html">full board</a></div><ul class="rows">{''.join(mov)}</ul></div>
 <p class="note">Last 30 days vs {'earlier this season' if baseline == 'earlier' else season_label(LAST_COMPLETE)}. Possession-based: a different unit from the win-rate gaps.</p></section>
@@ -2569,6 +2664,9 @@ def how_page(s):
 <p>These come from Ramiro Bentes' public lineup and possession data, which starts in {season_label(RAMIRO_FIRST)}. Before that they show N/A.</p>
 <h2>Lists</h2>
 <p>Every list covers regular seasons {season_label(1947)} through {season_label(LAST_COMPLETE)} and has three eras: all-time, since 1976-77 and since 1996-97. "Winning seasons" and "playoff droughts" count the seasons he played, in a row; a season he missed entirely neither breaks nor extends a streak. The Accolade score uses the Teammates Score weights; the formula is on the <a href="lists/bad-luck.html">Bad Luck Index</a> page.</p>
+<h2 id="facts">Fun facts, the daily story and the comparison of the day</h2>
+<p>Every sentence is a template filled from the nightly data, never written by a model. The nightly job runs four times a day; the first run of a date writes that day's fun facts and story, and a later run rewrites them only when newer games arrive. Fun facts (6 to 8 a day) come from six kinds of templates: a player who passed another on the career wins or W {MINUS} L list in the last game date's games; a team's best or worst start through that many games since a given season; a team unbeaten or winless in the games a player played or missed (only with 10+ games played and 8+ missed); tonight's games where an active player has a record of .700+ or .350 or lower against the opponent (20+ games); winning-season streaks and playoff droughts still alive; and title-winning or 60-win-pace teams on this date. Each links to the row that proves it. The same fact never appears two days running, and a streak or on-this-day fact never repeats within 30 days.</p>
+<p>The daily story never repeats a lead within 30 days; on a day with no games it is a comparison. Its two supporting links are about the story's own players. The comparison of the day pairs two players from the same era with 300+ games each, at least one of them an All-Star, from a pool of 120 pairs that rotates daily (no pair repeats within 120 days).</p>
 <h2>What is missing or corrected</h2>
 <ul>
 <li>One 1953-54 Milwaukee Hawks vs Baltimore Bullets game is missing from the box scores, and eight games from 1946-47 to 1953-54 have results that disagree with the official standings. Team records use the standings; with/without uses the games we have.</li>
@@ -2697,6 +2795,7 @@ def main():
             write(*season_page(s, sy))
         write(*seasons_index(s))
         write(*comparison_rules_page(s))
+        write(*compare_any_page(s))
         for rel, txt in cohort_pages(s):
             write(rel, txt)
         done = set()

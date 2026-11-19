@@ -19,7 +19,7 @@ PO_DEPTH = {"": 0, "Play-In": 0, "First Round": 1, "Conf Semis": 2, "Conf Finali
             "Finalist": 4, "Champion": 5}
 PO_LABEL = {"First Round": "First round", "Conf Semis": "Conference semifinals",
             "Conf Finalist": "Conference finals", "Finalist": "NBA Finals",
-            "Champion": "Won the title", "Play-In": "Lost in the play-in", "": "Missed the playoffs"}
+            "Champion": "Won the title", "Play-In": "Lost in play-in", "": "Missed playoffs"}
 
 
 class Data:

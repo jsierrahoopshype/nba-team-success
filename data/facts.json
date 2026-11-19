@@ -1,0 +1,173 @@
+{
+ "cutoff": "2026-11-17",
+ "date": "2026-11-19",
+ "facts": [
+  {
+   "href": "seasons/2026-27.html#t-MIL",
+   "key": "start:worst:MIL:14|The Milwaukee Bucks/ are 1–13, the franchise's worst start through 14 games since the /1974-75 Milwaukee Bucks/ (also 1–13).",
+   "parts": [
+    [
+     "The Milwaukee Bucks",
+     "seasons/2026-27.html#t-MIL",
+     1
+    ],
+    [
+     " are 1–13, the franchise's worst start through 14 games since the "
+    ],
+    [
+     "1974-75 Milwaukee Bucks",
+     "seasons/1974-75.html#t-MIL",
+     0
+    ],
+    [
+     " (also 1–13)."
+    ]
+   ],
+   "pid": null,
+   "team": [
+    "MIL",
+    2027
+   ],
+   "type": "start"
+  },
+  {
+   "href": "seasons/2026-27.html#t-SAC",
+   "key": "start:worst:SAC:13|The Sacramento Kings/ are 1–12, the franchise's worst start through 13 games since the /1990-91 Sacramento Kings/ (also 1–12).",
+   "parts": [
+    [
+     "The Sacramento Kings",
+     "seasons/2026-27.html#t-SAC",
+     1
+    ],
+    [
+     " are 1–12, the franchise's worst start through 13 games since the "
+    ],
+    [
+     "1990-91 Sacramento Kings",
+     "seasons/1990-91.html#t-SAC",
+     0
+    ],
+    [
+     " (also 1–12)."
+    ]
+   ],
+   "pid": null,
+   "team": [
+    "SAC",
+    2027
+   ],
+   "type": "start"
+  },
+  {
+   "href": "player/jalen-brunson.html#cap-seasons",
+   "key": "streak:winning:jalen-brunson|Jalen Brunson/'s teams have had a winning record in each of his last /7 seasons/ (2019-20 to 2025-26), No. 9 among active players.",
+   "parts": [
+    [
+     "Jalen Brunson",
+     "player/jalen-brunson.html",
+     1
+    ],
+    [
+     "'s teams have had a winning record in each of his last "
+    ],
+    [
+     "7 seasons",
+     "player/jalen-brunson.html#cap-seasons",
+     0
+    ],
+    [
+     " (2019-20 to 2025-26), No. 9 among active players."
+    ]
+   ],
+   "pid": "1628973",
+   "team": null,
+   "type": "streak"
+  },
+  {
+   "href": "player/tre-mann.html#cap-seasons",
+   "key": "streak:drought:tre-mann|Tre Mann/ has not been on a playoff team in his last /5 seasons/ (2021-22 to 2025-26), No. 7 among active players.",
+   "parts": [
+    [
+     "Tre Mann",
+     "player/tre-mann.html",
+     1
+    ],
+    [
+     " has not been on a playoff team in his last "
+    ],
+    [
+     "5 seasons",
+     "player/tre-mann.html#cap-seasons",
+     0
+    ],
+    [
+     " (2021-22 to 2025-26), No. 7 among active players."
+    ]
+   ],
+   "pid": "1630544",
+   "team": null,
+   "type": "streak"
+  },
+  {
+   "href": "seasons/1957-58.html#t-ATL",
+   "key": "onthisday:1958:ATL|On this date in 1957-58, the /St. Louis Hawks/ were 7–5. They finished 41–31 and won the title.",
+   "parts": [
+    [
+     "On this date in 1957-58, the "
+    ],
+    [
+     "St. Louis Hawks",
+     "seasons/1957-58.html#t-ATL",
+     1
+    ],
+    [
+     " were 7–5. They finished 41–31 and won the title."
+    ]
+   ],
+   "pid": null,
+   "team": [
+    "ATL",
+    1958
+   ],
+   "type": "onthisday"
+  },
+  {
+   "href": "seasons/2026-27.html#t-PHI",
+   "key": "start:best:PHI:15|The Philadelphia 76ers/ are 12–3, the franchise's best start through 15 games since the /2000-01 Philadelphia 76ers/ (13–2).",
+   "parts": [
+    [
+     "The Philadelphia 76ers",
+     "seasons/2026-27.html#t-PHI",
+     1
+    ],
+    [
+     " are 12–3, the franchise's best start through 15 games since the "
+    ],
+    [
+     "2000-01 Philadelphia 76ers",
+     "seasons/2000-01.html#t-PHI",
+     0
+    ],
+    [
+     " (13–2)."
+    ]
+   ],
+   "pid": null,
+   "team": [
+    "PHI",
+    2027
+   ],
+   "type": "start"
+  }
+ ],
+ "history": {
+  "2026-11-19": [
+   "start:worst:MIL:14|The Milwaukee Bucks/ are 1–13, the franchise's worst start through 14 games since the /1974-75 Milwaukee Bucks/ (also 1–13).",
+   "start:worst:SAC:13|The Sacramento Kings/ are 1–12, the franchise's worst start through 13 games since the /1990-91 Sacramento Kings/ (also 1–12).",
+   "streak:winning:jalen-brunson|Jalen Brunson/'s teams have had a winning record in each of his last /7 seasons/ (2019-20 to 2025-26), No. 9 among active players.",
+   "streak:drought:tre-mann|Tre Mann/ has not been on a playoff team in his last /5 seasons/ (2021-22 to 2025-26), No. 7 among active players.",
+   "onthisday:1958:ATL|On this date in 1957-58, the /St. Louis Hawks/ were 7–5. They finished 41–31 and won the title.",
+   "start:best:PHI:15|The Philadelphia 76ers/ are 12–3, the franchise's best start through 15 games since the /2000-01 Philadelphia 76ers/ (13–2)."
+  ]
+ }
+}

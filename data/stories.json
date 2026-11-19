@@ -2,6 +2,41 @@
  "stories": [
   {
    "body": [
+    "Rudy Gobert's teams are +159 in his regular-season games: +151 through 2025-26 and +8 in 2026-27.",
+    "That is #157 all time counting this season, ahead of Bill Wennington (+158)."
+   ],
+   "cutoff": "2026-11-17",
+   "date": "2026-11-19",
+   "headline": "Rudy Gobert passes Bill Wennington on the career wins-minus-losses list",
+   "img": "stories/img/2026-11-19.png",
+   "line": "Rudy Gobert passed Bill Wennington on the career W − L list.",
+   "link": {
+    "href": "player/rudy-gobert.html",
+    "text": "Rudy Gobert's page"
+   },
+   "more": {
+    "href": "lists/wins-minus-losses.html?hl=rudy-gobert#p-rudy-gobert",
+    "text": "Career W − L board (completed seasons)"
+   },
+   "players": [
+    "rudy-gobert",
+    "bill-wennington"
+   ],
+   "rule": "pass",
+   "schedule": null,
+   "supporting": [
+    {
+     "href": "compare/?a=rudy-gobert&b=bill-wennington",
+     "text": "Rudy Gobert vs Bill Wennington, season by season"
+    },
+    {
+     "href": "player/bill-wennington.html",
+     "text": "Bill Wennington: every season and every opponent"
+    }
+   ]
+  },
+  {
+   "body": [
     "His teams are +2 in his 2026-27 games, which takes his career total to +342: #29 all time counting this season, up from #30 at the end of 2025-26.",
     "He has passed 2 players this season; the most decorated of them is Michael Jordan (+340)."
    ],

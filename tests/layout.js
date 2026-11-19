@@ -23,6 +23,9 @@ const PAGES = [
   'compare/karl-malone--michael-jordan.html', 'lists/sixty-win-pace.html', 'lists/best-team.html',
   'lists/average-finish.html', 'player/chris-paul.html', 'player/tiny-archibald.html', 'player/kevin-durant.html',
   'seasons/1976-77.html', 'seasons/1974-75.html',
+  // round 4: compare any two players, the compare block on player pages
+  'compare/index.html', 'compare/?a=lebron-james&b=michael-jordan', 'compare/?a=cooper-flagg&b=luka-doncic',
+  'player/cooper-flagg.html',
 ];
 const TEXT_CHECK = ['player/michael-jordan.html', 'player/lebron-james.html', 'player/chris-paul.html',
   'player/tiny-archibald.html', 'compare/karl-malone--michael-jordan.html', 'lists/sixty-win-pace.html',
@@ -88,7 +91,8 @@ const WIDTHS = [320, 375, 414, 768, 1024, 1280, 1440, 1920];
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json',
   '.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2', '.svg': 'image/svg+xml' };
 const server = http.createServer((req, res) => {
-  const p = path.join(ROOT, decodeURIComponent(req.url.split('?')[0].split('#')[0]));
+  let p = path.join(ROOT, decodeURIComponent(req.url.split('?')[0].split('#')[0]));
+  if (p.startsWith(ROOT) && fs.existsSync(p) && fs.statSync(p).isDirectory()) p = path.join(p, 'index.html');
   if (!p.startsWith(ROOT) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { res.writeHead(404); return res.end(); }
   res.writeHead(200, { 'Content-Type': TYPES[path.extname(p)] || 'application/octet-stream' });
   fs.createReadStream(p).pipe(res);
@@ -99,7 +103,8 @@ server.listen(0, async () => {
   const bad = [];
   let n = 0;
   for (const rel of PAGES.concat(extra)) {
-    const file = path.join(ROOT, rel.split('?')[0].split('#')[0]);
+    let file = path.join(ROOT, rel.split('?')[0].split('#')[0]);
+    if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, 'index.html');
     if (!fs.existsSync(file)) { bad.push(`${rel}: missing`); continue; }
     for (const w of WIDTHS) {
       const page = await browser.newPage({ viewport: { width: w, height: 900 } });
@@ -121,12 +126,13 @@ server.listen(0, async () => {
       await page.close();
     }
   }
-  // the in-page comparison (?peer=) draws the same scoreboard and season table as the static page
+  // the compare page (and old ?peer= links, which redirect to it) draws the same scoreboard and
+  // season table as the static page
   {
     const text = async (u, w) => {
       const page = await browser.newPage({ viewport: { width: w, height: 900 } });
       await page.goto(`http://localhost:${port}/${u}`, { waitUntil: 'networkidle' });
-      if (u.includes('peer=')) await page.waitForSelector('#cmp .sbt');
+      if (u.includes('?')) await page.waitForSelector('#cmp .sbt');
       const out = await page.evaluate(() => {
         const root = document.querySelector('#cmp') || document;
         const t = s => [...root.querySelectorAll(s)].map(x => x.innerText.replace(/\s+/g, ' ').trim()).join(' | ');
@@ -137,8 +143,10 @@ server.listen(0, async () => {
     };
     for (const w of [390, 1366]) {
       const a = await text('compare/karl-malone--michael-jordan.html', w);
-      const b = await text('player/karl-malone.html?peer=michael-jordan', w);
-      for (const k of Object.keys(a)) if (a[k] !== b[k]) bad.push(`in-page compare differs from the static page at ${w}px: ${k}`);
+      for (const u of ['player/karl-malone.html?peer=michael-jordan', 'compare/?a=karl-malone&b=michael-jordan']) {
+        const b = await text(u, w);
+        for (const k of Object.keys(a)) if (a[k] !== b[k]) bad.push(`${u} differs from the static page at ${w}px: ${k}`);
+      }
       n++;
     }
   }

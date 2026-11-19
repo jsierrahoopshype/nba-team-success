@@ -10,7 +10,7 @@
   var DEF = root ? JSON.parse(root.getAttribute("data-def")) : null;
   var UP = root ? root.getAttribute("data-up") : "";
   var DEPTH = [0, 0, 1, 2, 3, 4, 5];
-  var DEPTH_LABEL = { 5: "Won the title", 4: "NBA Finals", 3: "Conference finals", 2: "Conference semifinals", 1: "First round", 0: "Missed the playoffs" };
+  var DEPTH_LABEL = { 5: "Won the title", 4: "NBA Finals", 3: "Conference finals", 2: "Conference semifinals", 1: "First round", 0: "Missed playoffs" };
   var EN = "–", MINUS = "−";
   var data = null;
   var shown = 100;
