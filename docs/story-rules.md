@@ -23,10 +23,10 @@ view, qualifying group, standard competition ranking with "T-" for a shared rank
 | 3 | team start | his team played last night, 8+ games, and the record is the franchise's best (worst) through that many games since a season 10+ years ago, or ever (10+ earlier seasons) | "The {team} are {W}–{L}, the franchise's best / worst start through {n} games since {season} ({W}–{L})." | the team's row in this season's standings |
 | 3 | team streak | a current winning or losing streak of 5+ games that is the franchise's longest since a season 10+ years ago, or ever | "The {team} have a {k}-game winning / losing streak, the franchise's longest since {season}." | standings row |
 | 4 | with / without | his team played last night; 10+ games played and 8+ missed this season; one side unbeaten or winless, or a gap of 40+ points | "The {team} are {W}–{L} without {P} and {W}–{L} with him (2026-27 to date, {g} played, {m} missed)." | his row on the with and without board at 10 and 8 |
-| 5 | tonight | an active player with 15+ regular-season games against tonight's opponent (cdn.nba.com schedule) and a win rate of .700+ or .350 or lower | "Tonight vs the {opp}: {P}'s teams are {W}–{L} ({pct}) in his {n} regular-season games against them (through 2025-26)." | his opponent row |
+| 5 | tonight | an active player with 15+ regular-season games against tonight's opponent (nba-editorial-bots' schedule CSV, `data/schedule_<season>.csv` on its Pages site, read the way nba-head-to-head reads it for "Tonight's duels": games on today's US Eastern date that are not final) and a win rate of .700+ or .350 or lower | "Tonight vs the {opp}: {P}'s teams are {W}–{L} ({pct}) in his {n} regular-season games against them (through 2025-26)." | his opponent row |
 
 Picking: priority order (within a priority, the best board rank or the biggest number first), one
-item per player or team, at most 4 passes, up to 10 items. Hall of Famers come from the "Hall of
+item per player or team, at most 4 passes, 3 team starts and 2 "tonight" items, up to 10 items. Hall of Famers come from the "Hall of
 Fame" rows of awards.json (nba-player-data), matched to players by name like every other honor.
 
 **Quiet night**: when no item qualifies the list says "Quiet night" and shows three items labeled

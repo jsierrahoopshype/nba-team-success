@@ -16,7 +16,9 @@ only when newer games arrive. Also draws stories/img/<date>.png (the share card)
 Prints CHANGED or UNCHANGED.
 """
 import argparse
+import csv
 import datetime as dt
+import io
 import json
 import os
 import sys
@@ -29,7 +31,8 @@ import boards as B  # noqa: E402
 from common import (CURRENT_SEASON, DATA, LAST_COMPLETE, ROOT, dump_json, era_lookup,  # noqa: E402
                     franchise_name, load_json, season_label)
 
-SCHEDULE = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
+# the schedule nba-head-to-head reads for "Tonight's duels" (nba-editorial-bots' public Pages site)
+SCHEDULE = "https://jsierrahoopshype.github.io/nba-editorial-bots/data/schedule_{season}.csv"
 EN, MINUS = "–", "−"
 MAX_ITEMS, MIN_ITEMS, ARCHIVE_N = 10, 4, 3
 WINS_STEP, WINS_FROM = 100, 300            # career wins milestones: 300, 400, ... 1,000, ...
@@ -37,6 +40,7 @@ WL_STEP = 100                              # career W - L milestones: +100, +200
 PCT_MIN_GAMES, PCT_TOP = 500, 25           # career win %: players with 500+ games, top 25
 NOTABLE_RANK, NOTABLE_AS = 100, 3          # a passed player is notable: top 100 on that board, a Hall of Famer or a 3+ time All-Star
 PASS_MAX_RANK, PASS_CAP = 250, 4           # the passer is in that board's top 250; at most 4 pass items a night
+TYPE_CAP = {"start": 3, "tonight": 2}      # at most 3 team starts and 2 tonight items, so tonight always has room
 WW_PLAYED, WW_MISSED = 10, 8               # with/without this season: a real sample
 WW_GAP = 0.40                              # ... and a gap of 40+ points, or one side unbeaten / winless
 START_MIN, START_GAP = 8, 10               # team start: 8+ games, franchise best/worst since 10+ seasons ago
@@ -66,23 +70,40 @@ def nice_md(iso):
     return nice_date(iso).rsplit(",", 1)[0]
 
 
-def schedule():
-    """[(home franchise, away franchise)] for tonight, or None if the feed cannot be read."""
+def season_slug(sy=CURRENT_SEASON):
+    return f"{sy - 1}-{str(sy)[2:]}"
+
+
+def et_today():
+    """Today's date in US Eastern time (the schedule's game_date_et), like nba-head-to-head's etDate."""
+    from zoneinfo import ZoneInfo
+    return dt.datetime.now(ZoneInfo("America/New_York")).date().isoformat()
+
+
+def schedule(day=None):
+    """[(home franchise, away franchise)] for tonight, or (None, None) if the file cannot be read.
+
+    Same source and same reading as nba-head-to-head's "Tonight's duels" (scripts/update_current.py
+    and build/build.mjs there): nba-editorial-bots' public schedule CSV, regular-season and playoff
+    games (game_id 002 / 004) that are not final, on today's US Eastern date."""
+    day = day or et_today()
     try:
-        req = urllib.request.Request(SCHEDULE, headers={
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-            "Referer": "https://www.nba.com/", "Origin": "https://www.nba.com", "Accept": "application/json"})
-        with urllib.request.urlopen(req, timeout=30) as r:
-            doc = json.loads(r.read())
+        req = urllib.request.Request(SCHEDULE.format(season=season_slug()), headers={"User-Agent": "hoopsmatic-team-success-build"})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            rows = list(csv.DictReader(io.StringIO(r.read().decode("utf-8"))))
+        if not rows or "game_id" not in rows[0]:
+            raise ValueError("schedule has no rows")
         out = []
-        for g in doc["scoreboard"]["games"]:
-            h = era_lookup(g["homeTeam"]["teamTricode"], CURRENT_SEASON)
-            a = era_lookup(g["awayTeam"]["teamTricode"], CURRENT_SEASON)
-            if h and a and g.get("gameStatus", 1) == 1:
+        for g in rows:
+            if g["game_date_et"] != day or g["status"] == "final" or g["game_id"][:3] not in ("002", "004"):
+                continue
+            h = era_lookup(g["home_team_tricode"], CURRENT_SEASON)
+            a = era_lookup(g["away_team_tricode"], CURRENT_SEASON)
+            if h and a:
                 out.append((h[0], a[0]))
-        return out, doc["scoreboard"].get("gameDate")
-    except Exception as e:  # network, format: the matchup items are skipped
-        print(f"schedule not available ({type(e).__name__})", file=sys.stderr)
+        return out, day
+    except Exception as e:  # network, format: the "tonight" items are skipped
+        print(f"schedule not available ({type(e).__name__}: {e})", file=sys.stderr)
         return None, None
 
 
@@ -397,6 +418,9 @@ def build(date):
             if npass >= PASS_CAP:
                 continue
             npass += 1
+        if it["type"] in TYPE_CAP:
+            if sum(1 for x in picked if x["type"] == it["type"]) >= TYPE_CAP[it["type"]]:
+                continue
         picked.append(it)
         seen.add(who)
         if len(picked) >= MAX_ITEMS:

@@ -9,8 +9,8 @@
     "The Milwaukee Bucks are 1–14, the franchise's worst start through 15 games in 59 seasons (2026-27 to date).",
     "The Sacramento Kings are 1–13, the franchise's worst start through 14 games since 1990-91 (1–13).",
     "The Philadelphia 76ers are 13–3, the franchise's best start through 16 games since 2000-01 (14–2).",
-    "The Utah Jazz are 3–13, the franchise's worst start through 16 games since 2013-14 (2–14).",
-    "The Memphis Grizzlies are 11–4, the franchise's best start through 15 games since 2014-15 (13–2)."
+    "Tonight vs the Memphis Grizzlies: Al Horford's teams are 28–2 (93.3%) in his 30 regular-season games against them (through 2025-26).",
+    "Tonight vs the Minnesota Timberwolves: OG Anunoby's teams are 12–3 (80.0%) in his 15 regular-season games against them (through 2025-26)."
    ],
    "cutoff": "2026-11-18",
    "date": "2026-11-19",
@@ -248,62 +248,62 @@
      "type": "start"
     },
     {
-     "href": "seasons/2026-27.html#t-UTA",
-     "key": "start:worst:UTA:16",
+     "href": "player/al-horford.html?vs=MEM#vs-MEM",
+     "key": "tonight:al-horford:MEM",
      "parts": [
       [
-       "The Utah Jazz",
-       "seasons/2026-27.html#t-UTA",
+       "Tonight vs the Memphis Grizzlies: "
+      ],
+      [
+       "Al Horford",
+       "player/al-horford.html",
        1
       ],
       [
-       " are 3–13, the franchise's worst start through 16 games since "
+       "'s teams are "
       ],
       [
-       "2013-14",
-       "seasons/2013-14.html#t-UTA",
+       "28–2 (93.3%)",
+       "player/al-horford.html?vs=MEM#vs-MEM",
        0
       ],
       [
-       " (2–14)."
+       " in his 30 regular-season games against them (through 2025-26)."
       ]
      ],
-     "pid": null,
-     "scope": "2026-27 to date",
-     "team": [
-      "UTA",
-      2027
-     ],
-     "type": "start"
+     "pid": "201143",
+     "scope": "through 2025-26",
+     "team": null,
+     "type": "tonight"
     },
     {
-     "href": "seasons/2026-27.html#t-MEM",
-     "key": "start:best:MEM:15",
+     "href": "player/og-anunoby.html?vs=MIN#vs-MIN",
+     "key": "tonight:og-anunoby:MIN",
      "parts": [
       [
-       "The Memphis Grizzlies",
-       "seasons/2026-27.html#t-MEM",
+       "Tonight vs the Minnesota Timberwolves: "
+      ],
+      [
+       "OG Anunoby",
+       "player/og-anunoby.html",
        1
       ],
       [
-       " are 11–4, the franchise's best start through 15 games since "
+       "'s teams are "
       ],
       [
-       "2014-15",
-       "seasons/2014-15.html#t-MEM",
+       "12–3 (80.0%)",
+       "player/og-anunoby.html?vs=MIN#vs-MIN",
        0
       ],
       [
-       " (13–2)."
+       " in his 15 regular-season games against them (through 2025-26)."
       ]
      ],
-     "pid": null,
-     "scope": "2026-27 to date",
-     "team": [
-      "MEM",
-      2027
-     ],
-     "type": "start"
+     "pid": "1628384",
+     "scope": "through 2025-26",
+     "team": null,
+     "type": "tonight"
     }
    ],
    "kind": "night",
@@ -311,7 +311,9 @@
     "joel-embiid",
     "klay-thompson",
     "demar-derozan",
-    "kevin-durant"
+    "kevin-durant",
+    "al-horford",
+    "og-anunoby"
    ],
    "quiet": 0,
    "rule": "night",
