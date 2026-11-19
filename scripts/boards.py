@@ -16,7 +16,7 @@ import sys
 from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import CURRENT_SEASON, LAST_COMPLETE  # noqa: E402
+from common import CURRENT_SEASON, LAST_COMPLETE, season_label  # noqa: E402
 
 PO = ["", "Play-In", "First Round", "Conf Semis", "Conf Finalist", "Finalist", "Champion"]
 DEPTH = [0, 0, 1, 2, 3, 4, 5]
@@ -28,7 +28,7 @@ BOARDS = {
     "career-wins": {
         "title": "Most wins in his games: NBA career leaderboard",
         "h1": "Career wins in his games",
-        "desc": "Every NBA player ranked by his teams' regular-season wins in the games he played, 1946-47 to 2025-26. Switch to win % (minimum 400 games) and filter by era, team, All-Stars and games.",
+        "desc": "Every NBA player ranked by his teams' regular-season wins in the games he played, since 1946-47, including the season in progress to date. Switch to win % (minimum 400 games) and filter by era, team, All-Stars and games.",
         "card": "Career record",
         "sorts": {"w": ("Wins", "desc", {}), "pct": ("Win %", "desc", {"cg": 400})},
         "cols": ["w", "l", "pct", "gp", "wl"],
@@ -307,3 +307,91 @@ def compute(data, board, flt=None):
     for r in ranked:
         r[1] = cnt[r[0]] > 1
     return ranked, sort, mins
+
+
+# ---------------------------------------------------------------------------
+# One ranking rule and one scope label everywhere (player cards, boards, the daily list, fun facts,
+# share-card data, comparison scoreboards): the board's default view, its qualifying group, and
+# standard competition ranking (1, 2, 2, 4) shown as "T-2" for a shared rank.
+# ---------------------------------------------------------------------------
+# which boards count the season in progress (career W-L totals) and which are completed seasons only
+LIVE_BOARDS = {"career-wins", "wins-minus-losses", "gap-career"}
+SCOPE_LIVE = f"incl. {season_label(CURRENT_SEASON)} to date"
+SCOPE_DONE = f"through {season_label(LAST_COMPLETE)}"
+
+
+def scope_label(board, flt=None):
+    """A few words for the scope of a board's numbers: "incl. 2026-27 to date" / "through 2025-26"."""
+    flt = flt or {}
+    if board in LIVE_BOARDS and int(flt.get("to", CURRENT_SEASON)) >= CURRENT_SEASON:
+        return SCOPE_LIVE
+    return SCOPE_DONE
+
+
+def rank_label(rank, tied):
+    return f"T-{rank:,}" if tied else f"#{rank:,}"
+
+
+def rank_of(data, board, pid, flt=None):
+    """(rank, tied, qualifying players, metrics) for one player on a board view, or None."""
+    ranked, sort, mins = compute(data, board, flt)
+    for r, tied, m in ranked:
+        if m["pid"] == pid:
+            return r, tied, len(ranked), m
+    return None
+
+
+def ranks_before(data, board, delta, flt=None):
+    """Ranks on a board view as they stood before the games in delta (pid -> [w, l] to take off
+    his live season). Same qualifying group, sort and tie rule as compute(). Returns
+    (before, after): pid -> (rank, tied, value)."""
+    ranked, sort, mins = compute(data, board, flt)
+    after = {m["pid"]: (r, t, m[sort]) for r, t, m in ranked}
+    rows = []
+    for row in data["p"]:
+        m = player_metrics(row, data["t"], dict(flt or {}, **({"noas": 1} if BOARDS[board].get("noas") else {})))
+        if not m:
+            continue
+        dw, dl = delta.get(m["pid"], (0, 0))
+        if dw or dl:
+            m = dict(m)
+            m["w"] -= dw
+            m["l"] -= dl
+            m["gp"] -= dw + dl
+            m["wl"] = m["w"] - m["l"]
+            m["pct"] = m["w"] / m["gp"] if m["gp"] else None
+        if m["gp"] < mins["cg"] or m["seasons"] < mins.get("ms", 0) or m[sort] is None:
+            continue
+        rows.append(m)
+    rows.sort(key=lambda m: sort_key(board, sort, m))
+    before, prev, rank, cnt = {}, object(), 0, defaultdict(int)
+    tmp = []
+    for i, m in enumerate(rows):
+        k = sort_key(board, sort, m)[0]
+        if k != prev:
+            rank, prev = i + 1, k
+        tmp.append((m["pid"], rank, m[sort]))
+        cnt[rank] += 1
+    for pid, r, v in tmp:
+        before[pid] = (r, cnt[r] > 1, v)
+    return before, after
+
+
+def passes(data, board, delta, flt=None):
+    """Players in delta who moved ahead of someone on a board view because of those games:
+    [(pid, (rank, tied, value) now, [(passed pid, (rank, tied, value) now), ...])], best rank first.
+    'Passed' = level with or ahead of him before, strictly behind him now (same board rule)."""
+    before, after = ranks_before(data, board, delta, flt)
+    out = []
+    for p in delta:
+        if p not in after or p not in before:
+            continue
+        rp0, rp1 = before[p][0], after[p][0]
+        if rp1 >= rp0 and not (before[p][1] and not after[p][1]):
+            continue
+        got = [q for q, v in after.items() if q != p and q in before and before[q][0] <= rp0 and v[0] > rp1]
+        if got:
+            got.sort(key=lambda q: after[q][0])
+            out.append((p, after[p], [(q, after[q]) for q in got]))
+    out.sort(key=lambda x: x[1][0])
+    return out

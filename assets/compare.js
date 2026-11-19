@@ -34,6 +34,7 @@
   var OG = "https://hoopsmatic.com/og/team-success/";
   var SB_NOTE = "Lower is better for finish and help. With vs without isn't counted. Team results, not who was better.";
   var board = null, names = null;
+  var SCOPE_LIVE = box.getAttribute("data-scope-live") || "", SCOPE_DONE = box.getAttribute("data-scope-done") || "";
   function getJSON(u) { return fetch(u, { credentials: "same-origin" }).then(function (r) { return r.json(); }); }
   function rowsFor(slug, pg) {
     var row = board.p.filter(function (r) { return r[1] === slug; })[0];
@@ -121,14 +122,14 @@
     function rec(c) { var f = document.createDocumentFragment(); f.appendChild(document.createTextNode(wl(c.w, c.l))); f.appendChild(el("small", pct1(c.pct))); return f; }
     // [label, how, value A, value B, text A, text B, lower leads (null = shown, never a lead)]
     var cats = [
-      ["Career record", "win % in his games", Math.round((ca.pct || 0) * 1000) / 1000, Math.round((cb.pct || 0) * 1000) / 1000, rec(ca), rec(cb), false],
-      ["W " + MINUS + " L", "", ca.wl, cb.wl, signed(ca.wl), signed(cb.wl), false],
-      ["Titles", "", ca.titles, cb.titles, String(ca.titles), String(cb.titles), false],
+      ["Career record", "win % in his games, " + SCOPE_LIVE, Math.round((ca.pct || 0) * 1000) / 1000, Math.round((cb.pct || 0) * 1000) / 1000, rec(ca), rec(cb), false],
+      ["W " + MINUS + " L", SCOPE_LIVE, ca.wl, cb.wl, signed(ca.wl), signed(cb.wl), false],
+      ["Titles", SCOPE_DONE, ca.titles, cb.titles, String(ca.titles), String(cb.titles), false],
       ["Playoff trips", "", ca.trips, cb.trips, String(ca.trips), String(cb.trips), false],
       ["Deepest run", "", ca.deep, cb.deep, ca.deepLabel, cb.deepLabel, false],
-      ["Average finish", "adjusted for league size, lower leads", r1(ca.adj30), r1(cb.adj30), fix1(ca.adj30) + " of 30", fix1(cb.adj30) + " of 30", true],
-      ["With vs without", "win-rate gap in points, not a lead category", null, null, pp(ca.gap), pp(cb.gap), null],
-      ["Help per season", "teammates' honors, less help leads", r1(ca.help), r1(cb.help), hfmt(ca.help), hfmt(cb.help), true]
+      ["Average finish", "adjusted for league size, lower leads, " + SCOPE_DONE, r1(ca.adj30), r1(cb.adj30), fix1(ca.adj30) + " of 30", fix1(cb.adj30) + " of 30", true],
+      ["With vs without", "win-rate gap in points, not a lead category, " + SCOPE_LIVE, null, null, pp(ca.gap), pp(cb.gap), null],
+      ["Help per season", "teammates' honors, less help leads, " + SCOPE_DONE, r1(ca.help), r1(cb.help), hfmt(ca.help), hfmt(cb.help), true]
     ];
     var tbl = el("table", undefined, "sbt"), thead = el("thead"), hr = el("tr");
     tbl.setAttribute("aria-labelledby", "cap-sb-peer");

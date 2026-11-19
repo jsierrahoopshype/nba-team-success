@@ -453,3 +453,11 @@ details[open]>summary{margin-bottom:.35rem}
 .cmppick .finder{margin:0}
 .picked{font-size:.74rem;color:var(--text-secondary);margin-top:.3rem;min-height:1.1em}
 .more-btn.dl{margin-right:.4rem}
+/* Round 5 */
+.jump{font-size:.8rem;color:var(--text-secondary);margin:.6rem 0 0}
+.jump a{text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:2px}
+.tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.3rem;width:100%}
+.tabs [role=tab]{font:inherit;font-size:.8rem;font-weight:600;padding:.4rem .8rem;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);cursor:pointer}
+.tabs [role=tab][aria-selected=true]{background:var(--text);color:var(--surface);border-color:var(--text)}
+table.opp[data-k="2"] .ser{display:none}
+.mchip .hp{font-size:.7rem;font-weight:700;margin-left:.2rem}

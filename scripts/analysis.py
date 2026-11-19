@@ -25,13 +25,17 @@ PO_LABEL = {"First Round": "First round", "Conf Semis": "Conference semifinals",
 class Data:
     """live=True adds the season in progress (data/current.json) as team-seasons flagged "live":
     they count in career W-L totals, never in season-based counts (winning seasons, trips, finish)."""
-    def __init__(self, data_dir=DATA, live=False):
+    def __init__(self, data_dir=DATA, live=False, cur=None):
         self.players = load_json(os.path.join(data_dir, "players.json"), {})
         self.teams = load_json(os.path.join(data_dir, "team_seasons.json"), {})
         self.ids = load_json(os.path.join(data_dir, "player_ids.json"), {})
         self.meta = load_json(os.path.join(data_dir, "meta.json"), {})
         self.through = None
-        cur = load_json(os.path.join(data_dir, "current.json"), None) if live else None
+        # cur: a fixed current-season document (tests use a frozen snapshot); else data/current.json
+        if live and cur is None:
+            cur = load_json(os.path.join(data_dir, "current.json"), None)
+        elif not live:
+            cur = None
         if cur and cur.get("teams"):
             self.through = cur["through"]
             sy = cur["season"]
