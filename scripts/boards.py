@@ -114,10 +114,10 @@ def compact(d, cur, help_doc=None, partial_years=()):
     season (team entries with live = 1: in W-L totals, never in season counts).
     Stint: [season, franchise, g, w, l, ow, ol, endTeam, played playoffs, last date,
             no All-Star teammate (1/0), he was an All-Star (1/0), honors missing (1/0)].
-    "Honors missing" = that season has no honors rows at all in the awards data, or no teammate-help rows yet
-    (2025-26 and the season in progress on 2026-11-18). The no-All-Star board leaves those team-seasons
-    out instead of counting them as "no All-Star"; they come back on their own once the awards file
-    (nba-player-data) and data/help.json have the season."""
+    "Honors missing" = that season's All-Stars are not in the awards data (awards.json in nba-player-data)
+    or it has no teammate-help rows yet (the season in progress on 2026-11-19). The no-All-Star board
+    leaves those team-seasons out instead of counting them as "no All-Star"; they come back on their own
+    once awards.json names the All-Stars and data/help.json has the season."""
     teams = {}
     size = defaultdict(int)
     for t in d.teams.values():
@@ -153,11 +153,14 @@ def compact(d, cur, help_doc=None, partial_years=()):
 
 
 def honors_known(d, help_doc):
-    """Seasons with any honors rows in the awards data (seasons with no All-Star Game, 1946-47 to
-    1949-50 and 1998-99, still have other honors) and with teammate help built (data/help.json)."""
-    as_years = {int(y) for p in d.players.values() for y in p.get("awY", {})}
+    """Seasons whose All-Stars are in the awards data (awards.json) and with teammate help built
+    (data/help.json). Seasons with no All-Star Game (1946-47 to 1949-50, 1998-99) count once they
+    have any other weighted honors."""
+    as_years = {int(y) for p in d.players.values() for y in p.get("as", [])}
+    aw_years = {int(y) for p in d.players.values() for y in p.get("awY", {})}
+    no_game = set(range(1947, 1951)) | {1999}
     help_years = {int(k.rsplit("-", 1)[1]) for v in (help_doc or {}).get("season", {}).values() for k in v}
-    return as_years & help_years
+    return (as_years | (aw_years & no_game)) & help_years
 
 
 def honors_missing(d, help_doc):

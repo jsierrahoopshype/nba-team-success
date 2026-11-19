@@ -1206,7 +1206,7 @@ def help_table(s, pid, up):
                   + (" · from " + ", ".join(f'{who(q)} ({pe:.1f})' for q, shared, ps, pe, aws in prev[:4]) if prev else "")
                   + "</p>")
         if st["s"] in s.partial_years:
-            # honors for this season are not in the awards file yet: say so, no bar
+            # honors for this season are not in awards.json yet: say so, no bar
             items.append(f'<li class="slim">{head}<span class="hnote">Honors not in the data yet</span></li>')
             continue
         if not honored:
@@ -2034,12 +2034,17 @@ def noas_note(s):
     miss = B.honors_missing(s.d, s.help)
     if not miss:
         return ""
+    if miss == [CURRENT_SEASON]:
+        # the usual case: only the season in progress, whose All-Stars come in February
+        return (f'<p class="note"><strong>{season_label(CURRENT_SEASON)} is left out until its All-Stars are named.</strong> '
+                'Its team-seasons are not counted as "no All-Star teammate" until then. '
+                'Honors come from awards.json in HoopsMatic\'s player database.</p>')
     if miss == list(range(miss[0], CURRENT_SEASON + 1)):
         what = f"{season_label(miss[0])} onward"
     else:
         what = ", ".join(season_label(y) for y in miss)
     return (f'<p class="note"><strong>{what} not counted yet: honors missing from the awards data.</strong> '
-            'Those team-seasons are left out (not counted as "no All-Star teammate") until the awards file has them.</p>')
+            'Those team-seasons are left out (not counted as "no All-Star teammate") until awards.json has them.</p>')
 
 
 def career_board_page(s, key):
@@ -2574,7 +2579,7 @@ def how_page(s):
 <li>The current season uses Ramiro's daily lineup data until the box-score archive adds it.</li>
 </ul>
 <h2>Sources</h2>
-<p>Box scores for every game since 1946-47 (Alberto de Roa's nba-boxscores), lineups and possessions since 1996-97 (Ramiro Bentes' nba_data), player names and awards (HoopsMatic's player database), team standings (HoopsMatic). All public.</p>
+<p>Box scores for every game since 1946-47 (Alberto de Roa's nba-boxscores), lineups and possessions since 1996-97 (Ramiro Bentes' nba_data), player names (RS-Stats.csv) and awards (awards.json, through the season in progress) from HoopsMatic's player database, team standings (HoopsMatic). All public.</p>
 </section>"""
     rel = "how-we-count.html"
     return rel, page(rel, "How we count: team records with and without a player | HoopsMatic",

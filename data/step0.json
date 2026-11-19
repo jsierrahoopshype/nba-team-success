@@ -1,4 +1,26 @@
 {
+ "awards": {
+  "allstars_by_season": {
+   "2025": 26,
+   "2026": 28,
+   "2027": 0
+  },
+  "file": "awards.json",
+  "first": 1947,
+  "last": 2027,
+  "rows": 10652,
+  "rows_by_season": {
+   "2025": 203,
+   "2026": 207,
+   "2027": 8
+  },
+  "unmatched": {
+   "2026": [
+    "Deriq Queen"
+   ],
+   "2027": []
+  }
+ },
  "career_map_names_not_used": [],
  "dnp_rows_excluded": {
   "1952": 5,
@@ -3328,7 +3350,7 @@
   "nba-boxscores": "05efb8f 2026-11-17",
   "nba-career-map": "a7f4d78 2026-11-17",
   "nba-headshots": "9d46952d 2026-11-16",
-  "nba-player-data": "17a4cf5 2026-11-18"
+  "nba-player-data": "caf7829 2026-11-18"
  },
  "standings": {
   "atl_2024_trailing": [

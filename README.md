@@ -84,9 +84,12 @@ Every factual sentence is a template filled from data; the rules are in `docs/st
   `season/<season>.png` (completed seasons), `compare/<a>--<b>.png`. Everything else keeps
   `assets/og-team-success.png`. The pre-rendered `compare/img/` PNGs and their scripts are gone; the
   in-browser "Download image" button stays.
-- No-All-Star board: team-seasons with no honors rows in the awards data (or no `data/help.json` rows)
-  are left out, not counted as "no All-Star" (`boards.honors_missing`); they return on the next full
+- No-All-Star board: team-seasons whose All-Stars are not in the awards data (or no `data/help.json` rows)
+  are left out, not counted as "no All-Star" (`boards.honors_missing`); they return on the next
   rebuild once nba-player-data has them.
+- Honors come from nba-player-data's `awards.json` (same fields as the old Awards.csv, which stops at
+  2024-25). After awards.json changes: `python scripts/build_history.py --awards-only`, then
+  `build_help.py`, `step0_report.py`, `build_site.py`.
 - Average finish: league-size-adjusted by default, shown as a 30-team equivalent (1 + adjusted x 29).
 - Tables and cards name teams by city that season (`city_of`); headings, titles and prose keep full names.
 - `tests/layout.js` also fails on a lone ":" "," or "·" line in tables/cards and on a team name that wraps
