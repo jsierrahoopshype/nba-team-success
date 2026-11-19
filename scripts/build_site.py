@@ -1355,7 +1355,7 @@ def compare_summary(s, pid):
             "w": sm["w"], "l": sm["l"], "wl": sm["w"] - sm["l"], "pct": A.pct(sm["w"], sm["l"]),
             "avg": sm["rnk"], "adj30": round(eq30(s.adj_avg(pid)), 4), "titles": sm["titles"], "trips": sm["trips"],
             "seasons": sm["seasons"], "deep": deep, "deepLabel": A.PO_LABEL[deep_po] if deep else "Missed playoffs",
-            "gap": round(sm["gap"], 4) if sm["gap"] is not None else None,
+            "gap": round(sm["gap"], 4) if sm["gap"] is not None else None, "gm": sm["ow"] + sm["ol"],
             "help": a.get("help"), "enter": a.get("enter"),
             "span": season_label(min(r["sy"] for r in rows)) + " to " + season_label(max(r["sy"] for r in rows))}
 
@@ -1366,6 +1366,34 @@ def short_name(name, other):
         w = [x for x in n.split() if x.lower().strip(".,") not in ("jr", "sr", "ii", "iii", "iv")]
         return w[-1] if w else n
     return name if last(name) == last(other) else last(name)
+
+
+# scoreboard row -> (board, extra query, who qualifies); None = no board (help: the rules page)
+SB_LINKS = {"Career record": ("career-wins", "sort=pct", lambda c: c["w"] + c["l"] >= 400),
+            "W \u2212 L": ("wins-minus-losses", "", lambda c: True),
+            "Titles": ("titles", "", lambda c: True),
+            "Playoff trips": ("playoff-trips", "", lambda c: True),
+            "Deepest run": ("deepest-run", "", lambda c: True),
+            "Average finish": ("average-finish", "", lambda c: c["seasons"] >= 5),
+            "With vs without": ("gap-career", "", lambda c: c["w"] + c["l"] >= 200 and c.get("gm", 0) >= 50),
+            "Help per season": None}
+
+
+def sb_hrefs(up, lab, ca, cb):
+    """(category href, href A, href B): the board with both players highlighted (?hl=a,b), and each
+    player's own row (?hl=<slug>#p-<slug>); a player outside the board's group links to his page."""
+    spec = SB_LINKS.get(lab)
+    if spec is None:
+        return (f"{up}comparison-rules.html#teammate-help", f"{up}player/{ca['slug']}.html#cap-help",
+                f"{up}player/{cb['slug']}.html#cap-help")
+    board, q, ok = spec
+    q = (q + "&amp;") if q else ""
+    hl = [c["slug"] for c in (ca, cb) if ok(c)]
+    cat = f"{up}lists/{board}.html?{q}hl={','.join(hl)}" if hl else f"{up}lists/{board}.html{('?' + q[:-5]) if q else ''}"
+
+    def one(c):
+        return (f"{up}lists/{board}.html?{q}hl={c['slug']}#p-{c['slug']}" if ok(c) else f"{up}player/{c['slug']}.html")
+    return cat, one(ca), one(cb)
 
 
 def scoreboard(s, a, b, ca, cb, up):
@@ -1404,8 +1432,9 @@ def scoreboard(s, a, b, ca, cb, up):
         else:
             ka, kb = "", ' class="lb"'
             lb += 1
-        rows.append(f'<tr{" class=\"txt\"" if lab == "Deepest run" else ""}><th scope="row">{e(lab)}{("<small>" + e(how) + "</small>") if how else ""}</th>'
-                    f'<td{ka}>{ta}</td><td{kb}>{tb}</td></tr>')
+        hc, ha, hb = sb_hrefs(up, lab, ca, cb)
+        rows.append(f'<tr{" class=\"txt\"" if lab == "Deepest run" else ""}><th scope="row"><a class="cl" href="{hc}">{e(lab)}</a>{("<small>" + e(how) + "</small>") if how else ""}</th>'
+                    f'<td{ka}><a class="cl" href="{ha}">{ta}</a></td><td{kb}><a class="cl" href="{hb}">{tb}</a></td></tr>')
     n = sum(1 for c in cats if c[6] is not None)
     tally = f"{e(na)} leads {la} of {n} · {e(nb)} leads {lb} of {n}" + (f" · {even} even" if even else "")
     help_line = ""
@@ -1499,6 +1528,16 @@ def compare_page(s, a, b, dist):
                      robots="noindex, follow", og=og)
 
 
+def redirect_stub(to, canonical):
+    """A moved page: noindex, canonical, an instant redirect and a plain link."""
+    return f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex, follow">
+<link rel="canonical" href="{canonical}"><meta http-equiv="refresh" content="0; url={to}">
+<title>Moved | HoopsMatic</title></head>
+<body><p>This comparison moved: <a href="{to}">open it on the compare page</a>.</p></body></html>
+"""
+
+
 def compare_any_page(s):
     """compare/index.html: any player vs any player, ?a=<slug>&b=<slug>. assets/compare.js renders the
     same scoreboard, tally and season table as the pre-built pages from assets/board.json and both
@@ -1527,7 +1566,7 @@ def comparison_rules_page(s):
     body = f"""<header><h1>How teammate help and peer comparisons work</h1>
 <p class="subtitle">The rules behind "Teammate help", "Compare with a peer" and the cohort lists.</p></header>
 <section class="prose">
-<h2>Teammate help</h2>
+<h2 id="teammate-help">Teammate help</h2>
 <p>Help uses the HoopsMatic Teammates Score weights: MVP and Finals MVP 10; All-NBA First Team and Defensive Player of the Year 4; All-NBA Second Team 3; All-NBA Third Team 2; All-Star and All-Defensive First Team 1; Rookie of the Year, Sixth Man, All-Defensive Second Team and All-Star MVP 0.5; Most Improved and All-Rookie First Team 0.25; All-Rookie Second Team 0.125. An MVP already covers that season's All-NBA nod and a DPOY that season's All-Defensive nod.</p>
 <p>A season's help adds up the honors won that season by the teammates who shared at least one regular-season game with him for that team. We check every game, so a player traded in February gets only the teammates he played with. Players are joined on their NBA person ID, team and season.</p>
 <p><strong>Zero and missing are different.</strong> 0 means no teammate he played with was honored. A "+" after a number means a teammate with 10 or more shared games has no award record in our player database (his name did not match), so the true number may be higher.</p>
@@ -2130,13 +2169,13 @@ def board_form(s, key):
 <label>One season<select name="season"><option value="">Any</option>{so}</select></label>
 <label>Team<select name="team"><option value="">Any team</option>{teams}</select></label>
 <fieldset><legend>Games in a team-season</legend><select data-preset="ts" name="tsp" aria-label="Preset"><option value="">Preset</option><option value="1">Any</option><option value="20">20+</option><option value="41">41+</option><option value="60">60+</option></select><input name="ts" type="number" min="1" inputmode="numeric" placeholder="1" aria-label="Minimum games in a team-season"></fieldset>
-<fieldset><legend>Career games</legend><select data-preset="cg" name="cgp" aria-label="Preset"><option value="">Preset</option><option value="1">Any</option><option value="100">100+</option><option value="400">400+</option><option value="1000">1,000+</option></select><input name="cg" type="number" min="1" inputmode="numeric" placeholder="1" aria-label="Minimum career games"></fieldset>
-<label>All-Stars<select name="as"><option value="">Everyone</option><option value="ever">Ever an All-Star</option><option value="season">All-Star in the selected season</option></select></label>
+<fieldset><legend>Games in this filtered sample</legend><select data-preset="cg" name="cgp" aria-label="Preset"><option value="">Preset</option><option value="1">Any</option><option value="100">100+</option><option value="400">400+</option><option value="1000">1,000+</option></select><input name="cg" type="number" min="1" inputmode="numeric" placeholder="1" aria-label="Minimum games in this filtered sample"></fieldset>
+<label>All-Stars<select name="as"><option value="">Everyone</option><option value="ever">Career All-Star (any season)</option><option value="season">All-Star that season (pick one season)</option></select></label>
 <label>Status<select name="st"><option value="">Active and retired</option><option value="active">Active ({season_label(CURRENT_SEASON)})</option><option value="retired">Retired</option></select></label>
 {extra}
 <button type="submit">Apply</button> <a href="{key}.html">Reset</a>
 </form>
-<p class="note">Scope: "Games in a team-season" drops the team-seasons where he played fewer games, before anything is counted. "Career games" sets who qualifies, after. "One season" and "All-Star in the selected season" work together. Filters run in your browser; the URL keeps them, so a filtered view can be shared.</p>"""
+<p class="note">Scope: "Games in a team-season" drops the team-seasons where he played fewer games, before anything is counted. "Games in this filtered sample" sets who qualifies, after the era, team and season filters (not his whole career). "Career All-Star" = an All-Star in any season of his career; "All-Star that season" needs "One season". Filters run in your browser; the URL keeps them, so a filtered view can be shared.</p>"""
 
 
 def noas_note(s):
@@ -2187,7 +2226,13 @@ def career_board_page(s, key):
     pop = (f"{len(ranked):,} players qualify" + (f" ({', '.join(mtxt)})" if mtxt else "")
            + f". Ranked by {dfn["sorts"][sort][0]}; equal values share a rank (T-). Numbers {B.scope_label(key)}.")
     others = " · ".join(f'<a href="{k}.html">{e(B.BOARDS[k]["h1"])}</a>' for k in B.BOARDS if k != key)
+    taps = ""
+    if len(dfn["sorts"]) > 1:
+        taps = ('<p class="sorttaps" role="group" aria-label="Rank by">Rank by: ' + " ".join(
+            f'<a class="chipbtn{" on" if k == sort else ""}" href="{key}.html{"" if k == sort else "?sort=" + k}"'
+            f'{" aria-current=" + chr(34) + "true" + chr(34) if k == sort else ""}>{e(v[0])}</a>' for k, v in dfn["sorts"].items()) + "</p>")
     body = f"""<header><h1>{e(dfn['h1'])}</h1><p class="subtitle">{e(dfn['desc'])}</p></header>
+{taps}
 {board_form(s, key)}
 <p id="board-pop" class="pop" aria-live="polite">{e(pop)}</p>
 {('<p class="note">' + e(dfn['explain']) + '</p>') if dfn.get('explain') else ''}
@@ -2900,6 +2945,12 @@ def main():
                 if rel not in done:
                     done.add(rel)
                     write(*compare_page(s, pid, q, dist))
+        # pair pages from earlier peer sets are no longer built: send them to the any-pair page
+        for f in sorted(os.listdir(os.path.join(ROOT, "compare"))):
+            rel = f"compare/{f}"
+            if f.endswith(".html") and "--" in f and rel not in done:
+                x, y = f[:-5].split("--", 1)
+                write(rel, redirect_stub(f"./?a={x}&amp;b={y}", f"{BASE}compare/"))
     write(*live_season_page(s))
     write("assets/board.json", json.dumps(s.board_data, ensure_ascii=False, separators=(",", ":")))
     write(*hub(s))

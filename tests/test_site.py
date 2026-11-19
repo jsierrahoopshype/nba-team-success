@@ -199,7 +199,7 @@ def test_compare_scoreboard():
     assert '<table class="sbt"' in t and "Malone leads " in t and "Jordan leads " in t
     # with vs without is shown but never a lead: 7 counted categories, no tint on that row
     assert re.search(r"Malone leads \d of 7 · Jordan leads \d of 7", t)
-    row = re.search(r'<tr><th scope="row">With vs without.*?</tr>', t).group(0)
+    row = re.search(r'<tr><th scope="row"><a class="cl" href="[^"]+">With vs without.*?</tr>', t).group(0)
     assert 'class="la"' not in row and 'class="lb"' not in row
     assert "Less help: Jordan (2.2 per season vs 3.4)" in t
     assert '<ul class="takes">' not in t                                   # the old text boxes are gone

@@ -138,3 +138,12 @@ with and without him."
 
 Win rates 65.9%; gaps +26.0 pp from unrounded rates; records 706–366 (en dash); W − L with a
 true minus sign; empty samples N/A; dates "Nov. 16, 2026".
+
+## Head-to-head scoreboard links
+
+Every row of the scoreboard (pre-built pair pages and compare/?a=&b=) is clickable. The category opens
+its board with both players highlighted (`?hl=a,b`; the page scrolls to the higher-ranked one) and each
+value cell opens that player's row (`?hl=<slug>#p-<slug>`): Career record -> career wins, win % sort
+(400+ games); W − L -> wins minus losses; Titles; Playoff trips; Deepest run; Average finish (5+
+seasons); With vs without -> career with/without (200+ played, 50+ missed); Help per season -> the
+comparison rules page (no board). A player outside a board's qualifying group links to his own page.
