@@ -162,6 +162,12 @@ def build(date):
     stories["stories"] = [x for x in stories["stories"] if x["date"] != date]
     last_cut = max((x["cutoff"] for x in stories["stories"] if x["date"] < date), default="")
     stale = through <= last_cut                 # no new games since the previous list
+    if stale and not today and any(x["date"] < date for x in stories["stories"]):
+        # a new UTC date but no new games yet (the night's games arrive around 11:00-13:30 UTC):
+        # keep the previous list, which already says which games it covers, instead of repeating it
+        print("UNCHANGED no new games since the list of", max(x["date"] for x in stories["stories"] if x["date"] < date),
+              f"(games through {through})")
+        return False
     data = B.compact(d, cur, help_doc)
 
     def slug(p):

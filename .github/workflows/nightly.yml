@@ -65,7 +65,12 @@ jobs:
       - name: Rebuild touched pages
         if: steps.update.outputs.changed == 'yes' || steps.awards.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes' || steps.facts.outputs.changed == 'yes'
         run: python scripts/build_site.py
+      # A failing test must never leave the site stale: the data and pages built above are committed
+      # anyway (build_site.py itself failing still stops the run before this), and the run is marked
+      # failed at the end so the problem is visible.
       - name: Tests
+        id: tests
+        continue-on-error: true
         if: steps.update.outputs.changed == 'yes' || steps.awards.outputs.changed == 'yes' || steps.story.outputs.changed == 'yes' || steps.facts.outputs.changed == 'yes'
         run: python -m pytest tests/ -q
       - name: Commit if changed
@@ -77,4 +82,9 @@ jobs:
           if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
           git commit -q -m "Nightly: current season through $(python -c "import json;print(json.load(open('data/current.json'))['through'])")"
           for i in 1 2 3; do git push && exit 0; git pull --rebase -q; done
+          exit 1
+      - name: Tests failed (the build above was still committed)
+        if: steps.tests.outcome == 'failure'
+        run: |
+          echo "::error::Tests failed after the nightly build; the data and pages were committed anyway. See the Tests step."
           exit 1
