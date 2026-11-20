@@ -503,3 +503,8 @@ table.minfilter tr.hl td{background:var(--accent-dim)}
 .bc ol{flex:1 1 0;min-width:0}
 .bc li:last-child{flex:1 1 0;min-width:0}
 .bc a[aria-current]{max-width:100%;min-width:0}
+/* Round 6: tap targets of at least 44 px for every control of ours */
+.more-btn,.chipbtn,.opp-open,.filters button,.filters select,.filters input,.tabs [role=tab],.fchips a{min-height:44px}
+.more-btn,.chipbtn,.opp-open{display:inline-flex;align-items:center;justify-content:center}
+th[data-type] > button,th[data-sort] > button{min-height:44px}
+details > summary{min-height:44px;padding:.7rem 0;box-sizing:border-box;cursor:pointer}

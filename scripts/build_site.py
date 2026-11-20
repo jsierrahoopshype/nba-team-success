@@ -3047,6 +3047,9 @@ def main():
                 write(rel, redirect_stub(f"./?a={x}&amp;b={y}", f"{BASE}compare/"))
     write(*live_season_page(s))
     write("assets/board.json", json.dumps(s.board_data, ensure_ascii=False, separators=(",", ":")))
+    # pre-built pair pages, for the compare page's canonical (no probing for pages that may not exist)
+    write("assets/compare-pairs.json", json.dumps(sorted(r[len("compare/"):-len(".html")] for r in s.compare_pages),
+                                                  separators=(",", ":")))
     write(*hub(s))
     for rel, txt in story_pages(s):
         write(rel, txt)

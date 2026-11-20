@@ -83,3 +83,18 @@ def test_help_rows_markup_order():
     i = t.index('2022-23</span><span class="hs-t">')
     li = t[i:t.index("</li>", i)]
     assert li.index('class="hbar"') < li.index('class="chipsrow"') < li.index("Help this season:") < li.index("<details>")
+
+
+def test_compare_canonical_without_probing():
+    import json
+    js = read("assets/compare.js")
+    assert 'method: "HEAD"' not in js and "assets/compare-pairs.json" in js
+    pairs = json.loads(read("assets/compare-pairs.json"))
+    assert "karl-malone--michael-jordan" in pairs and len(pairs) > 1000
+    for p in pairs[:50]:
+        assert os.path.exists(os.path.join(ROOT, "compare", p + ".html"))
+
+
+def test_tap_target_css():
+    css = read("assets/ts.css")
+    assert ".more-btn,.chipbtn,.opp-open,.filters button,.filters select,.filters input,.tabs [role=tab],.fchips a{min-height:44px}" in css
