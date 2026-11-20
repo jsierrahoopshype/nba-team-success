@@ -260,8 +260,9 @@
     document.title = ca.name + " vs " + cb.name + ": team success compared | HoopsMatic";
     // canonical: the pre-built page when this pair has one
     var can = document.querySelector('link[rel="canonical"]'), rel = "compare/" + ps[0] + "--" + ps[1] + ".html";
-    fetch(up + rel, { method: "HEAD", credentials: "same-origin" }).then(function (r) {
-      if (r.ok && can) can.href = "https://hoopsmatic.com/team-success/" + rel;
+    // the list of pre-built pairs (assets/compare-pairs.json), so no request for a page that may not exist
+    getJSON(up + "assets/compare-pairs.json").then(function (pairs) {
+      if (can && pairs.indexOf(ps[0] + "--" + ps[1]) >= 0) can.href = "https://hoopsmatic.com/team-success/" + rel;
     }).catch(function () {});
   }
   var sides = { a: null, b: null };
