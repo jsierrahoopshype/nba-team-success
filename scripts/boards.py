@@ -312,7 +312,8 @@ def compute(data, board, flt=None):
 # ---------------------------------------------------------------------------
 # One ranking rule and one scope label everywhere (player cards, boards, the daily list, fun facts,
 # share-card data, comparison scoreboards): the board's default view, its qualifying group, and
-# standard competition ranking (1, 2, 2, 4) shown as "T-2" for a shared rank.
+# standard competition ranking (1, 2, 2, 4): a shared rank shows the same number, "No. 2" in a
+# sentence and a plain 2 in a table's rank column (no "T-").
 # ---------------------------------------------------------------------------
 # which boards count the season in progress (career W-L totals) and which are completed seasons only
 LIVE_BOARDS = {"career-wins", "wins-minus-losses", "gap-career"}
@@ -329,7 +330,8 @@ def scope_label(board, flt=None):
 
 
 def rank_label(rank, tied):
-    return f"T-{rank:,}" if tied else f"#{rank:,}"
+    """A rank in a sentence: "No. 128". A shared rank reads the same (tied is kept for callers)."""
+    return f"No. {rank:,}"
 
 
 def rank_of(data, board, pid, flt=None):

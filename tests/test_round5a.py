@@ -42,25 +42,27 @@ def live():
 
 def test_frozen_gobert_rank(snap):
     """The regression: the story said '#157 all time counting this season' while his card said
-    T-155. On the frozen snapshot the board rule gives +159, T-155 (incl. 2026-27) and +151, T-172
-    through 2025-26."""
+    T-155. On the frozen snapshot the board rule gives +159, tied at 155 (incl. 2026-27) and +151,
+    tied at 172 through 2025-26. A shared rank reads "No. 155" in a sentence, never "T-155"."""
     r, tied, n, m = B.rank_of(snap, "wins-minus-losses", GOBERT)
     assert (m["wl"], r, tied) == (159, 155, True)
-    assert B.rank_label(r, tied) == "T-155"
+    assert B.rank_label(r, tied) == "No. 155"
+    assert B.rank_label(r, False) == "No. 155"           # tied or not, the same words
+    assert B.rank_label(1234, True) == "No. 1,234"
     r, tied, n, m = B.rank_of(snap, "wins-minus-losses", GOBERT, {"to": 2026})
     assert (m["wl"], r, tied) == (151, 172, True)
 
 
 def test_card_story_and_board_agree(live):
     t = read("player/rudy-gobert.html")
-    m = re.search(r'wins-minus-losses\.html\?hl=rudy-gobert#p-rudy-gobert".*?<span class="rk">(T-\d+|#\d+) of ([\d,]+) · (incl\. [^<]+)</span>', t, re.S)
+    m = re.search(r'wins-minus-losses\.html\?hl=rudy-gobert#p-rudy-gobert".*?<span class="rk">(No\. [\d,]+) of ([\d,]+) · (incl\. [^<]+)</span>', t, re.S)
     r, tied, n, _ = B.rank_of(live, "wins-minus-losses", GOBERT)
     assert m and m.group(1) == B.rank_label(r, tied) and m.group(3) == B.SCOPE_LIVE
     # the board page renders the top 100 in HTML; beyond that boards.js computes the same rows
     board = read("lists/wins-minus-losses.html")
-    row = re.search(r'<tr id="p-rudy-gobert"><td data-l="Rank" class="mono" data-value="(\d+)"><span class="v">(T-)?', board)
-    if r <= 100:
-        assert row and int(row.group(1)) == r and bool(row.group(2)) == tied
+    row = re.search(r'<tr id="p-rudy-gobert"><td data-l="Rank" class="mono" data-value="(\d+)"><span class="v">(\d+)</span>', board)
+    if r <= 100:                                        # plain number in the rank column, no "T-"
+        assert row and int(row.group(1)) == r and int(row.group(2)) == r
     card = json.loads(read("assets/card/rudy-gobert.json"))
     assert card["record"]["wl_rank"] == r and card["record"]["wl_tied"] == tied and card["record"]["scope"] == B.SCOPE_LIVE
     # every story that quotes a W - L board rank uses the board's label and links the same scope

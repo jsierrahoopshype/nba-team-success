@@ -12,7 +12,10 @@ of the last game date in the nightly data (the season's game log in `data/curren
 previous run's totals). The first run of a date writes the list; a later run rewrites it only when
 newer games arrive. Every item is one sentence from a template, with a face or a team logo, its
 scope, and a link to the board row or games that prove it. Ranks use the board's own rule (default
-view, qualifying group, standard competition ranking with "T-" for a shared rank).
+view, qualifying group, standard competition ranking). Every `{rank}` in a sentence (this list, fun
+facts, player-page leads and cards, the comparison scoreboard, share text and the share-card data) reads
+"No. {r}", e.g. "for No. 128 in career wins"; a shared rank reads the same, with no "T-". A table's rank
+column shows the plain number (128). Team finishes keep "#{r} of {N}".
 
 | Priority | Item | When | Template | Proof link |
 |---|---|---|---|---|

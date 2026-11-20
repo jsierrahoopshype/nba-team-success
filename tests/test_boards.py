@@ -52,11 +52,11 @@ def test_jordan_card_ranks_match_board_pages():
     for key in B.BOARDS:
         if not B.BOARDS[key].get("noas"):               # the eight career cards
             assert f'lists/{key}.html?hl=michael-jordan#p-michael-jordan' in t, key
-    m = re.search(r'wins-minus-losses\.html\?hl=michael-jordan.*?<span class="rk">(T-)?#?(\d+) of ([\d,]+) · incl\. ', t, re.S)
+    m = re.search(r'wins-minus-losses\.html\?hl=michael-jordan.*?<span class="rk">No\. ([\d,]+) of ([\d,]+) · incl\. ', t, re.S)
     assert m
     board = read("lists/wins-minus-losses.html")
-    row = re.search(r'<tr id="p-michael-jordan"><td data-l="Rank" class="mono" data-value="(\d+)"><span class="v">(T-)?\d+', board)
-    assert row and row.group(1) == m.group(2) and bool(row.group(2)) == bool(m.group(1))
+    row = re.search(r'<tr id="p-michael-jordan"><td data-l="Rank" class="mono" data-value="(\d+)"><span class="v">(\d+)</span>', board)
+    assert row and row.group(1) == m.group(1).replace(",", "") == row.group(2)
 
 
 FILTERS = [{}, {"from": 1977}, {"ts": 20}, {"team": "CHI"}, {"as": "ever"}, {"season": 1998, "as": "season"},

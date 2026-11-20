@@ -1780,7 +1780,9 @@ def cohort_pages(s):
 
 def card_files(s):
     """assets/card/*.json: small, stable data for the hoopsmatic-og-card repo to draw social cards.
-    Values are numbers and short strings from the same functions as the pages (no prose)."""
+    Values are numbers and short strings from the same functions as the pages (no prose). Each rank
+    also carries its label as the pages print it: "No. 342" for a player's rank, the plain number for a
+    list row; "tied" stays for the renderer, but a shared rank reads the same, never "T-"."""
     out = []
     thr = s.through
     for pid in s.ids:
@@ -1806,6 +1808,7 @@ def card_files(s):
                "span": [season_label(yrs[0]), season_label(yrs[-1])],
                "record": {"w": sm["w"], "l": sm["l"], "pct": round(A.pct(sm["w"], sm["l"]) or 0, 4),
                           "wl": sm["w"] - sm["l"], "wl_rank": rk[0] if rk else None, "wl_tied": bool(rk and rk[1]),
+                          "wl_rank_label": B.rank_label(rk[0], rk[1]) if rk else None,
                           "wl_of": s.rank_n["wins-minus-losses"], "scope": B.SCOPE_LIVE},
                "titles": sm["titles"], "title_seasons": [season_label(y) for y in sm["titleYears"]],
                "best_finish": {"rank": best[2], "of": best[3], "season": season_label(best[1]), "team": best[4]} if best else None,
@@ -1814,12 +1817,13 @@ def card_files(s):
                                 "gap_points": round(100 * sm["gap"], 1) if sm["gap"] is not None else None,
                                 "without_games": sm["ow"] + sm["ol"]},
                "help": {"per_season": round(a["help"], 2) if a else None, "rank": hr[0] if hr else None,
+                        "rank_label": B.rank_label(hr[0], hr[2]) if hr else None,
                         "of": hr[1] if hr else None, "tied": bool(hr and hr[2]), "scope": B.SCOPE_DONE},
                "top_peer": s.ids[peers[0][0]]["slug"] if peers and peers[0][0] in s.ids else None}
         out.append((f"assets/card/{v['slug']}.json", json.dumps(doc, ensure_ascii=False, separators=(",", ":"))))
     for key, dfn in B.BOARDS.items():
         ranked, sort, mins = s.board_default[key]
-        rows = [{"rank": r, "tied": tied, "slug": m["slug"], "name": m["name"],
+        rows = [{"rank": r, "tied": tied, "rank_label": str(r), "slug": m["slug"], "name": m["name"],
                  "headshot": (f"assets/hs/{s.ids[m['pid']]['hs']}" if s.ids[m["pid"]].get("hs") and
                               os.path.exists(os.path.join(ROOT, "assets", "hs", s.ids[m["pid"]]["hs"])) else None),
                  "value": board_cell(sort, m)[1], "w": m["w"], "l": m["l"]} for r, tied, m in ranked[:5]]
@@ -2118,16 +2122,13 @@ def season_page(s, sy):
     rel = f"seasons/{lab}.html"
     ts = sorted((t for t in s.d.teams.values() if t["s"] == sy), key=lambda t: (t["rnk"], t["name"]))
     n = len(ts)
-    cnt = defaultdict(int)
-    for t in ts:
-        cnt[t["rnk"]] += 1
     rows = []
     for t in ts:
         mates = s.roster.get((t["f"], sy), [])[:3]
         who = ", ".join(f'{s.plink(pid, up)} <span class="sub">{g} g</span>' for g, pid in mates if pid in s.ids)
         depth = A.PO_DEPTH[t["po"]] + (0.5 if t["po"] == "Play-In" else 0)
         rows.append(f'<tr id="t-{e(t["f"])}">' + "".join([
-            td("Final NBA finish", f'<span class="mono">{"T-" if cnt[t["rnk"]] > 1 else ""}#{t["rnk"]} of {n}</span>', t["rnk"]),
+            td("Final NBA finish", f'<span class="mono">#{t["rnk"]} of {n}</span>', t["rnk"]),
             td("Team", s.tlink(t["f"], sy), t["name"]),
             td("W–L", f'<span class="mono">{t["w"]}{EN}{t["l"]}</span>', t["w"] - t["l"]),
             td("Win %", pct1(A.pct(t["w"], t["l"])), fval(A.pct(t["w"], t["l"])), "mono"),
@@ -2224,7 +2225,7 @@ def board_cell(col, m):
 
 
 def board_row_html(s, r, tied, m, cols, up):
-    cells = [f'<td data-l="Rank" class="mono" data-value="{r}">{"T-" if tied else ""}{r}</td>',
+    cells = [f'<td data-l="Rank" class="mono" data-value="{r}">{r}</td>',
              f'<td data-l="Player"><span class="tmn">{s.pic(m["pid"], up, "sm")} {s.plink(m["pid"], up)}</span></td>']
     for c in cols:
         v, txt = board_cell(c, m)
@@ -2314,7 +2315,7 @@ def career_board_page(s, key):
     if mins.get("mm"):
         mtxt.append(f"{mins['mm']}+ games missed")
     pop = (f"{len(ranked):,} players qualify" + (f" ({', '.join(mtxt)})" if mtxt else "")
-           + f". Ranked by {dfn["sorts"][sort][0]}; equal values share a rank (T-). Numbers {B.scope_label(key)}.")
+           + f". Ranked by {dfn["sorts"][sort][0]}; equal values share a rank. Numbers {B.scope_label(key)}.")
     others = " · ".join(f'<a href="{k}.html">{e(B.BOARDS[k]["h1"])}</a>' for k in B.BOARDS if k != key)
     taps = ""
     if len(dfn["sorts"]) > 1:
@@ -2596,7 +2597,7 @@ def board_preview(s, key, up, n=5, title=None):
             num, sub = str(m["titles"]), ", ".join(season_label(y) for y in m["years"][:3]) + (" ..." if len(m["years"]) > 3 else "")
         else:
             num, sub = "", ""
-        items.append(prow(s, m["pid"], up, sub, num, ("T-" if tied else "") + str(r)))
+        items.append(prow(s, m["pid"], up, sub, num, str(r)))
     return (f'<div class="box"><div class="boxhead">{e(title or dfn["h1"])} <a href="{up}lists/{key}.html">full board</a></div>'
             f'<ul class="rows">{"".join(items)}</ul></div>')
 
@@ -2864,7 +2865,7 @@ def how_page(s):
 <h2>What each page covers</h2>
 <p><strong>Career records</strong> (W{EN}L, win %, W {MINUS} L, with and without) count every regular season from {season_label(1947)} through {season_label(CURRENT_SEASON)}, with {season_label(CURRENT_SEASON)} games through {e(nice_date(through))}, the last game in the nightly data; the nightly job recomputes them. <strong>Season counts and finishes</strong> (winning seasons, playoff trips, titles, final NBA finish, teammate help) use completed seasons, {season_label(1947)} through {season_label(LAST_COMPLETE)}, because a season in progress has no final finish. The career boards have a "Completed seasons only" option.</p>
 <h2 id="ranks">Ranks and scopes</h2>
-<p>Every rank on the site (player cards, boards, the daily list, fun facts, share-card data) comes from the board's own rule: its default view, its qualifying group and standard competition ranking, where equal values share a rank shown as "T-155" and the next rank skips ahead. Each career number says its scope in a few words: <strong>"{B.SCOPE_LIVE}"</strong> for career records (W{EN}L, win %, W {MINUS} L, with and without), <strong>"{B.SCOPE_DONE}"</strong> for season counts, finishes and teammate help. A link always opens the board in the scope it quotes.</p>
+<p>Every rank on the site (player cards, boards, the daily list, fun facts, share-card data) comes from the board's own rule: its default view, its qualifying group and standard competition ranking, where equal values share a rank (two players tied for No. 155 both show No. 155, and 155 in a board's rank column) and the next rank skips ahead. Each career number says its scope in a few words: <strong>"{B.SCOPE_LIVE}"</strong> for career records (W{EN}L, win %, W {MINUS} L, with and without), <strong>"{B.SCOPE_DONE}"</strong> for season counts, finishes and teammate help. A link always opens the board in the scope it quotes.</p>
 <h2>Formats</h2>
 <p>Records use an en dash (706{EN}366). Win rates read 65.9%. With and without is shown as the two win rates, "65.9% with him · 39.9% without", and the gap as "26.0 points higher": the difference between the two win percentages (percentage points), worked out from the unrounded rates. It is not a relative change: +26.0 does not mean 26% more wins. Possession-based on/off is in points per 100 possessions, a different unit, and is always labeled that way. An empty sample (no games) shows N/A, never 0.0%.</p>
 <h2>Final NBA finish</h2>

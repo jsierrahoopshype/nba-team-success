@@ -189,7 +189,7 @@
     td.setAttribute("data-l", "Rank");
     td.className = "mono";
     td.setAttribute("data-value", m._rank);
-    td.textContent = (m._tied ? "T-" : "") + m._rank;
+    td.textContent = m._rank;
     tr.appendChild(td);
     td = document.createElement("td");
     td.setAttribute("data-l", "Player");
@@ -261,7 +261,7 @@
       if (res.mins.ms) minTxt.push(res.mins.ms + "+ seasons");
       if (res.mins.mp) minTxt.push(res.mins.mp + "+ games played");
       if (res.mins.mm) minTxt.push(res.mins.mm + "+ games missed");
-      pop.textContent = res.rows.length.toLocaleString("en-US") + " players qualify" + (minTxt.length ? " (" + minTxt.join(", ") + ")" : "") + ". Ranked by " + DEF.sorts[res.sort][0] + "; equal values share a rank (T-). Numbers " +
+      pop.textContent = res.rows.length.toLocaleString("en-US") + " players qualify" + (minTxt.length ? " (" + minTxt.join(", ") + ")" : "") + ". Ranked by " + DEF.sorts[res.sort][0] + "; equal values share a rank. Numbers " +
         (DEF.live && (+(f.to || DEF.last)) >= DEF.last ? DEF.scopeLive : DEF.scopeDone) + ".";
     }
     var more = document.getElementById("board-more");
