@@ -145,6 +145,7 @@
     if (next && next.classList.contains("detail")) {
       next.parentNode.removeChild(next);
       btn.setAttribute("aria-expanded", "false"); btn.textContent = "Show games";
+      keepVs(null);
       return;
     }
     var f = filt(), list = rowsFor(f).filter(function (g) { return g.opp === o; });
@@ -180,6 +181,14 @@
     det.appendChild(cell);
     tr.parentNode.insertBefore(det, tr.nextSibling);
     btn.setAttribute("aria-expanded", "true"); btn.textContent = "Hide games";
+    keepVs(o);
+  }
+  // the opened game list goes in the URL (?vs=BOS#vs-BOS), so Back and shared links restore it
+  function keepVs(o) {
+    var q = new URLSearchParams(location.search);
+    if (o) q.set("vs", o); else q.delete("vs");
+    var qs = q.toString();
+    history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "") + (o ? "#vs-" + o : ""));
   }
   table.addEventListener("click", function (ev) {
     var b = ev.target.closest ? ev.target.closest("button.opp-open") : null;

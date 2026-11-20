@@ -94,17 +94,25 @@ def test_list_passes_are_notable():
 
 
 def test_homepage_order():
+    """Round 6 order: search, last night, fun facts, with/without (or its one-line placeholder), on/off,
+    leaderboards, comparison of the day, search again. No standings block."""
     t = read("index.html")
-    order = ['<section class="night">', "<h2>Fun facts</h2>", "<h2>Comparison of the day</h2>",
-             "so far: with and without</h2>", "<h2>Last 30 days: on/off movers</h2>", "standings</h2>",
-             "<h2>Leaderboards</h2>", 'class="az"']
+    ww = "so far: with and without</h2>" if "so far: with and without</h2>" in t else 'class="ww-wait"'
+    order = ['id="pf"', '<section class="night">', "<h2>Fun facts</h2>", ww, "<h2>Last 30 days: on/off movers</h2>",
+             '<h2 id="leaderboards">Leaderboards</h2>', "<h2>Comparison of the day</h2>", 'id="pf2"']
     pos = [t.index(x) for x in order]
     assert pos == sorted(pos)
-    assert t.index('id="pf"') < t.index("<h1>Team Success</h1>") < pos[0]
+    assert "standings</h2>" not in t
 
 
 def test_with_without_block_is_current_season_only():
     t = read("index.html")
+    if 'class="ww-wait"' in t:                      # nobody qualifies yet: one line, no empty boxes
+        sec = t[t.index('class="ww-wait"'):t.index("<h2>Last 30 days")]
+        assert "With and without for 2026-27 appears once players have missed 8+ games." in sec
+        assert '<a href="lists/gap-career.html">Career with and without</a>' in sec
+        assert "boxhead" not in sec and "Nobody yet" not in sec
+        return
     sec = t[t.index("so far: with and without</h2>"):t.index("<h2>Last 30 days")]
     assert ": career" not in sec and "Career leaders shown" not in sec
     assert "5 and 5" not in sec
@@ -112,9 +120,6 @@ def test_with_without_block_is_current_season_only():
     assert '<a href="lists/gap-career.html">Career with and without</a>' in sec
     for played, missed in re.findall(r"in (\d+) played · [^<]* in (\d+) missed", sec):
         assert int(played) >= 10 and int(missed) >= 8
-    n_rows = sec.count("<li>")
-    if n_rows < 6:
-        assert re.search(r"Too early: only \d+ players? ha(s|ve) played 10\+ games and missed 8\+ so far", sec)
 
 
 def test_full_board_defaults_match_js():

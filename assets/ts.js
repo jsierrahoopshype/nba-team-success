@@ -5,6 +5,19 @@
 // 2) Sortable tables (Chrome Modern Web Guidance "sortable-table"): a <button> in each sortable
 //    <th>, aria-sort on the sorted header only, raw values from data-value, Intl.Collator for text,
 //    existing rows moved (never re-rendered), one role="status" message per sort.
+// Back: shown only when the previous page was a Team Success page; it is history.back(), so the
+// browser restores that page's URL state (?hl=, filters, opened games) and its scroll position.
+(function () {
+  var b = document.querySelector("[data-back]");
+  if (!b) return;
+  var ref = document.referrer, base = location.origin + "/team-success/";
+  var local = location.pathname.indexOf("/team-success/") === 0 ? base : location.origin + location.pathname.replace(/[^/]*$/, "");
+  if (!ref || ref.indexOf(location.origin) !== 0 || (ref.indexOf(base) !== 0 && ref.indexOf(local) !== 0) || history.length < 2) return;
+  if (ref.split("#")[0] === location.href.split("#")[0]) return;
+  b.hidden = false;
+  b.addEventListener("click", function (ev) { ev.preventDefault(); history.back(); });
+})();
+
 (function () {
   // old in-page comparison links (player/<slug>.html?peer=<slug>) now open the compare page
   var pr = document.querySelector("[data-peer-redirect]"), peer = new URLSearchParams(location.search).get("peer");

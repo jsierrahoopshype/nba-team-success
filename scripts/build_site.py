@@ -351,7 +351,31 @@ class Site:
 TD_RE = re.compile(r'(<td data-l="[^"]*"[^>]*>)(.*?)(</td>)', re.S)
 
 
+CRUMB_SECTION = {"player": ("Players", "players/a.html"), "players": ("Players", "players/a.html"),
+                 "lists": ("Leaderboards", "index.html#leaderboards"), "seasons": ("Seasons", "seasons/index.html"),
+                 "compare": ("Compare", "compare/"), "stories": ("Last night", "stories/index.html")}
+
+
+def crumbs(rel, body, up):
+    """The way back out: 'Team Success › <section> › <this page>', each part a link, plus a Back link
+    that ts.js shows only when the previous page was a Team Success page. A navigation row, not a label."""
+    if rel == "index.html":
+        return ""
+    m = re.search(r"<h1[^>]*>(.*?)</h1>", body, re.S)
+    here = re.sub(r"<[^>]+>", "", m.group(1)).strip() if m else ""
+    here_url = up + (rel[:-len("index.html")] if rel.endswith("index.html") else rel)
+    parts = [f'<a href="{up}index.html">Team Success</a>']
+    sec = CRUMB_SECTION.get(rel.split("/")[0]) if "/" in rel else None
+    if sec and not (rel.split("/")[0] in ("seasons", "stories", "compare") and rel.endswith("index.html")) \
+            and not (rel.startswith("players/") and rel == "players/a.html"):
+        parts.append(f'<a href="{up}{sec[1]}">{e(sec[0])}</a>')
+    parts.append(f'<a href="{e(here_url)}" aria-current="page">{here}</a>')
+    return (f'<nav class="bc" aria-label="Breadcrumb"><a class="back" href="#" hidden data-back>&larr; Back</a>'
+            f'<ol>{"".join(f"<li>{x}</li>" for x in parts)}</ol></nav>')
+
+
 def page(rel, title, desc, body, up, robots=None, og=None, canonical=None):
+    bc = crumbs(rel, body, up)
     # one wrapper per card cell so phones show "label .... value" cleanly
     body = TD_RE.sub(lambda m: f'{m.group(1)}<span class="v">{m.group(2)}</span>{m.group(3)}', body)
     url = canonical or (BASE + ("" if rel == "index.html" else rel))
@@ -382,6 +406,7 @@ def page(rel, title, desc, body, up, robots=None, og=None, canonical=None):
 </head>
 <body>
 <div class="wrap">
+{bc}
 <form class="finder top" role="search" data-mode="go" data-up="{up}" data-index="{up}assets/players.json" action="{up}players/a.html">
 <label for="pf" class="vh">Find a player</label><input id="pf" type="search" autocomplete="off" placeholder="Find a player, e.g. Bill Russell">
 <ul class="results"></ul></form>
@@ -758,47 +783,112 @@ def latest_seasons(s, pid, up, pts):
     return '<ul class="latest">' + "".join(items) + "</ul>"
 
 
+def seasons_list(ys):
+    """'2019-20', '2019-20 and 2020-21', '2017-18, 2018-19 and 2019-20'."""
+    lab = [season_label(y) for y in ys]
+    return lab[0] if len(lab) == 1 else ", ".join(lab[:-1]) + " and " + lab[-1]
+
+
+def nickname(name, city):
+    return name[len(city):].strip() if city and name.startswith(city) and len(name) > len(city) else name
+
+
+def moves(d, pid):
+    """His moves, by the rule in docs/story-rules.md ("Arrival and departure"):
+    ("debut", f, y)    his first franchise in his first season with games
+    ("arrived", f, y)  a franchise he was not with in his previous season with games
+    ("left", f, b, n)  after season b, when his next season with games n is not with f (n None: never again)
+    ("missed", f, b, [missed seasons], n)  whole seasons without a game, then back with the same franchise
+    Seasons with games include the one in progress, so a current-season return or move counts."""
+    by = defaultdict(list)
+    for st in d.stints(pid, upto=CURRENT_SEASON):
+        by[st["s"]].append(st)
+    ys = sorted(by)
+    teams = {y: [x["f"] for x in sorted(by[y], key=lambda x: (x.get("first") or "", x.get("last") or ""))] for y in ys}
+    for y in ys:                                   # unique, in order of appearance
+        seen = []
+        for f in teams[y]:
+            if f not in seen:
+                seen.append(f)
+        teams[y] = seen
+    out = []
+    for i, y in enumerate(ys):
+        prev = teams[ys[i - 1]] if i else []
+        for k, f in enumerate(teams[y]):
+            if i == 0 and k == 0:
+                out.append(("debut", f, y))
+            elif f not in prev or (k > 0 and f != teams[y][0] and f not in prev):
+                out.append(("arrived", f, y))
+        nxt = ys[i + 1] if i + 1 < len(ys) else None
+        for f in teams[y]:
+            if nxt is not None and f in teams[nxt]:
+                if nxt > y + 1:
+                    out.append(("missed", f, y, list(range(y + 1, nxt)), nxt))
+                continue
+            if f == teams[y][-1] or nxt is None or f not in teams[nxt]:
+                out.append(("left", f, y, nxt))
+    return out
+
+
 def arrival_departure(s, pid, up):
     d = s.d
-    seasons = defaultdict(set)
-    for st in d.stints(pid):
-        seasons[st["f"]].add(st["s"])
     rows = []
-    for f, ys in seasons.items():
-        ys = sorted(ys)
-        runs = []
-        for y in ys:
-            if runs and y == runs[-1][1] + 1:
-                runs[-1][1] = y
-            else:
-                runs.append([y, y])
-        for a, b in runs:
+
+    def rec(t):
+        return f'{wl(t["w"], t["l"])} <span class="sub">{A.per82(t):.1f} per 82</span>'
+    for mv in moves(d, pid):
+        kind, f = mv[0], mv[1]
+        if kind in ("debut", "arrived"):
+            a = mv[2]
             prev, first = d.team(f, a - 1), d.team(f, a)
+            if not first or first.get("live"):
+                continue
+            ch = (A.per82(first) - A.per82(prev)) if prev else None
+            rows.append((a, "<tr>" + "".join([
+                td("Move", "Debut" if kind == "debut" else "Arrived", 0 if kind == "debut" else 1),
+                td("Team", s.tlink(f, a), first["name"]),
+                td("Season", season_label(a), a, "mono"),
+                td("Before", f'{season_label(a - 1)}: {rec(prev)}' if prev else "N/A", fval(A.per82(prev)) if prev else None, "mono"),
+                td("After", f'{season_label(a)}: {rec(first)}', fval(A.per82(first)), "mono"),
+                td("Change", f"{fnum(ch)} wins" if ch is not None else "N/A", fval(ch) if ch is not None else None,
+                   f"mono {cls_gap(ch)}" if ch is not None else "mono")]) + "</tr>"))
+        elif kind == "left":
+            b, n = mv[2], mv[3]
             last, nxt = d.team(f, b), d.team(f, b + 1)
-            if prev and first:
-                ch = A.per82(first) - A.per82(prev)
-                rows.append((a, "<tr>" + "".join([
-                    td("Move", "Arrived", 0), td("Team", s.tlink(f, a), first["name"]),
-                    td("Season", season_label(a), a, "mono"),
-                    td("Before", f'{season_label(a - 1)}: {wl(prev["w"], prev["l"])} <span class="sub">{A.per82(prev):.1f} per 82</span>', fval(A.per82(prev)), "mono"),
-                    td("After", f'{season_label(a)}: {wl(first["w"], first["l"])} <span class="sub">{A.per82(first):.1f} per 82</span>', fval(A.per82(first)), "mono"),
-                    td("Change", f"{fnum(ch)} wins", fval(ch), f"mono {cls_gap(ch)}")]) + "</tr>"))
-            if last and nxt and b + 1 <= LAST_COMPLETE:
-                ch = A.per82(nxt) - A.per82(last)
-                rows.append((b + 0.5, "<tr>" + "".join([
-                    td("Move", "Left", 1), td("Team", s.tlink(f, b), last["name"]),
-                    td("Season", season_label(b + 1), b + 1, "mono"),
-                    td("Before", f'{season_label(b)}: {wl(last["w"], last["l"])} <span class="sub">{A.per82(last):.1f} per 82</span>', fval(A.per82(last)), "mono"),
-                    td("After", f'{season_label(b + 1)}: {wl(nxt["w"], nxt["l"])} <span class="sub">{A.per82(nxt):.1f} per 82</span>', fval(A.per82(nxt)), "mono"),
-                    td("Change", f"{fnum(ch)} wins", fval(ch), f"mono {cls_gap(ch)}")]) + "</tr>"))
+            if not last or not nxt or nxt.get("live") or b + 1 > LAST_COMPLETE:
+                continue
+            ch = A.per82(nxt) - A.per82(last)
+            rows.append((b + 0.5, "<tr>" + "".join([
+                td("Move", "Left", 2), td("Team", s.tlink(f, b), last["name"]),
+                td("Season", f"after {season_label(b)}", b + 0.5, "mono"),
+                td("Before", f'{season_label(b)}: {rec(last)}', fval(A.per82(last)), "mono"),
+                td("After", f'{season_label(b + 1)}: {rec(nxt)} without him', fval(A.per82(nxt)), "mono"),
+                td("Change", f"{fnum(ch)} wins", fval(ch), f"mono {cls_gap(ch)}")]) + "</tr>"))
+        else:                                     # missed whole seasons, back with the same franchise
+            b, gap, n = mv[2], mv[3], mv[4]
+            recs = []
+            for y in gap:
+                t = d.team(f, y)
+                if t:
+                    recs.append(f'{wl(t["w"], t["l"])}')
+            t0 = d.team(f, gap[0]) or d.team(f, b)
+            nick = nickname(t0["name"], s.city(f, gap[0], t0["name"]))
+            rows.append((gap[0], '<tr class="gap">' + "".join([
+                td("Move", "Missed", 3), td("Team", s.tlink(f, gap[0]), t0["name"]),
+                td("Season", f"{seasons_list(gap)} (no games)", gap[0], "mono"),
+                td("Before", f'{season_label(b)}: {rec(d.team(f, b))}', fval(A.per82(d.team(f, b))), "mono"),
+                td("After", f'{e(nick)} {", ".join(recs)} without him; back in {season_label(n)}', None, "mono"),
+                td("Change", "N/A", None, "mono")]) + "</tr>"))
     if not rows:
         return ""
     rows.sort(key=lambda x: -x[0])
     heads = [th("Move", "number"), th("Team", "text"), th("Season", sort="descending"), th("Before"), th("After"), th("Change")]
     return ('<section><h2 id="cap-arr">Arrival and departure</h2>'
             '<p class="note">Team wins per 82 games the season before he arrived vs his first season there, and his last '
-            'season vs the season after he left. Per 82 so short seasons compare fairly. These are team records, not a '
-            'measure of what he did.</p>' + sortable("cap-arr", "", heads, [r for _, r in rows]) + "</section>")
+            'season vs the season after he left. He leaves a team only when his next season with games is for another '
+            'team (or he never plays again); whole seasons he missed and came back from are one "Missed" row with the '
+            'team\'s record without him. Per 82 so short seasons compare fairly. These are team records, not a measure '
+            'of what he did.</p>' + sortable("cap-arr", "", heads, [r for _, r in rows]) + "</section>")
 
 
 def trades(s, pid, up):
@@ -1294,8 +1384,8 @@ def help_table(s, pid, up):
         val = hfmt(same, partial) + (' <span class="aw">partial</span>' if partial else "")
         items.append(f"""<li>{head}
 <span class="hbar"><i style="width:{w}rem"></i>{val}</span>
-<p class="more">Help this season: {help_breakdown(s, up, mates, 2, same, partial)}</p>
 <span class="chipsrow">{chips}</span>
+<p class="more">Help this season: {help_breakdown(s, up, mates, 2, same, partial)}</p>
 <details><summary>More: help coming in and other teammates</summary>{coming}{others}</details></li>""")
     return (f'<section><h2 id="cap-help">Teammate help by season</h2>'
             f'<p class="note">Two separate numbers per season, each with every teammate that adds to it. '
@@ -2646,25 +2736,28 @@ def hub(s):
                   str(r["n"]), i + 1) for i, r in enumerate(wt)]
     az = " ".join(f'<a href="players/{c}.html">{c.upper()}</a>' for c in "abcdefghijklmnopqrstuvwxyz")
     feat = featured_pair(s, up, st[0]["date"] if st else dt.date.today().isoformat())
+    # with and without: the whole block only once someone qualifies (no empty boxes)
+    if ok:
+        ww = f"""<section><h2>{season_label(CURRENT_SEASON)} so far: with and without</h2>
+<div class="dgrid">{box_missed}
+{box_played}</div>
+{ww_why}<p class="note">{season_label(CURRENT_SEASON)} games only: team win % in the games he played minus in the games he missed, in points, with both records. {HOME_MIN_PLAYED}+ games played and {HOME_MIN_MISSED}+ missed; the <a href="{full}">full board</a> opens with the same minimums and lets you change them. A team record, not what he caused. <a href="lists/gap-career.html">Career with and without</a></p></section>"""
+    else:
+        ww = (f'<section class="ww-wait"><p class="note">With and without for {season_label(CURRENT_SEASON)} appears once '
+              f'players have missed {HOME_MIN_MISSED}+ games. <a href="lists/gap-career.html">Career with and without</a></p></section>')
     body = f"""<header><h1>Team Success</h1>
 <p class="subtitle">How much every NBA player won and how much help he had. Records in his games, final finishes, teammate help, every opponent, since 1946-47. Games through {e(nice_date(through))}.</p></header>
 {night or '<p class="note">The first list appears after the next nightly update.</p>'}
 {fun_facts(s, up)}
-<section><h2>Comparison of the day</h2>{feat}</section>
-<section><h2>{season_label(CURRENT_SEASON)} so far: with and without</h2>
-<div class="dgrid">{box_missed}
-{box_played}</div>
-{ww_why}<p class="note">{season_label(CURRENT_SEASON)} games only: team win % in the games he played minus in the games he missed, in points, with both records. {HOME_MIN_PLAYED}+ games played and {HOME_MIN_MISSED}+ missed; the <a href="{full}">full board</a> opens with the same minimums and lets you change them. A team record, not what he caused. <a href="lists/gap-career.html">Career with and without</a></p></section>
+{ww}
 <section><h2>Last 30 days: on/off movers</h2>
 <div class="box"><div class="boxhead">Biggest change in on/off per 100 possessions <a href="lists/on-off-movers.html">full board</a></div><ul class="rows">{''.join(mov)}</ul></div>
 <p class="note">Last 30 days ({mover_windows(s, baseline)[0] if s.cur else ''}) vs {'earlier this season' if baseline == 'earlier' else 'his ' + season_label(LAST_COMPLETE) + ' season'}, with the on-court possessions behind each number. Possession-based: a different unit from the win-rate gaps.</p></section>
-<section><h2>{season_label(CURRENT_SEASON)} standings</h2>
-<div class="dgrid"><div class="box"><ul class="rows">{''.join(tl[:half])}</ul></div><div class="box"><ul class="rows">{''.join(tl[half:])}</ul></div></div>
-<p class="note">By win % to date. <a href="seasons/{season_label(CURRENT_SEASON)}.html">All teams with their most-used players</a> · <a href="seasons/{season_label(LAST_COMPLETE)}.html">{season_label(LAST_COMPLETE)} final standings</a></p></section>
-<section><h2>Leaderboards</h2>
+<section><h2 id="leaderboards">Leaderboards</h2>
 <div class="dgrid three">{board_preview(s, 'career-wins', up)}{board_preview(s, 'wins-minus-losses', up)}{board_preview(s, 'titles', up)}
 {board_preview(s, 'no-allstar-teammate', up)}{list_preview(s, up, 'Bad Luck Index', 'lists/bad-luck.html', bad)}{list_preview(s, up, 'Played for the worst team the most', 'lists/worst-team.html', worst)}</div>
-<p class="note">Career wins and W {MINUS} L {B.SCOPE_LIVE}; titles {B.SCOPE_DONE}. <a href="lists/winning-seasons.html">Winning seasons</a> · <a href="lists/playoff-trips.html">Playoff trips</a> · <a href="lists/average-finish.html">Average finish</a> · <a href="lists/gap-career.html">Career with and without</a> · <a href="lists/low-help-all-stars.html">Low-help All-Stars</a> · <a href="seasons/index.html">Every season's standings</a></p></section>
+<p class="note">Career wins and W {MINUS} L {B.SCOPE_LIVE}; titles {B.SCOPE_DONE}. <a href="lists/winning-seasons.html">Winning seasons</a> · <a href="lists/playoff-trips.html">Playoff trips</a> · <a href="lists/average-finish.html">Average finish</a> · <a href="lists/gap-career.html">Career with and without</a> · <a href="lists/low-help-all-stars.html">Low-help All-Stars</a> · <a href="seasons/index.html">Every season's standings</a> · <a href="seasons/{season_label(CURRENT_SEASON)}.html">{season_label(CURRENT_SEASON)} standings so far</a></p></section>
+<section class="cotd"><h2>Comparison of the day</h2>{feat}</section>
 <p class="az">Players A-Z: {az}</p>"""
     desc = ("How much every NBA player won and how much help he had: team records in his games, final NBA finishes, "
             "teammate help, every opponent and a daily list from last night's games, since 1946-47.")

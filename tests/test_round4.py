@@ -95,6 +95,8 @@ def test_scoreboard_text_is_two_short_lines():
 
 def test_homepage_with_without_minimums():
     t = read("index.html")
+    if 'class="ww-wait"' in t:                      # round 6: nobody qualifies yet, the block is hidden
+        return
     sec = t[t.index("so far: with and without</h2>"):t.index("<h2>Last 30 days")]
     for played, missed in re.findall(r"in (\d[\d,]*) played · [^<]* in (\d[\d,]*) missed", sec):
         p, m = int(played.replace(",", "")), int(missed.replace(",", ""))

@@ -148,3 +148,17 @@ value cell opens that player's row (`?hl=<slug>#p-<slug>`): Career record -> car
 (400+ games); W − L -> wins minus losses; Titles; Playoff trips; Deepest run; Average finish (5+
 seasons); With vs without -> career with/without (200+ played, 50+ missed); Help per season -> the
 comparison rules page (no board). A player outside a board's qualifying group links to his own page.
+
+## Arrival and departure (player page)
+
+Built from the seasons in which he played at least one game (completed seasons plus the one in
+progress), in order of appearance:
+- **Debut**: his first franchise in his first season with games.
+- **Arrived**: a franchise he was not with in his previous season with games (a mid-season trade
+  counts in that season).
+- **Left**: only when his next season with games is for a different franchise, or he never plays
+  again; shown as "after {season}" with the team's record that season and the next one "without him".
+- **Missed**: one or more whole seasons without a game followed by a return to the same franchise
+  are one row, "Missed {seasons} (no games)", with the team's record in each of those seasons
+  without him. No Left / Arrived pair.
+Rows need the team's completed seasons (the season in progress has no final record yet).
