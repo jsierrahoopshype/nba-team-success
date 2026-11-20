@@ -1,153 +1,166 @@
 {
- "cutoff": "2026-11-18",
- "date": "2026-11-19",
+ "cutoff": "2026-11-19",
+ "date": "2026-11-20",
  "facts": [
   {
-   "href": "seasons/2026-27.html#t-SAS",
-   "key": "start:best:SAS:15|The San Antonio Spurs/ are 12–3, the franchise's best start through 15 games since the /2016-17 San Antonio Spurs/ (also 12–3).",
+   "href": "seasons/2026-27.html#t-SAC",
+   "key": "start:worst:SAC:14|The Sacramento Kings/ are 1–13, the franchise's worst start through 14 games since the /1990-91 Sacramento Kings/ (also 1–13).",
    "parts": [
     [
-     "The San Antonio Spurs",
-     "seasons/2026-27.html#t-SAS",
+     "The Sacramento Kings",
+     "seasons/2026-27.html#t-SAC",
      1
     ],
     [
-     " are 12–3, the franchise's best start through 15 games since the "
+     " are 1–13, the franchise's worst start through 14 games since the "
     ],
     [
-     "2016-17 San Antonio Spurs",
-     "seasons/2016-17.html#t-SAS",
+     "1990-91 Sacramento Kings",
+     "seasons/1990-91.html#t-SAC",
      0
     ],
     [
-     " (also 12–3)."
+     " (also 1–13)."
     ]
    ],
    "pid": null,
    "team": [
-    "SAS",
+    "SAC",
     2027
    ],
    "type": "start"
   },
   {
-   "href": "player/jalen-brunson.html#cap-seasons",
-   "key": "streak:winning:jalen-brunson|Jalen Brunson/'s teams have had a winning record in each of his last /7 seasons/ (2019-20 to 2025-26), T-9 among active players.",
+   "href": "seasons/2026-27.html#t-PHI",
+   "key": "start:best:PHI:16|The Philadelphia 76ers/ are 13–3, the franchise's best start through 16 games since the /2000-01 Philadelphia 76ers/ (14–2).",
    "parts": [
     [
-     "Jalen Brunson",
-     "player/jalen-brunson.html",
+     "The Philadelphia 76ers",
+     "seasons/2026-27.html#t-PHI",
+     1
+    ],
+    [
+     " are 13–3, the franchise's best start through 16 games since the "
+    ],
+    [
+     "2000-01 Philadelphia 76ers",
+     "seasons/2000-01.html#t-PHI",
+     0
+    ],
+    [
+     " (14–2)."
+    ]
+   ],
+   "pid": null,
+   "team": [
+    "PHI",
+    2027
+   ],
+   "type": "start"
+  },
+  {
+   "href": "player/trae-young.html?vs=CHI#vs-CHI",
+   "key": "matchup:trae-young:CHI|Tonight vs the Chicago Bulls: /Trae Young/'s teams are /8–16 (33.3%)/ in his 24 regular-season games against them.",
+   "parts": [
+    [
+     "Tonight vs the Chicago Bulls: "
+    ],
+    [
+     "Trae Young",
+     "player/trae-young.html",
+     1
+    ],
+    [
+     "'s teams are "
+    ],
+    [
+     "8–16 (33.3%)",
+     "player/trae-young.html?vs=CHI#vs-CHI",
+     0
+    ],
+    [
+     " in his 24 regular-season games against them."
+    ]
+   ],
+   "pid": "1629027",
+   "team": null,
+   "type": "matchup"
+  },
+  {
+   "href": "player/kawhi-leonard.html#cap-seasons",
+   "key": "streak:winning:kawhi-leonard|Kawhi Leonard/'s teams have had a winning record in each of his last /14 seasons/ (2011-12 to 2025-26), the longest active streak.",
+   "parts": [
+    [
+     "Kawhi Leonard",
+     "player/kawhi-leonard.html",
      1
     ],
     [
      "'s teams have had a winning record in each of his last "
     ],
     [
-     "7 seasons",
-     "player/jalen-brunson.html#cap-seasons",
+     "14 seasons",
+     "player/kawhi-leonard.html#cap-seasons",
      0
     ],
     [
-     " (2019-20 to 2025-26), T-9 among active players."
+     " (2011-12 to 2025-26), the longest active streak."
     ]
    ],
-   "pid": "1628973",
+   "pid": "202695",
    "team": null,
    "type": "streak"
   },
   {
-   "href": "player/tre-mann.html#cap-seasons",
-   "key": "streak:drought:tre-mann|Tre Mann/ has not been on a playoff team in his last /5 seasons/ (2021-22 to 2025-26), T-7 among active players.",
+   "href": "seasons/1964-65.html#t-BOS",
+   "key": "onthisday:1965:BOS|On this date in 1964-65, the /Boston Celtics/ were 14–3. They finished 62–18 and won the title.",
    "parts": [
     [
-     "Tre Mann",
-     "player/tre-mann.html",
-     1
-    ],
-    [
-     " has not been on a playoff team in his last "
-    ],
-    [
-     "5 seasons",
-     "player/tre-mann.html#cap-seasons",
-     0
-    ],
-    [
-     " (2021-22 to 2025-26), T-7 among active players."
-    ]
-   ],
-   "pid": "1630544",
-   "team": null,
-   "type": "streak"
-  },
-  {
-   "href": "seasons/1957-58.html#t-ATL",
-   "key": "onthisday:1958:ATL|On this date in 1957-58, the /St. Louis Hawks/ were 7–5. They finished 41–31 and won the title.",
-   "parts": [
-    [
-     "On this date in 1957-58, the "
-    ],
-    [
-     "St. Louis Hawks",
-     "seasons/1957-58.html#t-ATL",
-     1
-    ],
-    [
-     " were 7–5. They finished 41–31 and won the title."
-    ]
-   ],
-   "pid": null,
-   "team": [
-    "ATL",
-    1958
-   ],
-   "type": "onthisday"
-  },
-  {
-   "href": "seasons/1968-69.html#t-BOS",
-   "key": "onthisday:1969:BOS|On this date in 1968-69, the /Boston Celtics/ were 11–4. They finished 48–34 and won the title.",
-   "parts": [
-    [
-     "On this date in 1968-69, the "
+     "On this date in 1964-65, the "
     ],
     [
      "Boston Celtics",
-     "seasons/1968-69.html#t-BOS",
+     "seasons/1964-65.html#t-BOS",
      1
     ],
     [
-     " were 11–4. They finished 48–34 and won the title."
+     " were 14–3. They finished 62–18 and won the title."
     ]
    ],
    "pid": null,
    "team": [
     "BOS",
-    1969
+    1965
    ],
    "type": "onthisday"
   },
   {
-   "href": "seasons/1975-76.html#t-BOS",
-   "key": "onthisday:1976:BOS|On this date in 1975-76, the /Boston Celtics/ were 6–5. They finished 54–28 and won the title.",
+   "href": "seasons/2026-27.html#t-UTA",
+   "key": "start:worst:UTA:16|The Utah Jazz/ are 3–13, the franchise's worst start through 16 games since the /2013-14 Utah Jazz/ (2–14).",
    "parts": [
     [
-     "On this date in 1975-76, the "
-    ],
-    [
-     "Boston Celtics",
-     "seasons/1975-76.html#t-BOS",
+     "The Utah Jazz",
+     "seasons/2026-27.html#t-UTA",
      1
     ],
     [
-     " were 6–5. They finished 54–28 and won the title."
+     " are 3–13, the franchise's worst start through 16 games since the "
+    ],
+    [
+     "2013-14 Utah Jazz",
+     "seasons/2013-14.html#t-UTA",
+     0
+    ],
+    [
+     " (2–14)."
     ]
    ],
    "pid": null,
    "team": [
-    "BOS",
-    1976
+    "UTA",
+    2027
    ],
-   "type": "onthisday"
+   "type": "start"
   }
  ],
  "history": {
@@ -158,6 +171,14 @@
    "onthisday:1958:ATL|On this date in 1957-58, the /St. Louis Hawks/ were 7–5. They finished 41–31 and won the title.",
    "onthisday:1969:BOS|On this date in 1968-69, the /Boston Celtics/ were 11–4. They finished 48–34 and won the title.",
    "onthisday:1976:BOS|On this date in 1975-76, the /Boston Celtics/ were 6–5. They finished 54–28 and won the title."
+  ],
+  "2026-11-20": [
+   "start:worst:SAC:14|The Sacramento Kings/ are 1–13, the franchise's worst start through 14 games since the /1990-91 Sacramento Kings/ (also 1–13).",
+   "start:best:PHI:16|The Philadelphia 76ers/ are 13–3, the franchise's best start through 16 games since the /2000-01 Philadelphia 76ers/ (14–2).",
+   "matchup:trae-young:CHI|Tonight vs the Chicago Bulls: /Trae Young/'s teams are /8–16 (33.3%)/ in his 24 regular-season games against them.",
+   "streak:winning:kawhi-leonard|Kawhi Leonard/'s teams have had a winning record in each of his last /14 seasons/ (2011-12 to 2025-26), the longest active streak.",
+   "onthisday:1965:BOS|On this date in 1964-65, the /Boston Celtics/ were 14–3. They finished 62–18 and won the title.",
+   "start:worst:UTA:16|The Utah Jazz/ are 3–13, the franchise's worst start through 16 games since the /2013-14 Utah Jazz/ (2–14)."
   ]
  }
 }
