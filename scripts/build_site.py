@@ -2472,7 +2472,8 @@ def story_pages(s):
 {('<p><img class="storyimg" src="' + up + e(img) + '" alt="' + e(st['headline']) + '" width="1200" height="630" loading="lazy"></p>') if og else ''}
 <p class="seasonnav">{' · '.join(nav)}</p>"""
         out.append((rel, page(rel, f"{st['headline']} ({nice_date(st['date'])}) | HoopsMatic",
-                              " ".join(st["body"])[:300], body, up, robots="noindex, follow", og=og)))
+                              (f"{nice_date(st['date'])}: " + " ".join(st["body"]))[:300], body, up,
+                              robots="noindex, follow", og=og)))
     items = "".join(f'<li><a href="{x["date"]}.html"><strong>{e(x["headline"])}</strong></a>'
                     f'<span class="det">{e(nice_date(x["date"]))}. Data through {e(nice_date(x["cutoff"]))}.</span></li>'
                     for x in all_st)
