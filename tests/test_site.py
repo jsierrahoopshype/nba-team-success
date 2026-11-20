@@ -190,7 +190,11 @@ def test_city_names_rule(html):
 
 def test_no_bare_missed(html):
     for rel in ("player/michael-jordan.html", "player/lebron-james.html", "seasons/2025-26.html"):
-        body = re.sub(r"<[^>]+>", " ", html[rel].split("<body", 1)[1])
+        page = html[rel].split("<body", 1)[1]
+        if 'id="cap-arr"' in page:                   # "Missed" there is a move (whole seasons without a game)
+            i = page.index('id="cap-arr"')
+            page = page[:i] + page[page.index("</section>", i):]
+        body = re.sub(r"<[^>]+>", " ", page)
         assert not re.search(r"\bMissed\b(?! playoffs)", body), rel
 
 

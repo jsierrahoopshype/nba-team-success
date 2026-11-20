@@ -150,6 +150,38 @@ server.listen(0, async () => {
       n++;
     }
   }
+  // teammate help by season: no text block narrower than 120 px, and on desktop the chips wrap in
+  // rows (never one chip per line while the row has room)
+  for (const slug of ['keldon-johnson', 'michael-jordan', 'jordan-poole', 'lebron-james']) {
+    for (const w of [390, 768, 1024, 1366, 1920]) {
+      const page = await browser.newPage({ viewport: { width: w, height: 900 } });
+      await page.goto(`http://localhost:${port}/player/${slug}.html`, { waitUntil: 'load' });
+      const probs = await page.evaluate(() => {
+        const out = [], ul = document.querySelector('ul.helprows');
+        if (!ul) return ['no help table'];
+        ul.querySelectorAll('details').forEach(d => { d.open = true; });
+        const tw = document.createTreeWalker(ul, NodeFilter.SHOW_TEXT);
+        while (tw.nextNode()) {
+          const n = tw.currentNode, t = n.textContent.trim();
+          if (t.length < 12 || !n.parentElement.getClientRects().length) continue;
+          const blk = n.parentElement.closest('p, .hnote, .chipsrow, .hbar, summary, li');
+          const bw = blk.getBoundingClientRect().width;
+          if (bw < 120) out.push(`text "${t.slice(0, 24)}" in a ${Math.round(bw)} px block`);
+        }
+        if (innerWidth >= 1024) ul.querySelectorAll('.chipsrow').forEach(c => {
+          const ch = [...c.children];
+          if (ch.length < 2) return;
+          const need = ch.reduce((a, x) => a + x.getBoundingClientRect().width, 0);
+          const tops = new Set(ch.map(x => Math.round(x.getBoundingClientRect().top)));
+          if (tops.size === ch.length && c.getBoundingClientRect().width > need) out.push('chips stack one per line');
+        });
+        return out;
+      });
+      probs.slice(0, 4).forEach(x => bad.push(`player/${slug}.html help table at ${w}px: ${x}`));
+      n++;
+      await page.close();
+    }
+  }
   await browser.close();
   server.close();
   console.log(`${n} page/width checks, ${bad.length} problems`);
