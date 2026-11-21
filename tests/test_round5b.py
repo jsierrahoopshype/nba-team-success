@@ -47,7 +47,10 @@ def _notable(slug):
     players = json.loads(read("data/players.json"))
     pid = next(k for k, v in ids.items() if v["slug"] == slug)
     p = players.get(pid, {})
-    return bool(p.get("hof")), len(p.get("as", []))
+    import daily_story as D
+    role = D.hof_role(p)
+    # (Hall of Famer as a player, All-Star selections, Hall of Famer as a coach or contributor)
+    return role == "player", len(p.get("as", [])), role in ("coach", "contributor")
 
 
 def _board_rank(href, slug):
@@ -64,19 +67,20 @@ def _board_rank(href, slug):
 
 def test_list_pass_names_a_notable_player():
     """The player passed is top 100 on that board, a Hall of Famer or a 3+ time All-Star, and he is
-    the most notable of everyone passed (Hall of Famer, then All-Star selections, then rank)."""
+    the most notable of everyone passed (Hall of Famer as a player, then All-Star selections, then Hall
+    of Famer as a coach or contributor, then rank)."""
     st = json.loads(read("data/stories.json"))["stories"][0]
     for it in st["items"]:
         if not it["type"].endswith("-pass"):
             continue
         q = it["parts"][2][1].split("/")[-1][:-5]                    # "player/<slug>.html"
-        hof, n_as = _notable(q)
-        assert _board_rank(it["href"], q) <= 100 or hof or n_as >= 3, (it["key"], q)
-        best = (hof, n_as)
+        best = _notable(q)
+        hof, n_as, hof_other = best
+        assert _board_rank(it["href"], q) <= 100 or hof or hof_other or n_as >= 3, (it["key"], q)
         for other in it.get("passed", []):
-            h2, a2 = _notable(other)
-            if h2 or a2 >= 3 or _board_rank(it["href"], other) <= 100:
-                assert (h2, a2) <= best or (h2 == best[0] and a2 <= best[1]), (it["key"], other)
+            o = _notable(other)
+            if o[0] or o[2] or o[1] >= 3 or _board_rank(it["href"], other) <= 100:
+                assert o <= best, (it["key"], other)
         txt = "".join(p[0] for p in it["parts"])
         n = len(it.get("passed", [])) - 1
         if n > 0:
@@ -162,4 +166,5 @@ def test_awards_refresh_runs_only_on_change():
     src = read("scripts/awards_refresh.py")
     for step in ('["build_history.py", "--awards-only"]', '["build_help.py"]', '["step0_report.py"]'):
         assert step in src
-    assert 'if old.get("sha256") == sha:' in src
+    assert 'if old.get("sha256") == sha and old.get("extra_sha256", extra) == extra:' in src
+    assert len(st["extra_sha256"]) == 64        # data/hof_extra.json edits re-run the refresh too

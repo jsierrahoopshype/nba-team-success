@@ -48,6 +48,35 @@ STREAK_MIN, STREAK_GAP = 5, 10             # team streak: 5+ games, the franchis
 MATCHUP_MIN, MATCHUP_HI, MATCHUP_LO = 15, 0.700, 0.350
 
 
+def hof_role(p):
+    """A players.json row's Hall of Fame role: "player", "coach", "contributor" or None.
+    awards.json's own "Hall of Fame" rows are all "player"; data/hof_extra.json adds the rest."""
+    return (p.get("hofRole") or "player") if p.get("hof") else None
+
+
+def is_notable(p, rank):
+    """A passed player is notable: top 100 on that board, a Hall of Famer (any role) or a 3+ time All-Star."""
+    return rank <= NOTABLE_RANK or bool(hof_role(p)) or len(p.get("as", [])) >= NOTABLE_AS
+
+
+def notable_key(p, rank):
+    """Sort key, lowest = most notable: Hall of Famer as a player first, then All-Star selections, then
+    Hall of Famer as a coach or contributor, then rank (so Pat Riley never outranks a 5-time All-Star)."""
+    role = hof_role(p)
+    return (-(role == "player"), -len(p.get("as", [])), -(role in ("coach", "contributor")), rank)
+
+
+def note_of(p):
+    """The label after a passed player's name."""
+    role = hof_role(p)
+    if role == "player":
+        return " (Hall of Famer)"
+    if role in ("coach", "contributor"):
+        return f" (Hall of Famer as a {role})"
+    n_as = len(p.get("as", []))
+    return f" ({n_as}-time All-Star)" if n_as >= NOTABLE_AS else ""
+
+
 def signed(n):
     return ("+" if n > 0 else (MINUS if n < 0 else "")) + f"{abs(n):,}"
 
@@ -184,20 +213,14 @@ def build(date):
         return (t["name"] if t else None) or franchise_name(f, sy) or f
 
     def notable(q, board, rank):
-        p = d.players.get(q, {})
-        return rank <= NOTABLE_RANK or bool(p.get("hof")) or len(p.get("as", [])) >= NOTABLE_AS
+        return is_notable(d.players.get(q, {}), rank)
 
     def most_notable(cands):
-        """The most notable passed player: Hall of Famer first, then All-Star selections, then rank."""
-        return min(cands, key=lambda x: (-d.players.get(x[0], {}).get("hof", 0),
-                                         -len(d.players.get(x[0], {}).get("as", [])), x[1][0]))
+        """The most notable passed player (see notable_key)."""
+        return min(cands, key=lambda x: notable_key(d.players.get(x[0], {}), x[1][0]))
 
     def who_note(q):
-        p = d.players.get(q, {})
-        n_as = len(p.get("as", []))
-        if p.get("hof"):
-            return " (Hall of Famer)"
-        return f" ({n_as}-time All-Star)" if n_as >= NOTABLE_AS else ""
+        return note_of(d.players.get(q, {}))
 
     items = []
 
@@ -518,10 +541,98 @@ def draw(story):
     im.quantize(colors=64, method=Image.Quantize.FASTOCTREE).save(out, optimize=True)
 
 
+def draw_single(story):
+    """The share card of the single-story format (lists before Nov. 19, 2026): label, headline, the
+    first body sentence. Same layout as when those stories were published."""
+    from PIL import Image, ImageDraw, ImageFont
+    W, H = 1200, 630
+    fd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
+
+    def font(size, weight=400):
+        f = ImageFont.truetype(os.path.join(fd, "DMSans.ttf"), size)
+        try:
+            f.set_variation_by_axes([weight])
+        except Exception:
+            pass
+        return f
+
+    def wrap(g, text, f, width):
+        words, lines, cur = text.split(), [], ""
+        for wd in words:
+            t = (cur + " " + wd).strip()
+            if g.textlength(t, font=f) > width:
+                lines.append(cur)
+                cur = wd
+            else:
+                cur = t
+        lines.append(cur)
+        return lines
+    im = Image.new("RGB", (W, H), "#f5f5f7")
+    g = ImageDraw.Draw(im)
+    g.rounded_rectangle((36, 36, W - 36, H - 36), 24, fill="#ffffff", outline="#d1d1d6", width=2)
+    g.text((76, 70), f"Today in Team Success · {nice_date(story['date'])}", font=font(26, 600), fill="#6e6e73")
+    hf = font(52, 700)
+    y = 130
+    for ln in wrap(g, story["headline"], hf, W - 152)[:3]:
+        g.text((76, y), ln, font=hf, fill="#1d1d1f")
+        y += 64
+    bf = font(28, 500)
+    y += 20
+    for ln in wrap(g, story["body"][0], bf, W - 152)[:4]:
+        g.text((76, y), ln, font=bf, fill="#1d1d1f")
+        y += 40
+    g.text((76, H - 92), f"Data through {nice_date(story['cutoff'])}. Records are his teams' in his games.",
+           font=font(22, 500), fill="#6e6e73")
+    g.text((W - 76, H - 92), "hoopsmatic.com/team-success", font=font(22, 600), fill="#3b82f6", anchor="ra")
+    out = os.path.join(ROOT, story["img"])
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    im.quantize(colors=64, method=Image.Quantize.FASTOCTREE).save(out, optimize=True)
+
+
+IMG_HASH = os.path.join(DATA, "story_img_hash.json")
+
+
+def drawn_text(story):
+    """Exactly the text a story's share card shows, so its hash moves only when the image would."""
+    night = story.get("kind") == "night"
+    return {"kind": "night" if night else "single", "date": story["date"], "headline": story["headline"],
+            "body": story.get("body", [])[:3 if night else 1], "cutoff": story["cutoff"]}
+
+
+def img_hash(story):
+    import hashlib
+    txt = json.dumps(drawn_text(story), ensure_ascii=False, sort_keys=True)
+    return hashlib.sha256(txt.encode("utf-8")).hexdigest()
+
+
+def sync_images(stories=None):
+    """Redraw stories/img/<date>.png only for entries whose drawn text changed since the image was
+    drawn (data/story_img_hash.json), or whose image is missing. Everything else is left byte for
+    byte as it is, so a run with no text change commits nothing. Returns the redrawn dates."""
+    if stories is None:
+        stories = load_json(os.path.join(DATA, "stories.json"), {"stories": []})["stories"]
+    old = load_json(IMG_HASH, {})
+    new, redrawn = {}, []
+    for st in stories:
+        if not st.get("img"):
+            continue
+        h = img_hash(st)
+        new[st["date"]] = h
+        if old.get(st["date"]) != h or not os.path.exists(os.path.join(ROOT, st["img"])):
+            (draw if st.get("kind") == "night" else draw_single)(st)
+            redrawn.append(st["date"])
+    dump_json(IMG_HASH, new, compact=False)
+    return redrawn
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default=dt.datetime.now(dt.timezone.utc).date().isoformat())
     build(ap.parse_args().date)
+    # share images whose text changed (today's list, or an older entry rewritten in place)
+    redrawn = sync_images()
+    if redrawn:
+        print("CHANGED share images redrawn:", ", ".join(sorted(redrawn)))
 
 
 if __name__ == "__main__":

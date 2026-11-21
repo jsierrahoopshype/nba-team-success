@@ -54,14 +54,18 @@ def main():
         sha = hashlib.sha256(fh.read()).hexdigest()
     # the repo commit the file was read at (a depth-1 clone has only that commit)
     commit = git("log", "-1", "--format=%h %cs", cwd=os.path.join(SRC, "nba-player-data"))
+    # data/hof_extra.json (Hall of Famers awards.json misses) is merged in by --awards-only too:
+    # an edit to it re-runs the refresh like a new awards.json would
+    with open(os.path.join(DATA, "hof_extra.json"), "rb") as fh:
+        extra = hashlib.sha256(fh.read()).hexdigest()
     old = load_json(STATE, {})
-    if old.get("sha256") == sha:
+    if old.get("sha256") == sha and old.get("extra_sha256", extra) == extra:
         print("UNCHANGED awards.json", commit, sha[:12])
         return False
     for cmd in (["build_history.py", "--awards-only"], ["build_help.py"], ["step0_report.py"]):
         print("run", " ".join(cmd), flush=True)
         subprocess.run([sys.executable, os.path.join(ROOT, "scripts", cmd[0]), *cmd[1:]], check=True)
-    dump_json(STATE, {"sha256": sha, "commit": commit,
+    dump_json(STATE, {"sha256": sha, "extra_sha256": extra, "commit": commit,
                       "refreshed": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ")}, compact=False)
     print("CHANGED awards.json", commit, sha[:12], "(was", (old.get("commit") or "none") + ")")
     return True
