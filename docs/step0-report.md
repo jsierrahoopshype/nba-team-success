@@ -7,8 +7,8 @@ Read-only checks on the sources, run before building the pages. Every number bel
 | Source | Version used | What we take |
 |---|---|---|
 | aderoa/nba-boxscores | 05efb8f 2026-11-17 | every game and box score, 1946-47 to 2025-26 |
-| jsierrahoopshype/nba-player-data | caf7829 2026-11-18 | RS-Stats.csv (names), awards.json (honors) |
-| jsierrahoopshype/hh-teammates | b9767c3 2026-11-17 | accolade weights (`scores`) and the scoring rules |
+| jsierrahoopshype/nba-player-data | 8bed800 2026-11-21 | RS-Stats.csv (names), awards.json (honors) |
+| jsierrahoopshype/hh-teammates | d7e4d52 2026-11-19 | accolade weights (`scores`) and the scoring rules |
 | ramirobentes/nbadatar (data in ramirobentes/nba_data releases) | Parquet files of 2026-11-18 | lineups and possessions, 1996-97 on |
 | jsierrahoopshype/nba-headshots | 9d46952d 2026-11-16 | face-fill headshots, team slugs |
 | jsierrahoopshype/nba-career-map | a7f4d78 2026-11-17 | era names cross-check, player slugs |
@@ -124,7 +124,7 @@ Box-score players (personId + name) matched to RS-Stats.csv names per season + f
 
 - Source: `awards.json` in nba-player-data (10,652 rows, 1946-47 to 2026-27), the same file the Player Comparison tool reads. It replaced Awards.csv, which stops at 2024-25. Fields: "PLAYER / COACH", "AWARD", "YEAR", "TEAM".
 - Rows by season: 2024-25 203, 2025-26 207, 2026-27 8; All-Stars: 2024-25 26, 2025-26 28, 2026-27 0.
-- Names are matched to players on the RS-Stats name (else the display name), as before. Player names in the newest seasons that match no player (coach awards left out): 2025-26: Deriq Queen; 2026-27: none.
+- Names are matched to players on the RS-Stats name (else the display name), as before. Player names in the newest seasons that match no player (coach awards left out): 2025-26: none; 2026-27: none.
 
 ## d. "Did he play?"
 
