@@ -1,50 +1,42 @@
 {
  "cutoff": "2026-11-19",
- "date": "2026-11-20",
+ "date": "2026-11-21",
  "facts": [
   {
-   "href": "seasons/2026-27.html#t-SAC",
-   "key": "start:worst:SAC:14|The Sacramento Kings/ are 1–13, the franchise's worst start through 14 games since the /1990-91 Sacramento Kings/ (also 1–13).",
+   "href": "seasons/2026-27.html#t-MIL",
+   "key": "start:worst:MIL:16|The Milwaukee Bucks/ are 1–15, the franchise's worst record through 16 games in 59 seasons.",
    "parts": [
     [
-     "The Sacramento Kings",
-     "seasons/2026-27.html#t-SAC",
+     "The Milwaukee Bucks",
+     "seasons/2026-27.html#t-MIL",
      1
     ],
     [
-     " are 1–13, the franchise's worst start through 14 games since the "
-    ],
-    [
-     "1990-91 Sacramento Kings",
-     "seasons/1990-91.html#t-SAC",
-     0
-    ],
-    [
-     " (also 1–13)."
+     " are 1–15, the franchise's worst record through 16 games in 59 seasons."
     ]
    ],
    "pid": null,
    "team": [
-    "SAC",
+    "MIL",
     2027
    ],
    "type": "start"
   },
   {
-   "href": "seasons/2026-27.html#t-PHI",
-   "key": "start:best:PHI:16|The Philadelphia 76ers/ are 13–3, the franchise's best start through 16 games since the /2000-01 Philadelphia 76ers/ (14–2).",
+   "href": "seasons/2026-27.html#t-MEM",
+   "key": "start:best:MEM:16|The Memphis Grizzlies/ are 12–4, the franchise's best start through 16 games since the /2014-15 Memphis Grizzlies/ (14–2).",
    "parts": [
     [
-     "The Philadelphia 76ers",
-     "seasons/2026-27.html#t-PHI",
+     "The Memphis Grizzlies",
+     "seasons/2026-27.html#t-MEM",
      1
     ],
     [
-     " are 13–3, the franchise's best start through 16 games since the "
+     " are 12–4, the franchise's best start through 16 games since the "
     ],
     [
-     "2000-01 Philadelphia 76ers",
-     "seasons/2000-01.html#t-PHI",
+     "2014-15 Memphis Grizzlies",
+     "seasons/2014-15.html#t-MEM",
      0
     ],
     [
@@ -53,114 +45,116 @@
    ],
    "pid": null,
    "team": [
-    "PHI",
+    "MEM",
     2027
    ],
    "type": "start"
   },
   {
-   "href": "player/trae-young.html?vs=CHI#vs-CHI",
-   "key": "matchup:trae-young:CHI|Tonight vs the Chicago Bulls: /Trae Young/'s teams are /8–16 (33.3%)/ in his 24 regular-season games against them.",
+   "href": "player/james-harden.html#cap-seasons",
+   "key": "streak:winning:james-harden|James Harden/'s teams have had a winning record in each of his last /10 seasons/ (2016-17 to 2025-26), No. 2 among active players.",
    "parts": [
     [
-     "Tonight vs the Chicago Bulls: "
-    ],
-    [
-     "Trae Young",
-     "player/trae-young.html",
-     1
-    ],
-    [
-     "'s teams are "
-    ],
-    [
-     "8–16 (33.3%)",
-     "player/trae-young.html?vs=CHI#vs-CHI",
-     0
-    ],
-    [
-     " in his 24 regular-season games against them."
-    ]
-   ],
-   "pid": "1629027",
-   "team": null,
-   "type": "matchup"
-  },
-  {
-   "href": "player/kawhi-leonard.html#cap-seasons",
-   "key": "streak:winning:kawhi-leonard|Kawhi Leonard/'s teams have had a winning record in each of his last /14 seasons/ (2011-12 to 2025-26), the longest active streak.",
-   "parts": [
-    [
-     "Kawhi Leonard",
-     "player/kawhi-leonard.html",
+     "James Harden",
+     "player/james-harden.html",
      1
     ],
     [
      "'s teams have had a winning record in each of his last "
     ],
     [
-     "14 seasons",
-     "player/kawhi-leonard.html#cap-seasons",
+     "10 seasons",
+     "player/james-harden.html#cap-seasons",
      0
     ],
     [
-     " (2011-12 to 2025-26), the longest active streak."
+     " (2016-17 to 2025-26), No. 2 among active players."
     ]
    ],
-   "pid": "202695",
+   "pid": "201935",
    "team": null,
    "type": "streak"
   },
   {
-   "href": "seasons/1964-65.html#t-BOS",
-   "key": "onthisday:1965:BOS|On this date in 1964-65, the /Boston Celtics/ were 14–3. They finished 62–18 and won the title.",
+   "href": "player/collin-sexton.html#cap-seasons",
+   "key": "streak:drought:collin-sexton|Collin Sexton/ has not been on a playoff team in his last /8 seasons/ (2018-19 to 2025-26), No. 2 among active players.",
    "parts": [
     [
-     "On this date in 1964-65, the "
-    ],
-    [
-     "Boston Celtics",
-     "seasons/1964-65.html#t-BOS",
+     "Collin Sexton",
+     "player/collin-sexton.html",
      1
     ],
     [
-     " were 14–3. They finished 62–18 and won the title."
+     " has not been on a playoff team in his last "
+    ],
+    [
+     "8 seasons",
+     "player/collin-sexton.html#cap-seasons",
+     0
+    ],
+    [
+     " (2018-19 to 2025-26), No. 2 among active players."
+    ]
+   ],
+   "pid": "1629012",
+   "team": null,
+   "type": "streak"
+  },
+  {
+   "href": "seasons/1969-70.html#t-NYK",
+   "key": "onthisday:1970:NYK|On this date in 1969-70, the /New York Knicks/ were 19–1. They finished 60–22 and won the title.",
+   "parts": [
+    [
+     "On this date in 1969-70, the "
+    ],
+    [
+     "New York Knicks",
+     "seasons/1969-70.html#t-NYK",
+     1
+    ],
+    [
+     " were 19–1. They finished 60–22 and won the title."
     ]
    ],
    "pid": null,
    "team": [
-    "BOS",
-    1965
+    "NYK",
+    1970
    ],
    "type": "onthisday"
   },
   {
-   "href": "seasons/2026-27.html#t-UTA",
-   "key": "start:worst:UTA:16|The Utah Jazz/ are 3–13, the franchise's worst start through 16 games since the /2013-14 Utah Jazz/ (2–14).",
+   "href": "lists/career-wins.html?hl=harrison-barnes#p-harrison-barnes",
+   "key": "pass:career-wins:harrison-barnes:danny-green|Harrison Barnes/ passed /Danny Green/ and 1 other on Nov. 19 for /No. 128 in career wins/ (589 in his games, incl. 2026-27 to date).",
    "parts": [
     [
-     "The Utah Jazz",
-     "seasons/2026-27.html#t-UTA",
+     "Harrison Barnes",
+     "player/harrison-barnes.html",
      1
     ],
     [
-     " are 3–13, the franchise's worst start through 16 games since the "
+     " passed "
     ],
     [
-     "2013-14 Utah Jazz",
-     "seasons/2013-14.html#t-UTA",
+     "Danny Green",
+     "player/danny-green.html",
      0
     ],
     [
-     " (2–14)."
+     " and 1 other on Nov. 19 for "
+    ],
+    [
+     "No. 128 in career wins",
+     "lists/career-wins.html?hl=harrison-barnes#p-harrison-barnes",
+     0
+    ],
+    [
+     " (589 in his games, incl. 2026-27 to date)."
     ]
    ],
-   "pid": null,
-   "team": [
-    "UTA",
-    2027
-   ],
-   "type": "start"
+   "pid": "203084",
+   "team": null,
+   "type": "pass"
   }
  ],
  "history": {
@@ -179,6 +173,14 @@
    "streak:winning:kawhi-leonard|Kawhi Leonard/'s teams have had a winning record in each of his last /14 seasons/ (2011-12 to 2025-26), the longest active streak.",
    "onthisday:1965:BOS|On this date in 1964-65, the /Boston Celtics/ were 14–3. They finished 62–18 and won the title.",
    "start:worst:UTA:16|The Utah Jazz/ are 3–13, the franchise's worst start through 16 games since the /2013-14 Utah Jazz/ (2–14)."
+  ],
+  "2026-11-21": [
+   "start:worst:MIL:16|The Milwaukee Bucks/ are 1–15, the franchise's worst record through 16 games in 59 seasons.",
+   "start:best:MEM:16|The Memphis Grizzlies/ are 12–4, the franchise's best start through 16 games since the /2014-15 Memphis Grizzlies/ (14–2).",
+   "streak:winning:james-harden|James Harden/'s teams have had a winning record in each of his last /10 seasons/ (2016-17 to 2025-26), No. 2 among active players.",
+   "streak:drought:collin-sexton|Collin Sexton/ has not been on a playoff team in his last /8 seasons/ (2018-19 to 2025-26), No. 2 among active players.",
+   "onthisday:1970:NYK|On this date in 1969-70, the /New York Knicks/ were 19–1. They finished 60–22 and won the title.",
+   "pass:career-wins:harrison-barnes:danny-green|Harrison Barnes/ passed /Danny Green/ and 1 other on Nov. 19 for /No. 128 in career wins/ (589 in his games, incl. 2026-27 to date)."
   ]
  }
 }
