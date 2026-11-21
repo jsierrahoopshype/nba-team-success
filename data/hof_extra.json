@@ -1,0 +1,181 @@
+{
+ "note": "Hall of Fame inductees missing from awards.json's \"Hall of Fame\" rows: one inducted as a player (Tommy Heinsohn, 1986; also 2015 as a coach) and people inducted as a coach or contributor who also played in the NBA. Ids are data/player_ids.json keys. Merged in by scripts/build_history.py load_awards().",
+ "rows": [
+  {
+   "id": "76988",
+   "name": "Tommy Heinsohn",
+   "slug": "tommy-heinsohn",
+   "year": 1986,
+   "role": "player",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "76015",
+   "name": "Rick Adelman",
+   "slug": "rick-adelman",
+   "year": 2021,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "76454",
+   "name": "Larry Costello",
+   "slug": "larry-costello",
+   "year": 2022,
+   "role": "contributor",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "78350",
+   "name": "Rudy Tomjanovich",
+   "slug": "rudy-tomjanovich",
+   "year": 2020,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "76070",
+   "name": "Al Attles",
+   "slug": "al-attles",
+   "year": 2019,
+   "role": "contributor",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "78335",
+   "name": "Rod Thorn",
+   "slug": "rod-thorn",
+   "year": 2018,
+   "role": "contributor",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "77371",
+   "name": "Slick Leonard",
+   "slug": "slick-leonard",
+   "year": 2014,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "77700",
+   "name": "Don Nelson",
+   "slug": "don-nelson",
+   "year": 2012,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "78060",
+   "name": "Satch Sanders",
+   "slug": "satch-sanders",
+   "year": 2011,
+   "role": "contributor",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "78173",
+   "name": "Jerry Sloan",
+   "slug": "jerry-sloan",
+   "year": 2009,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "77962",
+   "name": "Pat Riley",
+   "slug": "pat-riley",
+   "year": 2008,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "77106",
+   "name": "Phil Jackson",
+   "slug": "phil-jackson",
+   "year": 2007,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "77394",
+   "name": "Earl Lloyd",
+   "slug": "earl-lloyd",
+   "year": 2003,
+   "role": "contributor",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "76668",
+   "name": "Wayne Embry",
+   "slug": "wayne-embry",
+   "year": 1999,
+   "role": "contributor",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "78328",
+   "name": "John Thompson",
+   "slug": "john-thompson",
+   "year": 1999,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "76937",
+   "name": "Alex Hannum",
+   "slug": "alex-hannum",
+   "year": 1998,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "77050",
+   "name": "Red Holzman",
+   "slug": "red-holzman",
+   "year": 1986,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "470",
+   "name": "Doc Rivers",
+   "slug": "doc-rivers",
+   "year": 2026,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "76505",
+   "name": "Mike D'Antoni",
+   "slug": "mike-d-antoni",
+   "year": 2026,
+   "role": "contributor",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "76421",
+   "name": "Doug Collins",
+   "slug": "doug-collins",
+   "year": 2024,
+   "role": "contributor",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "77223",
+   "name": "George Karl",
+   "slug": "george-karl",
+   "year": 2022,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  },
+  {
+   "id": "76586",
+   "name": "Billy Donovan",
+   "slug": "billy-donovan",
+   "year": 2025,
+   "role": "coach",
+   "source": "https://www.nba.com/news/basketball-hall-of-fame-all-time"
+  }
+ ]
+}

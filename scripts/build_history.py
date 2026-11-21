@@ -505,7 +505,30 @@ def load_awards():
                   "allstar": sorted(allstar.get(p, ())), "hof": 1 if p in hof else 0}
     for p in hof - set(out):
         out[p] = {"score": 0, "counts": {}, "byYear": {}, "allstar": sorted(allstar.get(p, ())), "hof": 1}
+    for p in hof:
+        out[p]["hofRole"] = "player"     # every awards.json "Hall of Fame" row counts as a player inductee
+    merge_hof_extra(out, allstar)
     return scores, out
+
+
+def merge_hof_extra(out, allstar):
+    """data/hof_extra.json: Hall of Fame inductees awards.json misses (NBA.com's inductee list), keyed by
+    player_ids.json id and matched to the awards key (RS-Stats name, else display name). Additive: a
+    player already flagged keeps his flag, and "player" wins over "coach" / "contributor"."""
+    path = os.path.join(DATA, "hof_extra.json")
+    if not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8") as fh:
+        extra = json.load(fh)["rows"]
+    with open(os.path.join(DATA, "player_ids.json"), encoding="utf-8") as fh:
+        ids = json.load(fh)
+    for r in extra:
+        info = ids.get(str(r["id"]), {})
+        key = info.get("rsName") or info.get("name") or r["name"]
+        row = out.setdefault(key, {"score": 0, "counts": {}, "byYear": {},
+                                   "allstar": sorted(allstar.get(key, ())), "hof": 0})
+        role = "player" if row.get("hofRole") == "player" else r["role"]
+        row["hof"], row["hofRole"] = 1, role
 
 
 # ---------------------------------------------------------------------------
@@ -1049,6 +1072,7 @@ def award_fields(info, awards):
     aw = awards.get(key, {"score": 0, "counts": {}, "byYear": {}, "allstar": []})
     return {"acc": aw["score"], "accY": aw["byYear"], "awards": aw["counts"],
             "as": aw.get("allstar", []), "hof": aw.get("hof", 0),
+            **({"hofRole": aw["hofRole"]} if aw.get("hof") and aw.get("hofRole") else {}),
             # honors by season (Teammates Score awards), for "the help behind a score"
             "awY": {str(y): sorted(AWARDS_BY_YEAR[(key, y)])
                     for y in range(1946, LAST_COMPLETE + 2) if (key, y) in AWARDS_BY_YEAR}}
@@ -1085,6 +1109,7 @@ def awards_only():
     for pid, row in players.items():
         info = pid_ids.get(pid)
         if info:
+            row.pop("hofRole", None)        # re-set below for Hall of Famers only
             row.update(award_fields(info, awards))
     step0["awards"] = awards_report(pid_ids)
     vers = source_versions()
