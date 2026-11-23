@@ -1,50 +1,42 @@
 {
  "cutoff": "2026-11-21",
- "date": "2026-11-22",
+ "date": "2026-11-23",
  "facts": [
   {
-   "href": "seasons/2026-27.html#t-UTA",
-   "key": "start:worst:UTA:17|The Utah Jazz/ are 3–14, the franchise's worst start through 17 games since the /2013-14 Utah Jazz/ (2–15).",
+   "href": "seasons/2026-27.html#t-SAC",
+   "key": "start:worst:SAC:16|The Sacramento Kings/ are 2–14, the franchise's worst record through 16 games in 79 seasons.",
    "parts": [
     [
-     "The Utah Jazz",
-     "seasons/2026-27.html#t-UTA",
+     "The Sacramento Kings",
+     "seasons/2026-27.html#t-SAC",
      1
     ],
     [
-     " are 3–14, the franchise's worst start through 17 games since the "
-    ],
-    [
-     "2013-14 Utah Jazz",
-     "seasons/2013-14.html#t-UTA",
-     0
-    ],
-    [
-     " (2–15)."
+     " are 2–14, the franchise's worst record through 16 games in 79 seasons."
     ]
    ],
    "pid": null,
    "team": [
-    "UTA",
+    "SAC",
     2027
    ],
    "type": "start"
   },
   {
-   "href": "seasons/2026-27.html#t-SAS",
-   "key": "start:best:SAS:17|The San Antonio Spurs/ are 14–3, the franchise's best start through 17 games since the /2016-17 San Antonio Spurs/ (also 14–3).",
+   "href": "seasons/2026-27.html#t-PHI",
+   "key": "start:best:PHI:17|The Philadelphia 76ers/ are 14–3, the franchise's best start through 17 games since the /2000-01 Philadelphia 76ers/ (also 14–3).",
    "parts": [
     [
-     "The San Antonio Spurs",
-     "seasons/2026-27.html#t-SAS",
+     "The Philadelphia 76ers",
+     "seasons/2026-27.html#t-PHI",
      1
     ],
     [
      " are 14–3, the franchise's best start through 17 games since the "
     ],
     [
-     "2016-17 San Antonio Spurs",
-     "seasons/2016-17.html#t-SAS",
+     "2000-01 Philadelphia 76ers",
+     "seasons/2000-01.html#t-PHI",
      0
     ],
     [
@@ -53,112 +45,109 @@
    ],
    "pid": null,
    "team": [
-    "SAS",
+    "PHI",
     2027
    ],
    "type": "start"
   },
   {
-   "href": "player/buddy-hield.html?vs=DEN#vs-DEN",
-   "key": "matchup:buddy-hield:DEN|Tonight vs the Denver Nuggets: /Buddy Hield/'s teams are /8–19 (29.6%)/ in his 27 regular-season games against them.",
-   "parts": [
-    [
-     "Tonight vs the Denver Nuggets: "
-    ],
-    [
-     "Buddy Hield",
-     "player/buddy-hield.html",
-     1
-    ],
-    [
-     "'s teams are "
-    ],
-    [
-     "8–19 (29.6%)",
-     "player/buddy-hield.html?vs=DEN#vs-DEN",
-     0
-    ],
-    [
-     " in his 27 regular-season games against them."
-    ]
-   ],
-   "pid": "1627741",
-   "team": null,
-   "type": "matchup"
-  },
-  {
-   "href": "player/jevon-carter.html?vs=WAS#vs-WAS",
-   "key": "matchup:jevon-carter:WAS|Tonight vs the Washington Wizards: /Jevon Carter/'s teams are /14–6 (70.0%)/ in his 20 regular-season games against them.",
+   "href": "player/goga-bitadze.html?vs=WAS#vs-WAS",
+   "key": "matchup:goga-bitadze:WAS|Tonight vs the Washington Wizards: /Goga Bitadze/'s teams are /15–5 (75.0%)/ in his 20 regular-season games against them.",
    "parts": [
     [
      "Tonight vs the Washington Wizards: "
     ],
     [
-     "Jevon Carter",
-     "player/jevon-carter.html",
+     "Goga Bitadze",
+     "player/goga-bitadze.html",
      1
     ],
     [
      "'s teams are "
     ],
     [
-     "14–6 (70.0%)",
-     "player/jevon-carter.html?vs=WAS#vs-WAS",
+     "15–5 (75.0%)",
+     "player/goga-bitadze.html?vs=WAS#vs-WAS",
      0
     ],
     [
      " in his 20 regular-season games against them."
     ]
    ],
-   "pid": "1628975",
+   "pid": "1629048",
    "team": null,
    "type": "matchup"
   },
   {
-   "href": "player/miles-bridges.html#cap-seasons",
-   "key": "streak:drought:miles-bridges|Miles Bridges/ has not been on a playoff team in his last /7 seasons/ (2018-19 to 2025-26), No. 3 among active players.",
+   "href": "player/donovan-mitchell.html#cap-seasons",
+   "key": "streak:winning:donovan-mitchell|Donovan Mitchell/'s teams have had a winning record in each of his last /9 seasons/ (2017-18 to 2025-26), No. 4 among active players.",
    "parts": [
     [
-     "Miles Bridges",
-     "player/miles-bridges.html",
+     "Donovan Mitchell",
+     "player/donovan-mitchell.html",
+     1
+    ],
+    [
+     "'s teams have had a winning record in each of his last "
+    ],
+    [
+     "9 seasons",
+     "player/donovan-mitchell.html#cap-seasons",
+     0
+    ],
+    [
+     " (2017-18 to 2025-26), No. 4 among active players."
+    ]
+   ],
+   "pid": "1628378",
+   "team": null,
+   "type": "streak"
+  },
+  {
+   "href": "player/lamelo-ball.html#cap-seasons",
+   "key": "streak:drought:lamelo-ball|LaMelo Ball/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
+   "parts": [
+    [
+     "LaMelo Ball",
+     "player/lamelo-ball.html",
      1
     ],
     [
      " has not been on a playoff team in his last "
     ],
     [
-     "7 seasons",
-     "player/miles-bridges.html#cap-seasons",
+     "6 seasons",
+     "player/lamelo-ball.html#cap-seasons",
      0
     ],
     [
-     " (2018-19 to 2025-26), No. 3 among active players."
+     " (2020-21 to 2025-26), No. 4 among active players."
     ]
    ],
-   "pid": "1628970",
+   "pid": "1630163",
    "team": null,
    "type": "streak"
   },
   {
-   "href": "seasons/1972-73.html#t-MIL",
-   "key": "onthisday:1973:MIL|On this date in 1972-73, the /Milwaukee Bucks/ were 12–6. They finished 60–22, a 60-win pace over 82 games.",
+   "href": "seasons/1977-78.html#t-WAS",
+   "key": "onthisday:1978:WAS|On this date in 1977-78, the /Washington Bullets/ were 8–7. They finished 44–38 and won the title.",
    "parts": [
     [
-     "On this date in 1972-73, the "
+     "On this date in 1977-78, the "
     ],
     [
-     "Milwaukee Bucks",
-     "seasons/1972-73.html#t-MIL",
+     "Washington Bullets",
+     "seasons/1977-78.html#t-WAS",
      1
     ],
     [
-     " were 12–6. They finished 60–22, a 60-win pace over 82 games."
+     " were 8–7. They finished 44–38 and won the title."
     ]
    ],
    "pid": null,
    "team": [
-    "MIL",
-    1973
+    "WAS",
+    1978
    ],
    "type": "onthisday"
   }
@@ -195,6 +184,14 @@
    "matchup:jevon-carter:WAS|Tonight vs the Washington Wizards: /Jevon Carter/'s teams are /14–6 (70.0%)/ in his 20 regular-season games against them.",
    "streak:drought:miles-bridges|Miles Bridges/ has not been on a playoff team in his last /7 seasons/ (2018-19 to 2025-26), No. 3 among active players.",
    "onthisday:1973:MIL|On this date in 1972-73, the /Milwaukee Bucks/ were 12–6. They finished 60–22, a 60-win pace over 82 games."
+  ],
+  "2026-11-23": [
+   "start:worst:SAC:16|The Sacramento Kings/ are 2–14, the franchise's worst record through 16 games in 79 seasons.",
+   "start:best:PHI:17|The Philadelphia 76ers/ are 14–3, the franchise's best start through 17 games since the /2000-01 Philadelphia 76ers/ (also 14–3).",
+   "matchup:goga-bitadze:WAS|Tonight vs the Washington Wizards: /Goga Bitadze/'s teams are /15–5 (75.0%)/ in his 20 regular-season games against them.",
+   "streak:winning:donovan-mitchell|Donovan Mitchell/'s teams have had a winning record in each of his last /9 seasons/ (2017-18 to 2025-26), No. 4 among active players.",
+   "streak:drought:lamelo-ball|LaMelo Ball/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
+   "onthisday:1978:WAS|On this date in 1977-78, the /Washington Bullets/ were 8–7. They finished 44–38 and won the title."
   ]
  }
 }
