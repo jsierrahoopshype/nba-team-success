@@ -23,6 +23,7 @@ from collections import defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import analysis as A  # noqa: E402
 import boards as B  # noqa: E402
+import teammates as TM  # noqa: E402
 from common import (CURRENT_SEASON, DATA, LAST_COMPLETE, dump_json, franchise_name,  # noqa: E402
                     load_json, season_label)
 
@@ -35,6 +36,8 @@ PERFECT_MIN_PLAYED = 10       # perfect / winless in his games: 10+ games played
 PERFECT_MIN_MISSED = 8        # perfect / winless in games he missed: 8+ games missed
 MATCHUP_MIN = 20              # tonight: 20+ regular-season games against that franchise
 MATCHUP_HI, MATCHUP_LO = 0.700, 0.350
+MATES_TOP = 10                # teammate facts rotate through the top 10 (30-day no-repeat)
+MATES_TOGETHER_MIN = 200      # best record together: current teammates with 200+ games together
 REPEAT_DAYS = 30              # historical and streak facts
 KEEP_DAYS = 60
 
@@ -303,6 +306,46 @@ def build(date):
             if len(cands) > before:
                 break
 
+    # ---- 5b. with and without a teammate (scripts/teammates.py; up to 2, after streaks) --------
+    pairs = TM.all_pairs(cur=cur)
+    active = set(cur.get("players", {}))
+    stars = {p for p, x in d.players.items() if x.get("as")}
+    thru = nice_md(through)
+    # biggest drop without an All-Star teammate, active players, "Biggest teammate swings" rule
+    drops = sorted(((TM.gap(r), a, b, r) for (a, b), r in pairs.items()
+                    if a in active and b in stars and a in ids and b in ids and TM.qualifies(r)),
+                   key=lambda x: (-x[0], x[1], x[2]))[:MATES_TOP]
+    for i, (g, a, b, r) in enumerate(drops):
+        href = f"lists/teammate-swings.html#as-{slug(a)}--{slug(b)}"
+        tag = "the biggest drop for an active player" if i == 0 else f"{B.rank_label(i + 1, False)} among active players"
+        before = len(cands)
+        add(5.5, i, f"mates:drop:{slug(a)}:{slug(b)}",
+            [plink(a), T(f"'s teams are {wl(*r['t'])} ({pct1(TM.pct(r['t']))}) with "), plink(b, False),
+             T(f" and {wl(*r['o'])} ({pct1(TM.pct(r['o']))}) without him, {100 * g:.1f} points lower: "),
+             L(tag, href), T(f" (regular season, through {thru}).")], href, pid=a, repeat30=True)
+        if len(cands) > before:
+            break
+    # best record together among current teammates
+    now = sorted(((TM.pct(r["t"]), sum(r["t"]), a, b, r) for (a, b), r in pairs.items()
+                  if a < b and a in active and b in active and a in ids and b in ids
+                  and sum(r["t"]) >= MATES_TOGETHER_MIN
+                  and any(sy == CURRENT_SEASON for _, sy in r["seasons"])
+                  and {f for f, sy in r["seasons"] if sy == CURRENT_SEASON}
+                  & {x["f"] for x in cur["players"][a] if x.get("endTeam")}
+                  & {x["f"] for x in cur["players"][b] if x.get("endTeam")}),
+                 key=lambda x: (-x[0], -x[1], x[2], x[3]))[:MATES_TOP]
+    for i, (p_, n, a, b, r) in enumerate(now):
+        href = f"player/{slug(a)}.html#mates"
+        tag = "the best record together" if i == 0 else f"{B.rank_label(i + 1, False)}"
+        before = len(cands)
+        add(5.5, 100 + i, f"mates:together:{slug(a)}:{slug(b)}",
+            [plink(a), T(" and "), plink(b), T(f" have played {n:,} regular-season games together: "),
+             L(f"{wl(*r['t'])} ({pct1(p_)})", href),
+             T(f", {tag} among current teammates with {MATES_TOGETHER_MIN}+ games (through {thru}).")],
+            href, pid=a, repeat30=True)
+        if len(cands) > before:
+            break
+
     # ---- 6. on this day: title-winning and 60-win-pace team-seasons ---------------------------
     mmdd = date[5:]
     hist_c = []
@@ -344,7 +387,7 @@ def build(date):
     # ---- pick: caps per type, then fill to 8 --------------------------------------------------
     cands.sort(key=lambda c: (c[0], c[1]))
     # passes moved to the daily "Last night" list (daily_story.py); fun facts keep the season-scale items
-    caps = {"pass": 0, "start": 2, "split": 2, "matchup": 2, "streak": 2, "onthisday": 1}
+    caps = {"pass": 0, "start": 2, "split": 2, "matchup": 2, "streak": 2, "mates": 2, "onthisday": 1}
     # the day's story already covers its players: they get no fun fact
     story = [x for x in load_json(os.path.join(DATA, "stories.json"), {"stories": []})["stories"] if x["date"] == date]
     by_slug = {v["slug"]: k for k, v in ids.items()}

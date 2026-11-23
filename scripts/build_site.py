@@ -25,6 +25,7 @@ import boards as B  # noqa: E402
 import charts as CH  # noqa: E402
 import leads as LEADS  # noqa: E402
 import picks  # noqa: E402
+import teammates as TM  # noqa: E402
 from common import (CURRENT_SEASON, DATA, DEFUNCT, LAST_COMPLETE, RAMIRO_FIRST, ROOT, SRC,  # noqa: E402
                     dump_json, franchise_name, load_json, season_label)
 
@@ -922,6 +923,180 @@ def trades(s, pid, up):
             + sortable("cap-trades", "", heads, rows) + "</section>")
 
 
+# ---------------------------------------------------------------------------
+# With and without his teammates (scripts/teammates.py): player page block, compare page block,
+# the "Biggest teammate swings" list. Pairs are computed once per build (about 7 seconds).
+# ---------------------------------------------------------------------------
+SWINGS_KEY = "teammate-swings"
+SWINGS_TITLE = "Biggest teammate swings"
+
+
+def mates(s):
+    """{A: {B: {"t": [w, l], "o": [w, l], "seasons": [[f, sy], ...]}}}, built once."""
+    if getattr(s, "_mates", None) is None:
+        s._mates = TM.by_player(TM.all_pairs())
+    return s._mates
+
+
+def mate_runs(s, seasons):
+    """[[f, sy], ...] -> [(f, first, last)]: consecutive seasons with one franchise under one name,
+    so every run is shown with the name that team had (era-accurate)."""
+    def name(f, sy):
+        t = s.d.team(f, sy)
+        return (t["name"] if t else None) or franchise_name(f, sy) or f
+    runs = []
+    for f, sy in sorted(seasons, key=lambda x: (x[1], x[0])):
+        for r in runs:
+            if r[0] == f and r[2] == sy - 1 and name(f, r[2]) == name(f, sy):
+                r[2] = sy
+                break
+        else:
+            runs.append([f, sy, sy])
+    return sorted(runs, key=lambda r: (r[1], r[0]))
+
+
+def runs_html(s, runs):
+    out = []
+    for f, a, b in runs:
+        yrs = season_label(a) if a == b else f"{season_label(a)} to {season_label(b)}"
+        out.append(f'{s.tlink(f, b)} <span class="mono">{yrs}</span>')
+    return "; ".join(out)
+
+
+def mate_rec(wl_):
+    return f'<span class="mono">{wl(*wl_)}</span> <span class="pc">{pct1(TM.pct(wl_))}</span>'
+
+
+def mate_compare_href(s, up, a, b):
+    sa, sb = s.ids[a]["slug"], s.ids[b]["slug"]
+    rel = compare_rel(sa, sb)
+    if rel in s.compare_pages:
+        return f"{up}{rel}"
+    return f"{up}compare/?a={e(sa)}&amp;b={e(sb)}"
+
+
+def mates_section(s, pid, up):
+    """Player page: his 12 teammates with the most games together, re-sortable by gap."""
+    mine = mates(s).get(pid)
+    if not mine:
+        return ""
+    name = s.ids[pid]["name"]
+    rows = []
+    for b, r in TM.top_teammates(mine):
+        if b not in s.ids:
+            continue
+        g = TM.gap(r)
+        few = TM.too_few(r)
+        if few:
+            gap_txt = '<span class="few">Too few games without him</span>'
+        else:
+            gap_txt = f'<span class="{cls_gap(-g)}">{pts_txt(-g)}</span>'
+        cmp_ok = s.has_hist(pid) and s.has_hist(b)
+        cmp = (f'<a class="more-btn" href="{mate_compare_href(s, up, pid, b)}">Compare</a>' if cmp_ok else "")
+        rows.append(
+            f'<li class="mate" data-g="{sum(r["t"])}" data-gap="{"" if few or g is None else f"{abs(g):.6f}"}">'
+            f'{s.pic(b, up, "sm")}<div class="who"><strong>{s.plink(b, up)}</strong>'
+            f'<span class="det">{runs_html(s, mate_runs(s, r["seasons"]))}</span></div>'
+            f'<dl class="mrec"><div><dt>Together</dt><dd>{mate_rec(r["t"])}</dd></div>'
+            f'<div><dt>Without him</dt><dd>{mate_rec(r["o"])}</dd></div>'
+            f'<div><dt>Gap</dt><dd>{gap_txt}</dd></div></dl>{cmp}</li>')
+    if not rows:
+        return ""
+    return f"""<section id="mates"><h2 id="cap-mates">With and without his teammates</h2>
+<p class="note">His {len(rows)} teammates with the most regular-season games together. "Together" is the team's record in the games both played for it; "Without him" is the team's record in the games {e(name)} played for that team while the teammate was on it (between the teammate's first and last game for the team, the appearance span) and the teammate did not play. Fewer than {TM.TOO_FEW_WITHOUT} games without him: no gap. Games through {e(nice_date(s.through))}. <a href="{up}how-we-count.html#teammates">How we count</a>.</p>
+<div class="seg msort" role="group" aria-label="Sort teammates" hidden><button type="button" class="pill" data-k="g" aria-pressed="true">Most games together</button><button type="button" class="pill" data-k="gap" aria-pressed="false">Biggest gap</button></div>
+<ol class="mates">{"".join(rows)}</ol>
+<p class="more"><a href="{up}lists/{SWINGS_KEY}.html">{SWINGS_TITLE}</a></p>
+<script src="{up}assets/mates.js" defer></script></section>"""
+
+
+def mate_rows_json(s, pid, rows):
+    out = []
+    for b, r in rows:
+        if b in s.ids:
+            out.append([s.ids[b]["slug"], r["t"][0], r["t"][1], r["o"][0], r["o"][1],
+                        [list(x) for x in mate_runs(s, r["seasons"])]])
+    return out
+
+
+def mates_json(s, pid):
+    """assets/tm/<slug>.json, read only by the compare page: every teammate,
+    {"v": 1, "m": {slug: [together W, L, without him W, L, [[franchise, first, last], ...]]}}."""
+    mine = mates(s).get(pid, {})
+    rows = mate_rows_json(s, pid, sorted(mine.items(), key=lambda kv: s.ids.get(kv[0], {}).get("slug", "")))
+    doc = {"v": 1, "m": {x[0]: x[1:] for x in rows}}
+    return f"assets/tm/{s.ids[pid]['slug']}.json", json.dumps(doc, separators=(",", ":"))
+
+
+def teammates_compare_block(s, a, b, up):
+    """Compare page: "As teammates", when the two ever played together; else nothing."""
+    ra = mates(s).get(a, {}).get(b)
+    rb = mates(s).get(b, {}).get(a)
+    if not ra or not rb:
+        return ""
+    na, nb = s.ids[a]["name"], s.ids[b]["name"]
+    sna, snb = short_name(na, nb), short_name(nb, na)
+
+    def wo(r, x, y):
+        few = TM.too_few(r)
+        g = TM.gap(r)
+        tail = ("too few games without him" if few else pts_txt(-g) + " than together")
+        return (f'<div><dt>{e(x)} without {e(y)}</dt><dd>{mate_rec(r["o"])} '
+                f'<span class="{"few" if few else cls_gap(-g)}">{tail}</span></dd></div>')
+    return f"""<section class="asmates"><h2 id="cap-mates">As teammates</h2>
+<p class="det">{runs_html(s, mate_runs(s, ra["seasons"]))}</p>
+<dl class="mrec wide"><div><dt>Together</dt><dd>{mate_rec(ra["t"])}</dd></div>{wo(ra, sna, snb)}{wo(rb, snb, sna)}</dl>
+<p class="note">Team records, regular season, games through {e(nice_date(s.through))}. "Without" counts the games one played for that team while the other was on it (between his first and last game for the team) and did not play. <a href="{up}how-we-count.html#teammates">How we count</a>.</p></section>"""
+
+
+def swings_rows(s):
+    """Qualifying pairs, biggest drop first: (A, B, record, made an All-Star team)."""
+    rows = []
+    for a, mine in mates(s).items():
+        for b, r in mine.items():
+            if a in s.ids and b in s.ids and TM.qualifies(r):
+                rows.append((a, b, r, bool(s.d.players.get(b, {}).get("as"))))
+    rows.sort(key=lambda x: (-TM.gap(x[2]), -sum(x[2]["t"]), s.ids[x[0]]["name"]))
+    return rows
+
+
+def swings_list_html(s, rows, up, tag):
+    if not rows:
+        return '<p class="empty">Nobody qualifies.</p>'
+    out = []
+    rank, prev = 0, None
+    for i, (a, b, r, _) in enumerate(rows):
+        g = round(100 * TM.gap(r), 1)
+        if g != prev:                      # standard competition ranking, ties share a number
+            rank, prev = i + 1, g
+        na, nb = s.ids[a]["name"], s.ids[b]["name"]
+        snb = short_name(nb, na)
+        out.append(f"""<li id="{tag}-{e(s.ids[a]['slug'])}--{e(s.ids[b]['slug'])}"><span class="rk mono">{rank}</span>{s.pic(a, up, 'sm')}<div class="who"><strong>{s.plink(a, up)} <span class="wo">without</span> {s.plink(b, up)}</strong>
+<span class="det">{runs_html(s, mate_runs(s, r["seasons"]))}</span>
+<span class="det">Together {mate_rec(r["t"])} · without {e(snb)} {mate_rec(r["o"])}</span>
+<a class="more-btn" href="{mate_compare_href(s, up, a, b)}">Compare</a></div><div class="val"><span class="big mono down">{g:.1f}</span><small>points lower</small></div></li>""")
+    return '<ol class="lst swings">' + "".join(out) + "</ol>"
+
+
+def swings_page(s):
+    up = "../"
+    rel = f"lists/{SWINGS_KEY}.html"
+    rows = swings_rows(s)
+    star = [x for x in rows if x[3]]
+    s.swing_counts = {"allstar": len(star), "all": len(rows)}
+    lead = (f"{s.ids[star[0][0]]['name']} without {s.ids[star[0][1]]['name']}" if star else "")
+    body = f"""<header><h1>{SWINGS_TITLE}</h1><p class="subtitle">How much a player's teams' win % dropped in the games his teammate missed, pair by pair, regular season since 1946-47.</p></header>
+<input class="vh" type="radio" name="tsw" id="tsw-as" checked><input class="vh" type="radio" name="tsw" id="tsw-all">
+<div class="seg tall" role="group" aria-label="Which teammates"><label for="tsw-as" class="pill l-as">Teammate made an All-Star team</label><label for="tsw-all" class="pill l-all">All teammates</label></div>
+<div class="panels"><div class="panel p-as"><p class="pop">{len(star):,} pairs qualify.</p>{swings_list_html(s, star, up, "as")}</div>
+<div class="panel p-all"><p class="pop">{len(rows):,} pairs qualify.</p>{swings_list_html(s, rows, up, "all")}</div></div>
+<p class="note">Who qualifies: at least {TM.SWING_MIN_TOGETHER} regular-season games together and at least {TM.SWING_MIN_WITHOUT} games the player played without that teammate, and a drop too big to be luck: a two-proportion test says a gap that size would happen by chance less than 1 time in 100 (z of 2.58 or more). Only drops are listed. "Together" is the team's record in the games both played; "without" is the team's record in the games the player played for that team while the teammate was on it (between the teammate's first and last game for the team) and the teammate did not play. Games through {e(nice_date(s.through))}. "Teammate made an All-Star team" means at any point of his career. <a href="../how-we-count.html#teammates">How we count</a>.</p>
+<p class="more">Career boards: {' · '.join(f'<a href="{k}.html">{e(B.BOARDS[k]["h1"])}</a>' for k in B.BOARDS)}</p>"""
+    desc = (f"{SWINGS_TITLE}: how much each NBA player's team win % dropped without one teammate, "
+            f"{len(star)} pairs with an All-Star teammate and {len(rows)} in all, led by {lead}. Records since 1946-47.")
+    return rel, page(rel, f"{SWINGS_TITLE}: NBA records with and without a teammate | HoopsMatic", desc, body, up)
+
+
 def duos(s, pid, up):
     ds = s.d.players[pid].get("duos", [])
     if not ds:
@@ -1177,7 +1352,9 @@ def player_games_json(s, pid):
     doc = {"v": 1, "s": {str(sy): [[f, g] for f, g in teams.items()] for sy, teams in sorted(by.items())},
            "ps": dict(ps),
            "h": {str(r["sy"]): [r["help"], r["enter"], r["partial"]] for r in career_rows(s, pid)},
-           "sum": compare_summary(s, pid)}
+           "sum": compare_summary(s, pid),
+           # "With and without his teammates": [slug, together W, L, without him W, L, [[team, first, last], ...]]
+           "tm": mate_rows_json(s, pid, TM.top_teammates(mates(s).get(pid, {})))}
     return f"assets/pg/{s.ids[pid]['slug']}.json", json.dumps(doc, separators=(",", ":"))
 
 
@@ -1606,6 +1783,7 @@ def compare_page(s, a, b, dist):
 <p class="subtitle">Team success, aligned by career season: final NBA finish, record in his games, playoffs and teammate help.</p></div></header>
 {scoreboard(s, a, b, ca, cb, up)}
 <p>{download_link(f"{OG}compare/{sa}--{sb}.png", f"{sa}-vs-{sb}.png")} <a class="more-btn" href="./?a={e(sa)}&amp;b={e(sb)}">Swap in another player</a></p>
+{teammates_compare_block(s, a, b, up)}
 <section><h2 id="cap-cmp">Season by season</h2>
 <p class="note">Career season 1 next to career season 1. Each player's season is the team he played the most games for; W–L is his teams' record in his games that season. The tinted finish is the team that finished higher that season, on the league-size-adjusted scale; the last column keeps the running count. Help counts honors won that season by teammates who shared a game with him. <a href="../comparison-rules.html">Comparison rules</a>.</p>
 {table}</section>
@@ -1903,8 +2081,11 @@ def player_page(s, pid):
 <section class="sum"><h2>Career</h2>{summary_cards(s, pid, up)}
 <p class="note">Career records (W{EN}L, W {MINUS} L, with and without) include {season_label(CURRENT_SEASON)} games through {e(nice_date(s.through))}; season counts and finishes are through {season_label(LAST_COMPLETE)}. Each card opens its board in the same scope. <a href="../how-we-count.html">How we count</a>.</p>
 <p>{download_link(f"{OG}player/{v['slug']}.png", f"{v['slug']}-team-success.png")}</p></section>""")
+        parts.append(mates_section(s, pid, up))
         parts.append(f'<section><h2>Latest completed seasons</h2>{latest_seasons(s, pid, up, pts)}</section>')
     parts.append(current_block(s, pid, up))
+    if not has_hist:
+        parts.append(mates_section(s, pid, up))     # first season: right after his own with/without
     if has_hist:
         rows, lineup = season_rows(s, pid, up)
         parts.append(f"""<section><h2 id="cap-seasons">Season by season</h2>
@@ -2757,7 +2938,7 @@ def hub(s):
 <section><h2 id="leaderboards">Leaderboards</h2>
 <div class="dgrid three">{board_preview(s, 'career-wins', up)}{board_preview(s, 'wins-minus-losses', up)}{board_preview(s, 'titles', up)}
 {board_preview(s, 'no-allstar-teammate', up)}{list_preview(s, up, 'Bad Luck Index', 'lists/bad-luck.html', bad)}{list_preview(s, up, 'Played for the worst team the most', 'lists/worst-team.html', worst)}</div>
-<p class="note">Career wins and W {MINUS} L {B.SCOPE_LIVE}; titles {B.SCOPE_DONE}. <a href="lists/winning-seasons.html">Winning seasons</a> · <a href="lists/playoff-trips.html">Playoff trips</a> · <a href="lists/average-finish.html">Average finish</a> · <a href="lists/gap-career.html">Career with and without</a> · <a href="lists/low-help-all-stars.html">Low-help All-Stars</a> · <a href="seasons/index.html">Every season's standings</a> · <a href="seasons/{season_label(CURRENT_SEASON)}.html">{season_label(CURRENT_SEASON)} standings so far</a></p></section>
+<p class="note">Career wins and W {MINUS} L {B.SCOPE_LIVE}; titles {B.SCOPE_DONE}. <a href="lists/winning-seasons.html">Winning seasons</a> · <a href="lists/playoff-trips.html">Playoff trips</a> · <a href="lists/average-finish.html">Average finish</a> · <a href="lists/gap-career.html">Career with and without</a> · <a href="lists/low-help-all-stars.html">Low-help All-Stars</a> · <a href="lists/teammate-swings.html">Biggest teammate swings</a> · <a href="seasons/index.html">Every season's standings</a> · <a href="seasons/{season_label(CURRENT_SEASON)}.html">{season_label(CURRENT_SEASON)} standings so far</a></p></section>
 <section class="cotd"><h2>Comparison of the day</h2>{feat}</section>
 <p class="az">Players A-Z: {az}</p>"""
     desc = ("How much every NBA player won and how much help he had: team records in his games, final NBA finishes, "
@@ -2883,6 +3064,14 @@ def how_page(s):
 </ul>
 <p>What the window proxy counts that the span does not, across every player: {w.get('one_team_games_before_first_appearance', 0):,} team games before a one-team player's first appearance (late signings, call-ups, injuries) in {w.get('rows_before', 0):,} team-seasons; {w.get('one_team_games_after_last_appearance', 0):,} games after his last appearance (cuts, season-ending injuries) in {w.get('rows_after', 0):,} team-seasons; and {w.get('traded_games_between_teams', 0):,} games in the days between two teams, which count for both, in {w.get('rows_traded', 0):,} traded team-seasons.</p>
 <p>The gap is win % with him minus win % without him, in percentage points. Leaderboards that rank gaps set separate minimums for games played and games missed and show both samples.</p>
+<h2 id="teammates">With and without a teammate</h2>
+<p>For a player and one teammate, regular season only, 1946-47 through {season_label(CURRENT_SEASON)} to date:</p>
+<ul>
+<li><strong>Together</strong>: the games both played for the same team.</li>
+<li><strong>Without him</strong>: the games the player played for that team while the teammate was on it that season and the teammate did not play. "On it" is the appearance span above: between the teammate's first and last game for that team (per stint), the same rule as the span line on every player page.</li>
+</ul>
+<p>Records are the team's W{EN}L in those games and win % has one decimal. The gap is said in words: both percentages, then how many points lower or higher the record without him was. With fewer than {TM.TOO_FEW_WITHOUT} games without the teammate, the player page shows the record but no gap ("Too few games without him"). Each player page lists his {TM.PAGE_ROWS} teammates with the most games together; a comparison of two players who were teammates adds an "As teammates" block.</p>
+<p><strong><a href="lists/teammate-swings.html">Biggest teammate swings</a></strong> ranks pairs by how much a player's teams' win % dropped without one teammate. A pair qualifies with at least {TM.SWING_MIN_TOGETHER} games together, at least {TM.SWING_MIN_WITHOUT} games the player played without the teammate, and a drop too big to be luck: a two-proportion z test at the 99% level (z of {TM.SWING_Z} or more), which a gap that size would pass by chance less than 1 time in 100. Only drops are listed: the biggest "better without him" gaps are mostly teams that changed during a season, not a story about the teammate. The default view keeps teammates who made an All-Star team at any point of their career. A record together and apart, not what a teammate caused.</p>
 <h2>Worked example: Michael Jordan</h2>
 <p>With him: <span class="mono">{jw}{EN}{jl}</span> in {jw + jl:,} games ({pct1(jw / (jw + jl)) if jw + jl else 'N/A'}), wins minus losses <span class="mono">{signed(jw - jl)}</span>. Without him, team-season window: <span class="mono">{wl(ow, ol)}</span> in {ow + ol} games ({pct1(ow / (ow + ol)) if ow + ol else 'N/A'}), <span class="mono">{pts_txt((jw / (jw + jl)) - (ow / (ow + ol))) if ow + ol else 'N/A'}</span> with him. Without him, appearance span: <span class="mono">{wl(sw, sl)}</span> in {sw + sl} games ({pct1(sw / (sw + sl)) if sw + sl else 'N/A'}), <span class="mono">{pts_txt((jw / (jw + jl)) - (sw / (sw + sl))) if sw + sl else 'N/A'}</span> with him.</p>
 {j95_html}
@@ -3047,6 +3236,7 @@ def main():
                 x, y = f[:-5].split("--", 1)
                 write(rel, redirect_stub(f"./?a={x}&amp;b={y}", f"{BASE}compare/"))
     write(*live_season_page(s))
+    write(*swings_page(s))
     write("assets/board.json", json.dumps(s.board_data, ensure_ascii=False, separators=(",", ":")))
     # pre-built pair pages, for the compare page's canonical (no probing for pages that may not exist)
     write("assets/compare-pairs.json", json.dumps(sorted(r[len("compare/"):-len(".html")] for r in s.compare_pages),
@@ -3065,6 +3255,7 @@ def main():
         write(*player_page(s, pid))
         if s.has_hist(pid):
             write(*player_games_json(s, pid))
+            write(*mates_json(s, pid))
     write(*team_names_json(s))
     for rel, txt in card_files(s):
         write(rel, txt)
