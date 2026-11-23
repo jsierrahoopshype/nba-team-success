@@ -241,6 +241,53 @@
     frag.appendChild(wide); frag.appendChild(cards);
     return frag;
   }
+  // ---- "As teammates" (build_site.py teammates_compare_block(); keep the two in step): only when
+  // the two played together. Each assets/tm/<slug>.json holds that player's record with and without
+  // every teammate, computed by scripts/teammates.py; nothing is recomputed here.
+  var TOO_FEW = 20;
+  function ptsTxt(g) {
+    var t = fix1(100 * g);
+    if (parseFloat(t) === 0) return "even";
+    return t.replace("-", "") + " points " + (t[0] === "-" ? "lower" : "higher");
+  }
+  function recNode(w, l) {
+    var f = document.createDocumentFragment(), p = (w + l) ? w / (w + l) : null;
+    f.appendChild(el("span", wl(w, l), "mono")); f.appendChild(document.createTextNode(" "));
+    f.appendChild(el("span", pct1(p), "pc"));
+    return f;
+  }
+  function asTeammates(B, ca, cb, holder) {
+    Promise.all([getJSON(up + "assets/tm/" + encodeURIComponent(A) + ".json").catch(function () { return null; }),
+                 getJSON(up + "assets/tm/" + encodeURIComponent(B) + ".json").catch(function () { return null; })])
+      .then(function (x) {
+        var ra = x[0] && x[0].m && x[0].m[B], rb = x[1] && x[1].m && x[1].m[A];
+        if (!ra || !rb) { holder.parentNode && holder.parentNode.removeChild(holder); return; }
+        var na = shortName(ca.name, cb.name), nb = shortName(cb.name, ca.name);
+        var h = el("h2", "As teammates"); h.id = "cap-mates"; holder.appendChild(h);
+        var det = el("p", undefined, "det");
+        ra[4].forEach(function (r, i) {
+          if (i) det.appendChild(document.createTextNode("; "));
+          det.appendChild(team(r[0], r[2])); det.appendChild(document.createTextNode(" "));
+          det.appendChild(el("span", r[1] === r[2] ? label(r[1]) : label(r[1]) + " to " + label(r[2]), "mono"));
+        });
+        holder.appendChild(det);
+        var dl = el("dl", undefined, "mrec wide");
+        function item(t, node) { var d = el("div"); d.appendChild(el("dt", t)); var dd = el("dd"); dd.appendChild(node); d.appendChild(dd); dl.appendChild(d); }
+        item("Together", recNode(ra[0], ra[1]));
+        [[ra, na, nb], [rb, nb, na]].forEach(function (y) {
+          var r = y[0], f = recNode(r[2], r[3]), few = (r[2] + r[3]) < TOO_FEW;
+          var pt = (r[0] + r[1]) ? r[0] / (r[0] + r[1]) : null, po = (r[2] + r[3]) ? r[2] / (r[2] + r[3]) : null;
+          f.appendChild(document.createTextNode(" "));
+          f.appendChild(few || pt === null || po === null ? el("span", "too few games without him", "few")
+            : el("span", ptsTxt(po - pt) + " than together", po < pt ? "down" : (po > pt ? "up" : "flat")));
+          item(y[1] + " without " + y[2], f);
+        });
+        holder.appendChild(dl);
+        var nt = el("p", "Team records, regular season. \"Without\" counts the games one played for that team while the other was on it (between his first and last game for the team) and did not play. ", "note");
+        var how = el("a", "How we count"); how.href = up + "how-we-count.html#teammates"; nt.appendChild(how);
+        holder.appendChild(nt);
+      });
+  }
   function pairSlugs(a, b) { return a < b ? [a, b] : [b, a]; }
   function render(B, pa, pb) {
     while (box.firstChild) box.removeChild(box.firstChild);
@@ -249,6 +296,8 @@
     var ps = pairSlugs(A, B), bp = el("p"), dl = el("a", "Download image", "more-btn dl");
     dl.href = OG + "compare/" + ps[0] + "--" + ps[1] + ".png"; dl.setAttribute("download", ps[0] + "-vs-" + ps[1] + ".png");
     bp.appendChild(dl); box.appendChild(bp);
+    var tmsec = el("section", undefined, "asmates"); box.appendChild(tmsec);
+    asTeammates(B, ca, cb, tmsec);
     var sec = el("section"); sec.appendChild(seasonTable(ca, cb, ra, rb)); box.appendChild(sec);
     box.appendChild(el("p", "Records and finishes, not what a player caused. Help counts honors won that season by teammates who shared a game with him.", "note"));
     var more = el("p", undefined, "more");

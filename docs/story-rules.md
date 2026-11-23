@@ -62,13 +62,14 @@ run of a UTC date writes the set, a later run rewrites it only when the data cut
 | 3 | split (2) | 10+ games played AND 8+ missed this season, and his team is unbeaten or winless in the games he played or missed | "The {team} are {W}–0 / 0–{L} in the games {P} played / missed this season." | his row on the with and without board |
 | 4 | matchup (2) | tonight's schedule: an active player with 20+ regular-season games against tonight's opponent, win rate .700+ or .350 or lower (most extreme first) | "Tonight vs the {opp}: {P}'s teams are {W}–{L} ({pct}) in his {n} regular-season games against them." | his opponent row |
 | 5 | streak (2: one winning, one drought) | active players whose streak runs through 2025-26: 5+ winning seasons in a row, or 4+ seasons without a playoff trip; the top 10 rotate by date | "{P}'s teams have had a winning record in each of his last {n} seasons ({a} to {b}), {the longest active streak / No. k among active players}." / "{P} has not been on a playoff team in his last {n} seasons ..." | his season-by-season table |
+| 5b | mates (2: one drop, one together) | from `scripts/teammates.py`, regular season incl. the season to date. Drop: active players' pairs that qualify for "Biggest teammate swings" (100+ games together, 40+ without, z of 2.58 or more) with a teammate who made an All-Star team, biggest drop first. Together: current teammates (same team now) with 200+ games together, best win % first. Each rotates through its top 10 | "{P}'s teams are {W}–{L} ({pct}) with {Q} and {W}–{L} ({pct}) without him, {x} points lower: the biggest drop for an active player / No. {k} among active players (regular season, through {date})." / "{P} and {Q} have played {n} regular-season games together: {W}–{L} ({pct}), the best record together / No. {k} among current teammates with 200+ games (through {date})." | the pair's row on Biggest teammate swings / his "With and without his teammates" block |
 | 6 | on this day (1, more to fill) | a title-winning or 60-win-pace team-season with 5+ games by this calendar date | "On this date in {season}, the {team} were {W}–{L}. They finished {W}–{L} and won the title / a {n}-win pace over 82 games." | the team's row on that season's standings |
 
 Picking: candidates in priority order, within the caps, one fact per player (or current team) a
 day, players and teams of the day's list left out (and its archive items), up to 8; if fewer than 6, more candidates in priority
 order fill the strip. **Never the same fact two days running** (the exact fact text of yesterday's
 set is excluded), and a streak or on-this-day fact (same player or team-season) never repeats
-within 30 days. Sets are kept 60 days in `data/facts.json`.
+within 30 days (the teammate facts too, per pair). Sets are kept 60 days in `data/facts.json`.
 
 ## Comparison of the day (`scripts/picks.py`, homepage)
 

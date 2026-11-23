@@ -508,3 +508,37 @@ table.minfilter tr.hl td{background:var(--accent-dim)}
 .more-btn,.chipbtn,.opp-open{display:inline-flex;align-items:center;justify-content:center}
 th[data-type] > button,th[data-sort] > button{min-height:44px}
 details > summary{min-height:44px;padding:.7rem 0;box-sizing:border-box;cursor:pointer}
+/* With and without his teammates (player page), As teammates (compare), Biggest teammate swings.
+   Phones: one stacked card per teammate; wide screens: one line per teammate. No carousels. */
+.msort .pill,.seg.tall .pill{min-height:44px;display:inline-flex;align-items:center;font:inherit;font-family:var(--mono);font-size:.68rem}
+.msort .pill[aria-pressed="true"]{background:var(--text);color:#fff;border-color:var(--text);font-weight:600}
+.msort .pill:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+.mates{list-style:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.mates li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.35rem .6rem;align-items:center;padding:.6rem .75rem;border-bottom:1px solid var(--border);font-size:.82rem}
+.mates li:last-child{border-bottom:0}
+.mates .who strong{display:block}
+.mates .det{display:block;font-size:.72rem;color:var(--text-secondary);overflow-wrap:anywhere}
+.mates .mrec,.mates .more-btn{grid-column:1/-1}
+.mates .more-btn{justify-self:start}
+.mrec{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4rem;margin:0}
+.mrec div{min-width:0}
+.mrec dt{font-size:.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.02em}
+.mrec dd{margin:0;font-size:.78rem}
+.mrec .pc{color:var(--text-secondary)}
+.mrec .few{color:var(--text-secondary);font-size:.72rem}
+.mrec .down,.swings .big.down{color:var(--red,#c0392b)}
+@media(min-width:900px){
+  .mates li{grid-template-columns:auto minmax(0,1.2fr) minmax(0,1.6fr) auto}
+  .mates .mrec{grid-column:auto}
+  .mates .more-btn{grid-column:auto}
+}
+.asmates .mrec.wide{grid-template-columns:minmax(0,1fr);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.6rem .75rem}
+@media(min-width:700px){.asmates .mrec.wide{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.asmates .det{font-size:.78rem;color:var(--text-secondary)}
+.swings .wo{font-weight:400;color:var(--text-secondary)}
+.swings .det{overflow-wrap:anywhere}
+.swings .more-btn{margin-top:.35rem}
+.swings .val small{display:block;font-size:.6rem;color:var(--text-secondary)}
+#tsw-as:checked~.seg .l-as,#tsw-all:checked~.seg .l-all{background:var(--text);color:#fff;border-color:var(--text);font-weight:600}
+#tsw-as:focus-visible~.seg .l-as,#tsw-all:focus-visible~.seg .l-all{outline:2px solid var(--text);outline-offset:2px}
+#tsw-as:checked~.panels .p-as,#tsw-all:checked~.panels .p-all{display:block}
