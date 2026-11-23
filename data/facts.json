@@ -1,5 +1,5 @@
 {
- "cutoff": "2026-11-21",
+ "cutoff": "2026-11-22",
  "date": "2026-11-23",
  "facts": [
   {
@@ -51,57 +51,60 @@
    "type": "start"
   },
   {
-   "href": "player/goga-bitadze.html?vs=WAS#vs-WAS",
-   "key": "matchup:goga-bitadze:WAS|Tonight vs the Washington Wizards: /Goga Bitadze/'s teams are /15–5 (75.0%)/ in his 20 regular-season games against them.",
+   "href": "player/donovan-mitchell.html?vs=CHI#vs-CHI",
+   "key": "matchup:donovan-mitchell:CHI|Tonight vs the Chicago Bulls: /Donovan Mitchell/'s teams are /17–4 (81.0%)/ in his 21 regular-season games against them.",
    "parts": [
     [
-     "Tonight vs the Washington Wizards: "
+     "Tonight vs the Chicago Bulls: "
     ],
-    [
-     "Goga Bitadze",
-     "player/goga-bitadze.html",
-     1
-    ],
-    [
-     "'s teams are "
-    ],
-    [
-     "15–5 (75.0%)",
-     "player/goga-bitadze.html?vs=WAS#vs-WAS",
-     0
-    ],
-    [
-     " in his 20 regular-season games against them."
-    ]
-   ],
-   "pid": "1629048",
-   "team": null,
-   "type": "matchup"
-  },
-  {
-   "href": "player/donovan-mitchell.html#cap-seasons",
-   "key": "streak:winning:donovan-mitchell|Donovan Mitchell/'s teams have had a winning record in each of his last /9 seasons/ (2017-18 to 2025-26), No. 4 among active players.",
-   "parts": [
     [
      "Donovan Mitchell",
      "player/donovan-mitchell.html",
      1
     ],
     [
-     "'s teams have had a winning record in each of his last "
+     "'s teams are "
     ],
     [
-     "9 seasons",
-     "player/donovan-mitchell.html#cap-seasons",
+     "17–4 (81.0%)",
+     "player/donovan-mitchell.html?vs=CHI#vs-CHI",
      0
     ],
     [
-     " (2017-18 to 2025-26), No. 4 among active players."
+     " in his 21 regular-season games against them."
     ]
    ],
    "pid": "1628378",
    "team": null,
-   "type": "streak"
+   "type": "matchup"
+  },
+  {
+   "href": "player/jarrett-allen.html?vs=CHI#vs-CHI",
+   "key": "matchup:jarrett-allen:CHI|Tonight vs the Chicago Bulls: /Jarrett Allen/'s teams are /24–6 (80.0%)/ in his 30 regular-season games against them.",
+   "parts": [
+    [
+     "Tonight vs the Chicago Bulls: "
+    ],
+    [
+     "Jarrett Allen",
+     "player/jarrett-allen.html",
+     1
+    ],
+    [
+     "'s teams are "
+    ],
+    [
+     "24–6 (80.0%)",
+     "player/jarrett-allen.html?vs=CHI#vs-CHI",
+     0
+    ],
+    [
+     " in his 30 regular-season games against them."
+    ]
+   ],
+   "pid": "1628386",
+   "team": null,
+   "type": "matchup"
   },
   {
    "href": "player/lamelo-ball.html#cap-seasons",
@@ -127,6 +130,39 @@
    "pid": "1630163",
    "team": null,
    "type": "streak"
+  },
+  {
+   "href": "player/shai-gilgeous-alexander.html#mates",
+   "key": "mates:together:shai-gilgeous-alexander:cason-wallace|Shai Gilgeous-Alexander/ and /Cason Wallace/ have played 211 regular-season games together: /167–44 (79.1%)/, the best record together among current teammates with 200+ games (through Nov. 22).",
+   "parts": [
+    [
+     "Shai Gilgeous-Alexander",
+     "player/shai-gilgeous-alexander.html",
+     1
+    ],
+    [
+     " and "
+    ],
+    [
+     "Cason Wallace",
+     "player/cason-wallace.html",
+     1
+    ],
+    [
+     " have played 211 regular-season games together: "
+    ],
+    [
+     "167–44 (79.1%)",
+     "player/shai-gilgeous-alexander.html#mates",
+     0
+    ],
+    [
+     ", the best record together among current teammates with 200+ games (through Nov. 22)."
+    ]
+   ],
+   "pid": "1628983",
+   "team": null,
+   "type": "mates"
   },
   {
    "href": "seasons/1977-78.html#t-WAS",
@@ -188,9 +224,10 @@
   "2026-11-23": [
    "start:worst:SAC:16|The Sacramento Kings/ are 2–14, the franchise's worst record through 16 games in 79 seasons.",
    "start:best:PHI:17|The Philadelphia 76ers/ are 14–3, the franchise's best start through 17 games since the /2000-01 Philadelphia 76ers/ (also 14–3).",
-   "matchup:goga-bitadze:WAS|Tonight vs the Washington Wizards: /Goga Bitadze/'s teams are /15–5 (75.0%)/ in his 20 regular-season games against them.",
-   "streak:winning:donovan-mitchell|Donovan Mitchell/'s teams have had a winning record in each of his last /9 seasons/ (2017-18 to 2025-26), No. 4 among active players.",
+   "matchup:donovan-mitchell:CHI|Tonight vs the Chicago Bulls: /Donovan Mitchell/'s teams are /17–4 (81.0%)/ in his 21 regular-season games against them.",
+   "matchup:jarrett-allen:CHI|Tonight vs the Chicago Bulls: /Jarrett Allen/'s teams are /24–6 (80.0%)/ in his 30 regular-season games against them.",
    "streak:drought:lamelo-ball|LaMelo Ball/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
+   "mates:together:shai-gilgeous-alexander:cason-wallace|Shai Gilgeous-Alexander/ and /Cason Wallace/ have played 211 regular-season games together: /167–44 (79.1%)/, the best record together among current teammates with 200+ games (through Nov. 22).",
    "onthisday:1978:WAS|On this date in 1977-78, the /Washington Bullets/ were 8–7. They finished 44–38 and won the title."
   ]
  }

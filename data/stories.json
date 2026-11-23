@@ -2,6 +2,331 @@
  "stories": [
   {
    "body": [
+    "Aaron Wiggins reached +100 wins minus losses: +100, No. 321 on the board (incl. 2026-27 to date).",
+    "Al Horford passed Russell Westbrook (9-time All-Star) for No. 35 in career wins (739, incl. 2026-27 to date).",
+    "Georges Niang passed James Jones in career win % in his games: 65.1%, No. 41 among players with 500+ games (incl. 2026-27 to date).",
+    "Draymond Green passed John Havlicek (Hall of Famer) and 1 other in career win % in his games: 64.9%, No. 45 among players with 500+ games (incl. 2026-27 to date).",
+    "DeMar DeRozan passed Satch Sanders (Hall of Famer as a contributor) for No. 82 in career wins (639, incl. 2026-27 to date).",
+    "The Utah Jazz are 3–15, the franchise's worst start through 18 games since 2013-14 (3–15).",
+    "The Atlanta Hawks are 11–6, the franchise's best start through 17 games since 2014-15 (11–6).",
+    "Tonight vs the Phoenix Suns: Jordan Poole's teams are 3–15 (16.7%) in his 18 regular-season games against them (through 2025-26).",
+    "Tonight vs the Indiana Pacers: Isaiah Hartenstein's teams are 13–3 (81.2%) in his 16 regular-season games against them (through 2025-26)."
+   ],
+   "cutoff": "2026-11-22",
+   "date": "2026-11-23",
+   "games": 7,
+   "games_date": "2026-11-22",
+   "headline": "Last night in Team Success · Nov. 22 games",
+   "img": "stories/img/2026-11-23.png",
+   "items": [
+    {
+     "href": "lists/wins-minus-losses.html?hl=aaron-wiggins#p-aaron-wiggins",
+     "key": "wl-mark:aaron-wiggins:100",
+     "parts": [
+      [
+       "Aaron Wiggins",
+       "player/aaron-wiggins.html",
+       1
+      ],
+      [
+       " reached +100 wins minus losses: "
+      ],
+      [
+       "+100, No. 321",
+       "lists/wins-minus-losses.html?hl=aaron-wiggins#p-aaron-wiggins",
+       0
+      ],
+      [
+       " on the board (incl. 2026-27 to date)."
+      ]
+     ],
+     "pid": "1630598",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "wl-mark"
+    },
+    {
+     "href": "lists/career-wins.html?hl=al-horford#p-al-horford",
+     "key": "wins-pass:al-horford:russell-westbrook",
+     "parts": [
+      [
+       "Al Horford",
+       "player/al-horford.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "Russell Westbrook",
+       "player/russell-westbrook.html",
+       0
+      ],
+      [
+       " (9-time All-Star) for "
+      ],
+      [
+       "No. 35 in career wins",
+       "lists/career-wins.html?hl=al-horford#p-al-horford",
+       0
+      ],
+      [
+       " (739, incl. 2026-27 to date)."
+      ]
+     ],
+     "passed": [
+      "russell-westbrook"
+     ],
+     "pid": "201143",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "wins-pass"
+    },
+    {
+     "href": "lists/career-wins.html?sort=pct&cg=500&hl=georges-niang#p-georges-niang",
+     "key": "pct-pass:georges-niang:james-jones",
+     "parts": [
+      [
+       "Georges Niang",
+       "player/georges-niang.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "James Jones",
+       "player/james-jones.html",
+       0
+      ],
+      [
+       " in career win % in his games: "
+      ],
+      [
+       "65.1%, No. 41",
+       "lists/career-wins.html?sort=pct&cg=500&hl=georges-niang#p-georges-niang",
+       0
+      ],
+      [
+       " among players with 500+ games (incl. 2026-27 to date)."
+      ]
+     ],
+     "passed": [
+      "james-jones"
+     ],
+     "pid": "1627777",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "pct-pass"
+    },
+    {
+     "href": "lists/career-wins.html?sort=pct&cg=500&hl=draymond-green#p-draymond-green",
+     "key": "pct-pass:draymond-green:john-havlicek",
+     "parts": [
+      [
+       "Draymond Green",
+       "player/draymond-green.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "John Havlicek",
+       "player/john-havlicek.html",
+       0
+      ],
+      [
+       " (Hall of Famer) and 1 other in career win % in his games: "
+      ],
+      [
+       "64.9%, No. 45",
+       "lists/career-wins.html?sort=pct&cg=500&hl=draymond-green#p-draymond-green",
+       0
+      ],
+      [
+       " among players with 500+ games (incl. 2026-27 to date)."
+      ]
+     ],
+     "passed": [
+      "josh-howard",
+      "john-havlicek"
+     ],
+     "pid": "203110",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "pct-pass"
+    },
+    {
+     "href": "lists/career-wins.html?hl=demar-derozan#p-demar-derozan",
+     "key": "wins-pass:demar-derozan:satch-sanders",
+     "parts": [
+      [
+       "DeMar DeRozan",
+       "player/demar-derozan.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "Satch Sanders",
+       "player/satch-sanders.html",
+       0
+      ],
+      [
+       " (Hall of Famer as a contributor) for "
+      ],
+      [
+       "No. 82 in career wins",
+       "lists/career-wins.html?hl=demar-derozan#p-demar-derozan",
+       0
+      ],
+      [
+       " (639, incl. 2026-27 to date)."
+      ]
+     ],
+     "passed": [
+      "satch-sanders"
+     ],
+     "pid": "201942",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "wins-pass"
+    },
+    {
+     "href": "seasons/2026-27.html#t-UTA",
+     "key": "start:worst:UTA:18",
+     "parts": [
+      [
+       "The Utah Jazz",
+       "seasons/2026-27.html#t-UTA",
+       1
+      ],
+      [
+       " are 3–15, the franchise's worst start through 18 games since "
+      ],
+      [
+       "2013-14",
+       "seasons/2013-14.html#t-UTA",
+       0
+      ],
+      [
+       " (3–15)."
+      ]
+     ],
+     "pid": null,
+     "scope": "2026-27 to date",
+     "team": [
+      "UTA",
+      2027
+     ],
+     "type": "start"
+    },
+    {
+     "href": "seasons/2026-27.html#t-ATL",
+     "key": "start:best:ATL:17",
+     "parts": [
+      [
+       "The Atlanta Hawks",
+       "seasons/2026-27.html#t-ATL",
+       1
+      ],
+      [
+       " are 11–6, the franchise's best start through 17 games since "
+      ],
+      [
+       "2014-15",
+       "seasons/2014-15.html#t-ATL",
+       0
+      ],
+      [
+       " (11–6)."
+      ]
+     ],
+     "pid": null,
+     "scope": "2026-27 to date",
+     "team": [
+      "ATL",
+      2027
+     ],
+     "type": "start"
+    },
+    {
+     "href": "player/jordan-poole.html?vs=PHX#vs-PHX",
+     "key": "tonight:jordan-poole:PHX",
+     "parts": [
+      [
+       "Tonight vs the Phoenix Suns: "
+      ],
+      [
+       "Jordan Poole",
+       "player/jordan-poole.html",
+       1
+      ],
+      [
+       "'s teams are "
+      ],
+      [
+       "3–15 (16.7%)",
+       "player/jordan-poole.html?vs=PHX#vs-PHX",
+       0
+      ],
+      [
+       " in his 18 regular-season games against them (through 2025-26)."
+      ]
+     ],
+     "pid": "1629673",
+     "scope": "through 2025-26",
+     "team": null,
+     "type": "tonight"
+    },
+    {
+     "href": "player/isaiah-hartenstein.html?vs=IND#vs-IND",
+     "key": "tonight:isaiah-hartenstein:IND",
+     "parts": [
+      [
+       "Tonight vs the Indiana Pacers: "
+      ],
+      [
+       "Isaiah Hartenstein",
+       "player/isaiah-hartenstein.html",
+       1
+      ],
+      [
+       "'s teams are "
+      ],
+      [
+       "13–3 (81.2%)",
+       "player/isaiah-hartenstein.html?vs=IND#vs-IND",
+       0
+      ],
+      [
+       " in his 16 regular-season games against them (through 2025-26)."
+      ]
+     ],
+     "pid": "1628392",
+     "scope": "through 2025-26",
+     "team": null,
+     "type": "tonight"
+    }
+   ],
+   "kind": "night",
+   "players": [
+    "aaron-wiggins",
+    "al-horford",
+    "georges-niang",
+    "draymond-green",
+    "demar-derozan",
+    "jordan-poole",
+    "isaiah-hartenstein"
+   ],
+   "quiet": 0,
+   "rule": "night",
+   "stale": 0
+  },
+  {
+   "body": [
     "Joel Embiid passed Dan Majerle (3-time All-Star) in career win % in his games: 65.7%, No. 35 among players with 500+ games (incl. 2026-27 to date).",
     "Rudy Gobert passed Joe Dumars (Hall of Famer) and 5 others for No. 154 in career W − L (+159, incl. 2026-27 to date).",
     "The Sacramento Kings are 2–14, the franchise's worst start through 16 games in 79 seasons (2026-27 to date).",
