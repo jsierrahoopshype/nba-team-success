@@ -2081,7 +2081,6 @@ def player_page(s, pid):
 <section class="sum"><h2>Career</h2>{summary_cards(s, pid, up)}
 <p class="note">Career records (W{EN}L, W {MINUS} L, with and without) include {season_label(CURRENT_SEASON)} games through {e(nice_date(s.through))}; season counts and finishes are through {season_label(LAST_COMPLETE)}. Each card opens its board in the same scope. <a href="../how-we-count.html">How we count</a>.</p>
 <p>{download_link(f"{OG}player/{v['slug']}.png", f"{v['slug']}-team-success.png")}</p></section>""")
-        parts.append(mates_section(s, pid, up))
         parts.append(f'<section><h2>Latest completed seasons</h2>{latest_seasons(s, pid, up, pts)}</section>')
     parts.append(current_block(s, pid, up))
     if not has_hist:
@@ -2101,6 +2100,7 @@ def player_page(s, pid):
         parts.append(arrival_departure(s, pid, up))
         parts.append(trades(s, pid, up))
         parts.append(duos(s, pid, up))
+        parts.append(mates_section(s, pid, up))     # after Best duos (shown even when duos is empty)
         b = s.badges.get(pid)
         if b:
             parts.append('<section><h2>Lists he is on</h2><ul class="badges">' + "".join(
