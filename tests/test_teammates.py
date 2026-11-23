@@ -177,7 +177,9 @@ def test_draymond_curry_on_the_pages(pairs, ids):
     r = pairs[(dg, sc)]
     t = read("player/draymond-green.html")
     i = t.index('<section id="mates">')
-    assert t.index("<h2>Career</h2>") < i < t.index("<h2>Latest completed seasons</h2>")
+    # after Best duos, before "Lists he is on"; once
+    assert t.index("<h2>Best duos</h2>") < i < t.index("<h2>Lists he is on</h2>")
+    assert t.count('<section id="mates">') == 1
     sec = t[i:t.index("</section>", i)]
     first = re.search(r'<li class="mate".*?</li>', sec, re.S).group(0)
     assert "stephen-curry.html" in first and f"{r['t'][0]}–{r['t'][1]}" in first and f"{r['o'][0]}–{r['o'][1]}" in first
@@ -186,6 +188,24 @@ def test_draymond_curry_on_the_pages(pairs, ids):
     assert len(pg["tm"]) == 12 and pg["tm"][0][:5] == ["stephen-curry", *r["t"], *r["o"]]
     tm = json.loads(read("assets/tm/stephen-curry.json"))["m"]["draymond-green"]
     assert tm[:4] == [*pairs[(sc, dg)]["t"], *pairs[(sc, dg)]["o"]]
+
+
+@built
+def test_mates_block_order_first_season_and_no_duos():
+    """First-season players keep it right after the current-season block; a player with history but
+    no Best duos still gets it (before "Lists he is on" when he has badges)."""
+    cur = load_json(os.path.join(DATA, "current.json"))
+    players = load_json(os.path.join(DATA, "players.json"))
+    ids = load_json(os.path.join(DATA, "player_ids.json"))
+    ids.update(cur.get("newIds", {}))
+    rookie = next(p for p in sorted(cur["players"]) if p not in players and p in ids
+                  and os.path.exists(os.path.join(ROOT, "player", ids[p]["slug"] + ".html")))
+    t = read(f"player/{ids[rookie]['slug']}.html")
+    assert t.count('<section id="mates">') == 1
+    assert t.index(" so far</h2>") < t.index('<section id="mates">')
+    nod = next(p for p, x in players.items() if x.get("seasons") and not x.get("duos") and p in ids
+               and '<section id="mates">' in read(f"player/{ids[p]['slug']}.html"))
+    assert "<h2>Best duos</h2>" not in read(f"player/{ids[nod]['slug']}.html")
 
 
 @built
