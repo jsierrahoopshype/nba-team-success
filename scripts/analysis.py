@@ -268,10 +268,11 @@ def list_drought(d, era_from, mg):
     return rows
 
 
-def list_franchise(d, era_from, mg, min_games=200, top=3):
+def list_franchise(d, era_from, mg, min_games=200, top=3, upto=LAST_COMPLETE):
+    """upto=CURRENT_SEASON (with a live Data) adds the season to date: wins in his games."""
     by = defaultdict(lambda: defaultdict(lambda: [0, 0]))
     for pid in d.players:
-        for s in d.stints(pid, era_from, mg):
+        for s in d.stints(pid, era_from, mg, upto=upto):
             x = by[s["f"]][pid]
             x[0] += s["w"]
             x[1] += s["l"]
@@ -284,10 +285,11 @@ def list_franchise(d, era_from, mg, min_games=200, top=3):
     return out
 
 
-def list_gap_season(d, era_from, mg, min_each=20):
+def list_gap_season(d, era_from, mg, min_each=20, upto=LAST_COMPLETE):
+    """upto=CURRENT_SEASON (with a live Data) adds the season to date as its own team-seasons."""
     rows = []
     for pid in d.players:
-        for s in d.stints(pid, era_from, max(mg, min_each)):
+        for s in d.stints(pid, era_from, max(mg, min_each), upto=upto):
             if s["ow"] + s["ol"] < min_each:
                 continue
             rows.append({"pid": pid, "s": s, "gap": pct(s["w"], s["l"]) - pct(s["ow"], s["ol"])})

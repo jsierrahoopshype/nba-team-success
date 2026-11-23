@@ -245,6 +245,18 @@ def build(date):
                 for q in ap:
                     if str(q) in want:
                         rec[str(q)][h][0 if as_ > hs else 1] += 1
+        # the season to date too (current.json's game log), like the opponent row the item links to
+        lg = cur.get("log") or {}
+        for gid, dd, h, a, hs, as_ in lg.get("games", []):
+            if gid[2] != "2":
+                continue
+            hp, ap = lg["app"].get(gid, [[], []])
+            for q in hp:
+                if str(q) in want:
+                    rec[str(q)][a][0 if hs > as_ else 1] += 1
+            for q in ap:
+                if str(q) in want:
+                    rec[str(q)][h][0 if as_ > hs else 1] += 1
         for p in want:
             f = ([x for x in cur["players"][p] if x.get("endTeam")] or cur["players"][p][-1:])[0]["f"]
             opp = playing[f]
@@ -258,7 +270,7 @@ def build(date):
             add(4, -abs(r - 0.5), f"matchup:{slug(p)}:{opp}",
                 [T(f"Tonight vs the {on}: "), plink(p), T("'s teams are "),
                  L(f"{wl(w, l)} ({pct1(r)})", f"player/{slug(p)}.html?vs={opp}#vs-{opp}"),
-                 T(f" in his {w + l} regular-season games against them.")],
+                 T(f" in his {w + l} regular-season games against them ({B.SCOPE_LIVE}).")],
                 f"player/{slug(p)}.html?vs={opp}#vs-{opp}", pid=p)
 
     # ---- 5. streaks still alive (completed seasons, active players) ---------------------------

@@ -26,7 +26,9 @@ def test_jordan_opponents_add_up():
 
 
 def test_game_file_matches_career():
-    d = Data()
+    """The game file adds up to his career record in his games, incl. the season to date (the
+    career card's scope): the season in progress is in both."""
+    d = Data(live=True)
     for slug in ("michael-jordan", "george-mikan", "james-harden"):
         pid = next(k for k, v in d.ids.items() if v["slug"] == slug)
         doc = json.loads(read(f"assets/pg/{slug}.json"))
