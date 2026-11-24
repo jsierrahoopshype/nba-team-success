@@ -267,10 +267,10 @@ def build(date):
             if MATCHUP_LO < r < MATCHUP_HI:
                 continue
             on = team_name(opp)
+            # same sentence as the daily list's "tonight" item (daily_story.tonight_parts)
+            from daily_story import tonight_parts
             add(4, -abs(r - 0.5), f"matchup:{slug(p)}:{opp}",
-                [T(f"Tonight vs the {on}: "), plink(p), T("'s teams are "),
-                 L(f"{wl(w, l)} ({pct1(r)})", f"player/{slug(p)}.html?vs={opp}#vs-{opp}"),
-                 T(f" in his {w + l} regular-season games against them ({B.SCOPE_LIVE}).")],
+                tonight_parts(plink(p), on, L(wl(w, l), f"player/{slug(p)}.html?vs={opp}#vs-{opp}"), r),
                 f"player/{slug(p)}.html?vs={opp}#vs-{opp}", pid=p)
 
     # ---- 5. streaks still alive (completed seasons, active players) ---------------------------

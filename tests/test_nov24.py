@@ -60,7 +60,8 @@ def test_last_night_sources_have_no_scope_suffix_or_others():
     src = read("scripts/daily_story.py")
     assert "other{'s'" not in src and " and {len(passed) - 1} other" not in src
     assert '({B.SCOPE_LIVE}).")' not in src and "on the board ({B.scope_label" not in src
-    assert "Tonight vs the" not in src
+    assert "Tonight vs the" not in src and "Tonight vs the" not in read("scripts/fun_facts.py")
+    assert "Tonight vs the" not in read("docs/story-rules.md")
 
 
 # ---- homepage with/without: no empty box ------------------------------------------------------

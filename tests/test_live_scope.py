@@ -138,7 +138,8 @@ def test_franchise_list_counts_the_season_to_date():
 
 
 def test_tonight_items_use_the_live_scope():
-    # both read the season to date; the daily item now reads as a sentence with no scope suffix
-    assert "against them ({B.SCOPE_LIVE})" in read("scripts/fun_facts.py")
+    # both read the season to date and use the same sentence, with no scope suffix
+    ff = read("scripts/fun_facts.py")
+    assert "tonight_parts(" in ff and "against them ({B.SCOPE_LIVE})" not in ff and "Tonight vs the" not in ff
     src = read("scripts/daily_story.py")
     assert 'cur.get("log")' in src and "tonight_parts(" in src and " against them in the regular season, " in src
