@@ -50,7 +50,7 @@ def test_board_metrics_match_career_summary(data, d):
 def test_jordan_card_ranks_match_board_pages():
     t = read("player/michael-jordan.html")
     for key in B.BOARDS:
-        if not B.BOARDS[key].get("noas"):               # the eight career cards
+        if not B.BOARDS[key].get("noas") and not B.BOARDS[key].get("games"):   # the eight career cards
             assert f'lists/{key}.html?hl=michael-jordan#p-michael-jordan' in t, key
     m = re.search(r'wins-minus-losses\.html\?hl=michael-jordan.*?<span class="rk">No\. ([\d,]+) of ([\d,]+) · incl\. ', t, re.S)
     assert m
@@ -72,7 +72,8 @@ def test_js_ranks_like_python(data, tmp_path):
             for f in FILTERS:
                 cases.append({"b": key, "f": dict(f, sort=srt),
                               "def": {"sorts": {k: list(v) for k, v in dfn["sorts"].items()}, "cols": dfn["cols"],
-                                      "noas": 1 if dfn.get("noas") else 0}})
+                                      "noas": 1 if dfn.get("noas") else 0,
+                                      **({"games": dfn["games"]} if dfn.get("games") else {})}})
     cp = tmp_path / "cases.json"
     cp.write_text(json.dumps(cases))
     js = ("const fs=require('fs');const B=require(process.argv[1]);const d=JSON.parse(fs.readFileSync(process.argv[2]));"

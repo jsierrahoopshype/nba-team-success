@@ -1,6 +1,6 @@
 # (c) 2026 HoopsMatic. All rights reserved.
 # Team Success career leaderboards. Fingerprint: hm-ts-7f3a91c2-boards
-"""The eight career-card leaderboards, with filters.
+"""The career leaderboards, with filters.
 
 The ranking rules run on the compact data in assets/board.json, the same file the browser uses
 (assets/boards.js mirrors compute() line by line), so the pre-rendered default view, the rank on
@@ -92,6 +92,25 @@ BOARDS = {
         "cols": ["w", "wl", "pct", "rec", "gp", "seasons"],
         "noas": True,
     },
+    "playoff-wins": {
+        "title": "Most playoff wins: NBA career leaderboard",
+        "h1": "Most playoff wins",
+        "desc": "His teams' playoff record in the playoff games he played, every NBA player since 1946-47. Switch to playoff wins minus losses, or to playoff win % (minimum 50 playoff games), and filter by era, team and All-Stars.",
+        "card": "Playoff wins",
+        "sorts": {"pw": ("Playoff wins", "desc", {}), "pwl": ("Playoff W − L", "desc", {}),
+                  "ppct": ("Playoff win %", "desc", {"cg": 50})},
+        "cols": ["pw", "prec", "pwl", "ppct", "pgp"],
+        "games": "pgp",               # the games minimum counts playoff games
+    },
+    "combined-wins": {
+        "title": "Regular season plus playoffs: NBA career win % leaderboard",
+        "h1": "Regular season + playoffs win %",
+        "desc": "His teams' record in every game he played, regular season and playoffs together, since 1946-47, including the regular season in progress to date. Win % needs 500+ games; switch to wins or W − L.",
+        "card": "Regular season + playoffs",
+        "sorts": {"cpct": ("Win %", "desc", {"cg": 500}), "cw": ("Wins", "desc", {}), "cwl": ("W − L", "desc", {})},
+        "cols": ["cpct", "crec", "cw", "cwl", "cgp"],
+        "games": "cgp",               # the games minimum counts regular-season + playoff games
+    },
     "gap-career": {
         "title": "Biggest with/without win-rate gaps in an NBA career",
         "h1": "With vs without: career win-rate gap",
@@ -106,14 +125,17 @@ COL_LABEL = {"w": "Wins", "l": "Losses", "pct": "Win %", "gp": "Games in this vi
              "trips": "Playoff trips", "tshare": "Share", "deep": "Deepest run", "deepn": "Times",
              "titles": "Titles", "years": "Title seasons", "avg": "Raw average",
              "adj": "Adjusted (of 30)", "gap": "Gap (points)", "with": "With him", "without": "Without him",
-             "gm": "Missed"}
+             "gm": "Missed", "pw": "Playoff wins", "prec": "Playoff W–L", "pwl": "Playoff W − L",
+             "ppct": "Playoff win %", "pgp": "Playoff games", "cpct": "Win %", "crec": "W–L", "cw": "Wins",
+             "cwl": "W − L", "cgp": "Games"}
 
 
 def compact(d, cur, help_doc=None, partial_years=()):
     """Build assets/board.json: team table + one row per player, completed seasons plus the live
     season (team entries with live = 1: in W-L totals, never in season counts).
     Stint: [season, franchise, g, w, l, ow, ol, endTeam, played playoffs, last date,
-            no All-Star teammate (1/0), he was an All-Star (1/0), honors missing (1/0)].
+            no All-Star teammate (1/0), he was an All-Star (1/0), honors missing (1/0),
+            playoff wins, playoff losses (his teams' record in the playoff games he played for that team)].
     "Honors missing" = that season's All-Stars are not in the awards data (awards.json in nba-player-data)
     or it has no teammate-help rows yet (the season in progress on 2026-11-19). The no-All-Star board
     leaves those team-seasons out instead of counting them as "no All-Star"; they come back on their own
@@ -142,7 +164,8 @@ def compact(d, cur, help_doc=None, partial_years=()):
             noas = 0 if any("All-Star" in m[4] for m in mates) else 1
             st.append([s["s"], s["f"], s["g"], s["w"], s["l"], s["ow"], s["ol"],
                        1 if s.get("endTeam") else 0, 1 if (s.get("po") and s["po"]["g"] > 0) else 0, last,
-                       noas, 1 if s["s"] in allstar else 0, 0 if s["s"] in known else 1])
+                       noas, 1 if s["s"] in allstar else 0, 0 if s["s"] in known else 1,
+                       (s.get("po") or {}).get("w", 0), (s.get("po") or {}).get("l", 0)])
         if not st:
             continue
         face = v.get("hs") if v.get("hs") and os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "hs", v["hs"])) else ""
@@ -193,6 +216,9 @@ def player_metrics(row, teams, flt):
         return None
     w = sum(s[3] for s in inc)
     l = sum(s[4] for s in inc)
+    pw = sum(s[13] for s in inc if len(s) > 14)     # playoffs (completed seasons; none in a season in progress)
+    pl = sum(s[14] for s in inc if len(s) > 14)
+    pgp = pw + pl
     ow = sum(s[5] for s in inc)
     ol = sum(s[6] for s in inc)
     by = defaultdict(list)
@@ -240,7 +266,11 @@ def player_metrics(row, teams, flt):
             "wshare": winning / n if n else None, "trips": trips, "tshare": trips / n if n else None,
             "titles": titles, "years": title_years, "deep": deep if n else 0, "deepn": deepn,
             "avg": sum(rk) / n if n else None, "adj": sum(adj) / n if n else None,
-            "gap": ((w / (w + l)) - (ow / (ow + ol))) if (w + l) and (ow + ol) else None}
+            "gap": ((w / (w + l)) - (ow / (ow + ol))) if (w + l) and (ow + ol) else None,
+            "pw": pw if pgp else None, "pl": pl, "pgp": pgp, "pwl": (pw - pl) if pgp else None,
+            "ppct": pw / pgp if pgp else None,
+            "cw": w + pw, "cl": l + pl, "cgp": w + l + pgp, "cwl": (w + pw) - (l + pl),
+            "cpct": (w + pw) / (w + l + pgp) if (w + l + pgp) else None}
 
 
 def mins_for(board, sort, flt):
@@ -264,6 +294,16 @@ def sort_key(board, sort, m):
         return (-v, (m["l"], m["name"]))
     if sort == "wl":
         return (-v, (-m["w"], m["name"]))
+    if sort == "pw":
+        return (-v, (m["pl"], m["name"]))
+    if sort == "pwl":
+        return (-v, (-m["pw"], m["name"]))
+    if sort == "cw":
+        return (-v, (m["cl"], m["name"]))
+    if sort == "cwl":
+        return (-v, (-m["cw"], m["name"]))
+    if sort in ("ppct", "cpct"):
+        return (-round(v, 9), (-m["pgp" if sort == "ppct" else "cgp"], m["name"]))
     if sort in ("pct", "wshare", "tshare", "gap"):
         sec = {"pct": -m["gp"], "wshare": -m["seasons"], "tshare": -m["seasons"], "gap": -m["gp"]}[sort]
         return (-round(v, 9), (sec, m["name"]))
@@ -279,10 +319,11 @@ def compute(data, board, flt=None):
     if sort not in BOARDS[board]["sorts"]:
         sort = next(iter(BOARDS[board]["sorts"]))
     mins = mins_for(board, sort, flt)
+    gk = BOARDS[board].get("games", "gp")           # what the games minimum counts
     out = []
     for row in data["p"]:
         m = player_metrics(row, data["t"], flt)
-        if not m or m["gp"] < mins["cg"]:
+        if not m or m[gk] < mins["cg"]:
             continue
         if m["seasons"] < mins.get("ms", 0):
             continue
@@ -316,7 +357,7 @@ def compute(data, board, flt=None):
 # sentence and a plain 2 in a table's rank column (no "T-").
 # ---------------------------------------------------------------------------
 # which boards count the season in progress (career W-L totals) and which are completed seasons only
-LIVE_BOARDS = {"career-wins", "wins-minus-losses", "gap-career"}
+LIVE_BOARDS = {"career-wins", "wins-minus-losses", "gap-career", "combined-wins"}
 SCOPE_LIVE = f"incl. {season_label(CURRENT_SEASON)} to date"
 SCOPE_DONE = f"through {season_label(LAST_COMPLETE)}"
 

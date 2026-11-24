@@ -26,7 +26,9 @@ def read(rel):
 def test_nightly_runs_four_times_and_commits_only_changes():
     y = read(".github/workflows/nightly.yml")
     crons = re.findall(r'cron: "([^"]+)"', y)
-    assert len(crons) >= 2 and any(c.split()[1] in ("14", "15", "16", "17", "18") for c in crons)
+    # hourly from 12:17 to 23:17 UTC plus 02:17 and 05:17: Ramiro's update (~13:00-13:30 UTC) is always
+    # followed by several runs, however late GitHub starts them
+    assert crons == ["17 12-23,2,5 * * *"]
     assert "scripts/fun_facts.py" in y and "git diff --cached --quiet" in y
 
 
@@ -95,12 +97,12 @@ def test_scoreboard_text_is_two_short_lines():
 
 def test_homepage_with_without_minimums():
     t = read("index.html")
-    if 'class="ww-wait"' in t:                      # round 6: nobody qualifies yet, the block is hidden
+    if "so far: with and without</h2>" not in t:    # nobody qualifies yet: no block at all
         return
     sec = t[t.index("so far: with and without</h2>"):t.index("<h2>Last 30 days")]
     for played, missed in re.findall(r"in (\d[\d,]*) played · [^<]* in (\d[\d,]*) missed", sec):
         p, m = int(played.replace(",", "")), int(missed.replace(",", ""))
-        assert p >= 10 and m >= 8
+        assert p >= 10 and m >= 5
     if ": career" in sec:
         assert "Career leaders shown" in sec
 

@@ -81,7 +81,7 @@ def test_card_data(views):
     assert doc["pairs"][0]["rank"] == 1
 
 
-def test_homepage_leaderboards_nine_boxes():
+def test_homepage_leaderboards_boxes():
     t = read("index.html")
     sec = t[t.index('<h2 id="leaderboards">'):]
     sec = sec[:sec.index("</section>")]
@@ -89,13 +89,14 @@ def test_homepage_leaderboards_nine_boxes():
     assert [h for h, _ in heads] == ["Career wins in his games", "Wins minus losses", "Titles",
                                      "Most wins without an All-Star teammate", "Bad Luck Index",
                                      "Played for the worst team the most", "Biggest teammate swings",
-                                     "Career with and without", "Playoff trips"]
+                                     "Career with and without", "Playoff trips", "Most playoff wins",
+                                     "Playoff W − L", "Regular season + playoffs win %"]
     note = sec[sec.index('<p class="note">'):]
     for href, _ in (("lists/teammate-swings.html", 0), ("lists/gap-career.html", 0), ("lists/playoff-trips.html", 0)):
         assert sec.count(f'href="{href}"') == 1 and href not in note      # listed once, as a box
     for keep in ("lists/winning-seasons.html", "lists/average-finish.html", "lists/low-help-all-stars.html"):
         assert keep in note
-    assert sec.count("<li>") == 45
+    assert sec.count("<li>") == 60
 
 
 def test_list_share_card_and_filtered_views_noindex():

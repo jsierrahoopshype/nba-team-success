@@ -572,3 +572,5 @@ details > summary{min-height:44px;padding:.7rem 0;box-sizing:border-box;cursor:p
   .swl .cmp{padding:.25rem .1rem;margin:-.25rem 0}
 }
 @media(min-width:900px) and (pointer:coarse){.swl .cmp{padding:.75rem .1rem;margin:-.75rem 0}}
+/* homepage with/without: a single box (the other had no rows) takes the full width */
+.dgrid.one{grid-template-columns:minmax(0,1fr)}
