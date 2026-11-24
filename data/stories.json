@@ -2,6 +2,349 @@
  "stories": [
   {
    "body": [
+    "Kevin Durant passed Paul Pierce (Hall of Famer) and 1 other for No. 30 in career wins (759, incl. 2026-27 to date).",
+    "Steven Adams passed Donovan Mitchell (7-time All-Star) and 1 other for No. 105 in career W − L (+188, incl. 2026-27 to date).",
+    "Rudy Gobert passed Paul Westphal (Hall of Famer) and 2 others for No. 154 in career W − L (+160, incl. 2026-27 to date).",
+    "Marcus Smart passed Joe Dumars (Hall of Famer) and 4 others for No. 155 in career W − L (+159, incl. 2026-27 to date).",
+    "The Sacramento Kings are 2–15, the franchise's worst start through 17 games in 79 seasons (2026-27 to date).",
+    "The Milwaukee Bucks are 2–16, the franchise's worst start through 18 games in 59 seasons (2026-27 to date).",
+    "The Utah Jazz are 3–16, the franchise's worst start through 19 games since 1979-80 (2–17).",
+    "The Minnesota Timberwolves are 3–5 without Cody Williams and 10–0 with him (2026-27 to date, 10 played, 8 missed).",
+    "The Houston Rockets are 4–4 without Jae'Sean Tate and 9–1 with him (2026-27 to date, 10 played, 8 missed).",
+    "Tonight vs the Washington Wizards: Derrick White's teams are 17–1 (94.4%) in his 18 regular-season games against them (incl. 2026-27 to date)."
+   ],
+   "cutoff": "2026-11-23",
+   "date": "2026-11-24",
+   "games": 10,
+   "games_date": "2026-11-23",
+   "headline": "Last night in Team Success · Nov. 23 games",
+   "img": "stories/img/2026-11-24.png",
+   "items": [
+    {
+     "href": "lists/career-wins.html?hl=kevin-durant#p-kevin-durant",
+     "key": "wins-pass:kevin-durant:paul-pierce",
+     "parts": [
+      [
+       "Kevin Durant",
+       "player/kevin-durant.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "Paul Pierce",
+       "player/paul-pierce.html",
+       0
+      ],
+      [
+       " (Hall of Famer) and 1 other for "
+      ],
+      [
+       "No. 30 in career wins",
+       "lists/career-wins.html?hl=kevin-durant#p-kevin-durant",
+       0
+      ],
+      [
+       " (759, incl. 2026-27 to date)."
+      ]
+     ],
+     "passed": [
+      "horace-grant",
+      "paul-pierce"
+     ],
+     "pid": "201142",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "wins-pass"
+    },
+    {
+     "href": "lists/wins-minus-losses.html?hl=steven-adams#p-steven-adams",
+     "key": "wl-pass:steven-adams:donovan-mitchell",
+     "parts": [
+      [
+       "Steven Adams",
+       "player/steven-adams.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "Donovan Mitchell",
+       "player/donovan-mitchell.html",
+       0
+      ],
+      [
+       " (7-time All-Star) and 1 other for "
+      ],
+      [
+       "No. 105 in career W − L",
+       "lists/wins-minus-losses.html?hl=steven-adams#p-steven-adams",
+       0
+      ],
+      [
+       " (+188, incl. 2026-27 to date)."
+      ]
+     ],
+     "passed": [
+      "brian-shaw",
+      "donovan-mitchell"
+     ],
+     "pid": "203500",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "wl-pass"
+    },
+    {
+     "href": "lists/wins-minus-losses.html?hl=rudy-gobert#p-rudy-gobert",
+     "key": "wl-pass:rudy-gobert:paul-westphal",
+     "parts": [
+      [
+       "Rudy Gobert",
+       "player/rudy-gobert.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "Paul Westphal",
+       "player/paul-westphal.html",
+       0
+      ],
+      [
+       " (Hall of Famer) and 2 others for "
+      ],
+      [
+       "No. 154 in career W − L",
+       "lists/wins-minus-losses.html?hl=rudy-gobert#p-rudy-gobert",
+       0
+      ],
+      [
+       " (+160, incl. 2026-27 to date)."
+      ]
+     ],
+     "passed": [
+      "dick-barnett",
+      "steve-smith",
+      "paul-westphal"
+     ],
+     "pid": "203497",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "wl-pass"
+    },
+    {
+     "href": "lists/wins-minus-losses.html?hl=marcus-smart#p-marcus-smart",
+     "key": "wl-pass:marcus-smart:joe-dumars",
+     "parts": [
+      [
+       "Marcus Smart",
+       "player/marcus-smart.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "Joe Dumars",
+       "player/joe-dumars.html",
+       0
+      ],
+      [
+       " (Hall of Famer) and 4 others for "
+      ],
+      [
+       "No. 155 in career W − L",
+       "lists/wins-minus-losses.html?hl=marcus-smart#p-marcus-smart",
+       0
+      ],
+      [
+       " (+159, incl. 2026-27 to date)."
+      ]
+     ],
+     "passed": [
+      "tree-rollins",
+      "joe-dumars",
+      "kendrick-perkins",
+      "bill-wennington",
+      "joel-embiid"
+     ],
+     "pid": "203935",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "wl-pass"
+    },
+    {
+     "href": "seasons/2026-27.html#t-SAC",
+     "key": "start:worst:SAC:17",
+     "parts": [
+      [
+       "The Sacramento Kings",
+       "seasons/2026-27.html#t-SAC",
+       1
+      ],
+      [
+       " are 2–15, the franchise's worst start through 17 games in 79 seasons (2026-27 to date)."
+      ]
+     ],
+     "pid": null,
+     "scope": "2026-27 to date",
+     "team": [
+      "SAC",
+      2027
+     ],
+     "type": "start"
+    },
+    {
+     "href": "seasons/2026-27.html#t-MIL",
+     "key": "start:worst:MIL:18",
+     "parts": [
+      [
+       "The Milwaukee Bucks",
+       "seasons/2026-27.html#t-MIL",
+       1
+      ],
+      [
+       " are 2–16, the franchise's worst start through 18 games in 59 seasons (2026-27 to date)."
+      ]
+     ],
+     "pid": null,
+     "scope": "2026-27 to date",
+     "team": [
+      "MIL",
+      2027
+     ],
+     "type": "start"
+    },
+    {
+     "href": "seasons/2026-27.html#t-UTA",
+     "key": "start:worst:UTA:19",
+     "parts": [
+      [
+       "The Utah Jazz",
+       "seasons/2026-27.html#t-UTA",
+       1
+      ],
+      [
+       " are 3–16, the franchise's worst start through 19 games since "
+      ],
+      [
+       "1979-80",
+       "seasons/1979-80.html#t-UTA",
+       0
+      ],
+      [
+       " (2–17)."
+      ]
+     ],
+     "pid": null,
+     "scope": "2026-27 to date",
+     "team": [
+      "UTA",
+      2027
+     ],
+     "type": "start"
+    },
+    {
+     "href": "lists/winning-without-him.html?mp=10&mm=8&hl=cody-williams#p-cody-williams",
+     "key": "ww:cody-williams",
+     "parts": [
+      [
+       "The Minnesota Timberwolves are "
+      ],
+      [
+       "3–5 without ",
+       "lists/winning-without-him.html?mp=10&mm=8&hl=cody-williams#p-cody-williams",
+       0
+      ],
+      [
+       "Cody Williams",
+       "player/cody-williams.html",
+       1
+      ],
+      [
+       " and 10–0 with him (2026-27 to date, 10 played, 8 missed)."
+      ]
+     ],
+     "pid": "1642262",
+     "scope": "2026-27 to date",
+     "team": null,
+     "type": "ww"
+    },
+    {
+     "href": "lists/winning-without-him.html?mp=10&mm=8&hl=jae-sean-tate#p-jae-sean-tate",
+     "key": "ww:jae-sean-tate",
+     "parts": [
+      [
+       "The Houston Rockets are "
+      ],
+      [
+       "4–4 without ",
+       "lists/winning-without-him.html?mp=10&mm=8&hl=jae-sean-tate#p-jae-sean-tate",
+       0
+      ],
+      [
+       "Jae'Sean Tate",
+       "player/jae-sean-tate.html",
+       1
+      ],
+      [
+       " and 9–1 with him (2026-27 to date, 10 played, 8 missed)."
+      ]
+     ],
+     "pid": "1630256",
+     "scope": "2026-27 to date",
+     "team": null,
+     "type": "ww"
+    },
+    {
+     "href": "player/derrick-white.html?vs=WAS#vs-WAS",
+     "key": "tonight:derrick-white:WAS",
+     "parts": [
+      [
+       "Tonight vs the Washington Wizards: "
+      ],
+      [
+       "Derrick White",
+       "player/derrick-white.html",
+       1
+      ],
+      [
+       "'s teams are "
+      ],
+      [
+       "17–1 (94.4%)",
+       "player/derrick-white.html?vs=WAS#vs-WAS",
+       0
+      ],
+      [
+       " in his 18 regular-season games against them (incl. 2026-27 to date)."
+      ]
+     ],
+     "pid": "1628401",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "tonight"
+    }
+   ],
+   "kind": "night",
+   "players": [
+    "kevin-durant",
+    "steven-adams",
+    "rudy-gobert",
+    "marcus-smart",
+    "cody-williams",
+    "jae-sean-tate",
+    "derrick-white"
+   ],
+   "quiet": 0,
+   "rule": "night",
+   "stale": 0
+  },
+  {
+   "body": [
     "Aaron Wiggins reached +100 wins minus losses: +100, No. 321 on the board (incl. 2026-27 to date).",
     "Al Horford passed Russell Westbrook (9-time All-Star) for No. 35 in career wins (739, incl. 2026-27 to date).",
     "Georges Niang passed James Jones in career win % in his games: 65.1%, No. 41 among players with 500+ games (incl. 2026-27 to date).",
