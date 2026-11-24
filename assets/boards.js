@@ -40,9 +40,10 @@
     if (f.st === "retired" && active) return null;
     if (f.as === "ever" && !allstar.length) return null;
     if (f.as === "season" && !(lo === hi && allstar.indexOf(lo) >= 0)) return null;
-    var w = 0, l = 0, ow = 0, ol = 0, by = {}, order = [];
+    var w = 0, l = 0, ow = 0, ol = 0, pw = 0, pl = 0, by = {}, order = [];
     inc.forEach(function (s) {
       w += s[3]; l += s[4]; ow += s[5]; ol += s[6];
+      if (s.length > 14) { pw += s[13]; pl += s[14]; }     // playoffs (completed seasons)
       if (!by[s[0]]) { by[s[0]] = []; order.push(s[0]); }
       by[s[0]].push(s);
     });
@@ -81,7 +82,10 @@
     return { pid: row[0], slug: row[1], name: row[2], hs: row[6] || "", w: w, l: l, ow: ow, ol: ol, gp: w + l, gm: ow + ol, wl: w - l,
       pct: (w + l) ? w / (w + l) : null, seasons: f.noas ? n + liveN : n, winning: winning, wshare: n ? winning / n : null, trips: trips,
       tshare: n ? trips / n : null, titles: titles, years: years, deep: n ? deep : 0, deepn: deepn, avg: n ? rk / n : null, adj: n ? adj / n : null,
-      gap: ((w + l) && (ow + ol)) ? (w / (w + l)) - (ow / (ow + ol)) : null };
+      gap: ((w + l) && (ow + ol)) ? (w / (w + l)) - (ow / (ow + ol)) : null,
+      pw: (pw + pl) ? pw : null, pl: pl, pgp: pw + pl, pwl: (pw + pl) ? pw - pl : null, ppct: (pw + pl) ? pw / (pw + pl) : null,
+      cw: w + pw, cl: l + pl, cgp: w + l + pw + pl, cwl: (w + pw) - (l + pl),
+      cpct: (w + l + pw + pl) ? (w + pw) / (w + l + pw + pl) : null };
   }
 
   function r9(v) { return Math.round(v * 1e9) / 1e9; }
@@ -93,6 +97,11 @@
     if (sort === "avg" || sort === "adj") return [r9(v), [m.name]];
     if (sort === "w") return [-v, [m.l, m.name]];
     if (sort === "wl") return [-v, [-m.w, m.name]];
+    if (sort === "pw") return [-v, [m.pl, m.name]];
+    if (sort === "pwl") return [-v, [-m.pw, m.name]];
+    if (sort === "cw") return [-v, [m.cl, m.name]];
+    if (sort === "cwl") return [-v, [-m.cw, m.name]];
+    if (sort === "ppct" || sort === "cpct") return [-r9(v), [-(sort === "ppct" ? m.pgp : m.cgp), m.name]];
     if (sort === "pct" || sort === "wshare" || sort === "tshare" || sort === "gap") {
       var sec = { pct: -m.gp, wshare: -m.seasons, tshare: -m.seasons, gap: -m.gp }[sort];
       return [-r9(v), [sec, m.name]];
@@ -117,10 +126,10 @@
     Object.keys(base).forEach(function (k) { mins[k] = base[k]; });
     ["cg", "ms", "mp", "mm"].forEach(function (k) { if (k in f) mins[k] = f[k]; });
     if (!("cg" in mins)) mins.cg = 1;
-    var out = [];
+    var out = [], gk = DEF.games || "gp";          // what the games minimum counts
     data.p.forEach(function (row) {
       var m = metrics(row, data.t, f);
-      if (!m || m.gp < mins.cg) return;
+      if (!m || m[gk] < mins.cg) return;
       if (m.seasons < (mins.ms || 0)) return;
       if (m.gp < (mins.mp || 0) || m.gm < (mins.mm || 0)) return;
       if (m[sort] === null) return;
@@ -177,6 +186,16 @@
       case "gap": return [m.gap, pp(m.gap)];
       case "with": return [m.pct, wl(m.w, m.l) + ", " + pct1(m.pct)];
       case "without": return [m.gm ? m.ow / m.gm : null, wl(m.ow, m.ol) + ", " + pct1(m.gm ? m.ow / m.gm : null)];
+      case "pw": return [m.pw, m.pw === null ? "N/A" : m.pw.toLocaleString("en-US")];
+      case "prec": return [m.pw, wl(m.pw || 0, m.pl)];
+      case "pwl": return [m.pwl, m.pwl === null ? "N/A" : signed(m.pwl)];
+      case "ppct": return [m.ppct, pct1(m.ppct)];
+      case "pgp": return [m.pgp, m.pgp.toLocaleString("en-US")];
+      case "cw": return [m.cw, m.cw.toLocaleString("en-US")];
+      case "crec": return [m.cw, wl(m.cw, m.cl)];
+      case "cwl": return [m.cwl, signed(m.cwl)];
+      case "cpct": return [m.cpct, pct1(m.cpct)];
+      case "cgp": return [m.cgp, m.cgp.toLocaleString("en-US")];
     }
     return [null, ""];
   }

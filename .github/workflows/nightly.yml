@@ -1,8 +1,10 @@
 # (c) 2026 HoopsMatic. All rights reserved.
 # Team Success nightly refresh, hm-ts-7f3a91c2-nightly.
-# Four slots a day (11:37, 14:37, 18:37, 23:37 UTC). Ramiro's Parquet files are refreshed around
-# 13:00-13:30 UTC (Nov 18 2026: 13:19 UTC), after the old single 11:15 slot, and GitHub runs
-# scheduled jobs late or not at all at busy times, so one slot was not enough. The first run of a
+# Every hour at :17 from 12:17 to 23:17 UTC, plus 02:17 and 05:17. Ramiro's Parquet files are refreshed
+# around 13:00-13:30 UTC (Nov 24 2026: 13:12 UTC), and GitHub runs scheduled jobs hours late or not
+# at all at busy times (Nov 24: four slots fired at 22:52, 01:49, 04:03 and 07:03, all before that
+# day's update), so a few fixed slots were not enough. A run with nothing new prints UNCHANGED in every
+# step, skips the build and commits nothing (about 1 minute; the repo is public, so minutes are free). The first run of a
 # UTC date writes that date's story and fun facts (a quiet-day item if nothing new); a later run
 # with newer games rewrites them; a run with nothing new commits nothing. Pulls ONLY the current season
 # (Ramiro's 2026-27 Parquet files; nba-boxscores' season folder once it exists), re-reads honors only
@@ -14,10 +16,7 @@
 name: Nightly current season
 on:
   schedule:
-    - cron: "37 11 * * *"
-    - cron: "37 14 * * *"
-    - cron: "37 18 * * *"
-    - cron: "37 23 * * *"
+    - cron: "17 12-23,2,5 * * *"
   workflow_dispatch: {}
 permissions:
   contents: write

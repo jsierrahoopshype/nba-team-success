@@ -16,7 +16,8 @@ FOOTER = ('<footer class="hm-site-footer">\n'
           '</footer>')
 OG = "https://hoopsmatic.com/og/team-success/"
 OG_LISTS = {"average-finish", "career-wins", "deepest-run", "gap-career", "no-allstar-teammate", "playoff-trips",
-            "titles", "winning-seasons", "wins-minus-losses", "teammate-swings"}
+            "titles", "winning-seasons", "wins-minus-losses", "teammate-swings",
+            "playoff-wins", "combined-wins"}
 WORKER_MARKERS = ("<body", "</head", "</style", "</script", "<!--")
 
 
@@ -297,7 +298,9 @@ def test_card_json_files():
 
 def test_low_help_all_stars_rank_by_adjusted_finish():
     t = read("lists/low-help-all-stars.html")
-    tbl = t[t.index('id="cap-low"'):t.index('id="cap-low2"')]
+    assert 'id="cap-low2"' not in t and "Entering" not in t        # one table: same-season help only
+    tbl = t[t.index('id="cap-low"'):]
+    tbl = tbl[:tbl.index("</section>")]
     assert 'aria-sort="ascending" data-first="ascending"><button type="button">Average finish (of 30)</button>' in tbl
     assert "<button type=\"button\">Raw average</button>" in tbl
     adj = [float(x) for x in re.findall(r'data-l="Average finish \(of 30\)" class="mono" data-value="([\d.]+)"', tbl)]

@@ -86,12 +86,12 @@ def _num(x):
 
 
 def test_help_totals_equal_their_breakdowns():
-    """Jordan Poole 2022-23: 17 help coming in = Curry 14.5 + Green 1.5 + Wiggins 1 (the page used
-    to list Wiggins only). Every breakdown on a sample of pages adds up to its total."""
+    """Every same-season breakdown on a sample of pages adds up to its total (help counts only honors
+    won in that season; there is no "help coming in")."""
     t = read("player/jordan-poole.html")
     i = t.index('2022-23</span><span class="hs-t">')
     seg = re.sub(r"<[^>]+>", " ", t[i:t.index("</li>", i)])
-    assert re.search(r"Help coming in[^:]*:\s+17\s+=\s+14\.5\s+Stephen Curry\s+\+\s+1\.5\s+Draymond Green\s+\+\s+1\s+Andrew Wiggins", seg)
+    assert "coming in" not in seg.lower() and re.search(r"Help this season:\s+[\d.]+\+?\s+=", seg)
     files = sorted(os.listdir(os.path.join(ROOT, "player")))[::25]
     checked = 0
     for f in files + ["jordan-poole.html", "michael-jordan.html"]:

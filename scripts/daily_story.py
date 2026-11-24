@@ -38,6 +38,7 @@ MAX_ITEMS, MIN_ITEMS, ARCHIVE_N = 10, 4, 3
 WINS_STEP, WINS_FROM = 100, 300            # career wins milestones: 300, 400, ... 1,000, ...
 WL_STEP = 100                              # career W - L milestones: +100, +200, ... (and -100, ...)
 PCT_MIN_GAMES, PCT_TOP = 500, 25           # career win %: players with 500+ games, top 25
+NAMES_MAX, NAMES_SHOWN = 8, 7              # 8+ players passed: name the 7 most notable, then "and N more players"
 NOTABLE_RANK, NOTABLE_AS = 100, 3          # a passed player is notable: top 100 on that board, a Hall of Famer or a 3+ time All-Star
 PASS_MAX_RANK, PASS_CAP = 250, 4           # the passer is in that board's top 250; at most 4 pass items a night
 TYPE_CAP = {"start": 3, "tonight": 2}      # at most 3 team starts and 2 tonight items, so tonight always has room
@@ -75,6 +76,30 @@ def note_of(p):
         return f" (Hall of Famer as a {role})"
     n_as = len(p.get("as", []))
     return f" ({n_as}-time All-Star)" if n_as >= NOTABLE_AS else ""
+
+
+def join_names(entries, more_href):
+    """[(name link part, label)] in order -> parts: "A (Hall of Famer)", "A and B", "A, B and C";
+    8 or more: the first 7, then "and N more players" linking to more_href. Never "and N others"."""
+    shown = entries if len(entries) < NAMES_MAX else entries[:NAMES_SHOWN]
+    parts = []
+    for i, (link, note) in enumerate(shown):
+        if i:
+            parts.append(T(" and " if i == len(shown) - 1 and len(shown) == len(entries) else ", "))
+        parts.append(link)
+        if note:
+            parts.append(T(note))
+    if len(shown) < len(entries):
+        parts += [T(" and "), L(f"{len(entries) - len(shown)} more players", more_href)]
+    return parts
+
+
+def tonight_parts(player, opp_name, rec_link, rate):
+    """ "Isaiah Hartenstein faces the Indiana Pacers tonight. His teams are 13–3 against them in the
+    regular season, an 81.2% win rate." (record incl. the season to date, like his opponent row)"""
+    return [player, T(f" faces the {opp_name} tonight. His teams are "), rec_link,
+            T(f" against them in the regular season, {'an' if f'{100 * rate:.1f}'.startswith(('8', '11', '18')) else 'a'} "
+              f"{pct1(rate)} win rate.")]
 
 
 def signed(n):
@@ -222,6 +247,13 @@ def build(date):
     def who_note(q):
         return note_of(d.players.get(q, {}))
 
+    def passed_names(passed, rank_of, more_href):
+        """Every player passed, linked, labels kept, most notable first: "A (Hall of Famer), B and C".
+        8 or more: the 7 most notable, then "and N more players" linking to the board at that spot."""
+        qs = sorted([q for q, a in passed if q in ids],
+                    key=lambda q: notable_key(d.players.get(q, {}), rank_of(q)))
+        return join_names([(plink(q, False), who_note(q)) for q in qs], more_href)
+
     items = []
 
     def add(pri, order, key, parts, href, pid=None, team=None, scope=None, passed=None):
@@ -258,7 +290,7 @@ def build(date):
             if m is not None:
                 add(1, r, f"{'wins' if board == 'career-wins' else 'wl'}-mark:{slug(p)}:{m}",
                     [plink(p), T(f" reached {fmt(m)} {B.BOARDS[board]['h1'].lower() if board != 'career-wins' else 'career wins in his games'}: "),
-                     L(f"{fmt(v)}, {B.rank_label(r, tied)}", href(p)), T(f" on the board ({B.scope_label(board, flt)}).")],
+                     L(f"{fmt(v)}, {B.rank_label(r, tied)}", href(p)), T(" on the board.")],
                     href(p), pid=p, scope=B.scope_label(board, flt))
                 done.add(p)
         for p, (r, tied, v), passed in B.passes(data, board, delta, flt):
@@ -268,10 +300,10 @@ def build(date):
             if not nq:
                 continue
             q, (rq, tq, vq) = most_notable(nq)
-            more = f" and {len(passed) - 1} other{'s' if len(passed) > 2 else ''}" if len(passed) > 1 else ""
+            ranks = {x: a[0] for x, a in passed}
             add(2, r, f"{'wins' if board == 'career-wins' else 'wl'}-pass:{slug(p)}:{slug(q)}",
-                [plink(p), T(" passed "), plink(q, False), T(f"{who_note(q)}{more} for "),
-                 L(f"{B.rank_label(r, tied)} in {what}", href(p)), T(f" ({fmt(v)}, {B.scope_label(board, flt)}).")],
+                [plink(p), T(" passed ")] + passed_names(passed, ranks.get, href(p)) + [T(" for "),
+                 L(f"{B.rank_label(r, tied)} in {what}", href(p)), T(f" ({fmt(v)}).")],
                 href(p), pid=p, scope=B.scope_label(board, flt), passed=[slug(x) for x, _ in passed if x in ids])
 
     def round_up(step, start=None):
@@ -302,19 +334,19 @@ def build(date):
             add(1, r, f"pct-top:{slug(p)}",
                 [plink(p), T(f" moved into the top {PCT_TOP} in career win % in his games: "),
                  L(f"{pct1(v)}, {B.rank_label(r, tied)}", href),
-                 T(f" among players with {PCT_MIN_GAMES}+ games ({B.SCOPE_LIVE}).")], href, pid=p, scope=B.SCOPE_LIVE)
+                 T(f" among players with {PCT_MIN_GAMES}+ games.")], href, pid=p, scope=B.SCOPE_LIVE)
     for p, (r, tied, v), passed in B.passes(data, "career-wins", delta, pflt):
         if any(x[2]["key"] == f"pct-top:{slug(p)}" for x in items) or r > NOTABLE_RANK:
             continue
         nq = [(q, a) for q, a in passed if q in ids and notable(q, "pct", a[0])]
         if nq:
             q = most_notable(nq)[0]
-            more = f" and {len(passed) - 1} other{'s' if len(passed) > 2 else ''}" if len(passed) > 1 else ""
             href = f"lists/career-wins.html?sort=pct&cg={PCT_MIN_GAMES}&hl={slug(p)}#p-{slug(p)}"
+            ranks = {x: a[0] for x, a in passed}
             add(2, r, f"pct-pass:{slug(p)}:{slug(q)}",
-                [plink(p), T(" passed "), plink(q, False), T(f"{who_note(q)}{more} in career win % in his games: "),
+                [plink(p), T(" passed ")] + passed_names(passed, ranks.get, href) + [T(" in career win % in his games: "),
                  L(f"{pct1(v)}, {B.rank_label(r, tied)}", href),
-                 T(f" among players with {PCT_MIN_GAMES}+ games ({B.SCOPE_LIVE}).")], href, pid=p, scope=B.SCOPE_LIVE,
+                 T(f" among players with {PCT_MIN_GAMES}+ games.")], href, pid=p, scope=B.SCOPE_LIVE,
                 passed=[slug(x) for x, _ in passed if x in ids])
 
     # ---- 3. teams that played last night: starts and streaks ---------------------------------
@@ -444,8 +476,7 @@ def build(date):
                 continue
             href = f"player/{slug(p)}.html?vs={opp}#vs-{opp}"
             add(5, -abs(w / (w + l) - 0.5), f"tonight:{slug(p)}:{opp}",
-                [T(f"Tonight vs the {tname(opp)}: "), plink(p), T("'s teams are "),
-                 L(f"{wl(w, l)} ({pct1(w / (w + l))})", href), T(f" in his {w + l} regular-season games against them ({B.SCOPE_LIVE}).")],
+                tonight_parts(plink(p), tname(opp), L(wl(w, l), href), w / (w + l)),
                 href, pid=p, scope=B.SCOPE_LIVE)
 
     # ---- pick ---------------------------------------------------------------------------------

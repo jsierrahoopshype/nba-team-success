@@ -82,7 +82,11 @@ def test_help_rows_markup_order():
     t = read("player/jordan-poole.html")
     i = t.index('2022-23</span><span class="hs-t">')
     li = t[i:t.index("</li>", i)]
-    assert li.index('class="hbar"') < li.index('class="chipsrow"') < li.index("Help this season:") < li.index("<details>")
+    assert li.index('class="hbar"') < li.index('class="chipsrow"') < li.index("Help this season:")
+    # the other teammates sit plainly under the breakdown (no toggle, no "help coming in")
+    assert "<details>" not in li and "coming in" not in li.lower()
+    if "Other teammates" in li:
+        assert li.index("Help this season:") < li.index("Other teammates")
 
 
 def test_compare_canonical_without_probing():
