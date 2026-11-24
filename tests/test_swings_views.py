@@ -49,16 +49,22 @@ def test_three_views_and_counts(views):
     assert "Both made an All-Star team" in read("how-we-count.html")
 
 
-def test_compact_rows():
+def test_two_line_rows():
+    """Line 1: rank, face, "Player without Teammate", the gap; line 2: team, both records, a small
+    Compare link. Body font (no monospace class in the rows), no big Compare button."""
     t = read("lists/teammate-swings.html")
     panel = t[t.index('<div class="panel p-as">'):]
     li = re.search(r"<li id=.*?</li>", panel, re.S).group(0)
-    assert 'class="more-btn"' not in t                        # the big Compare buttons are gone
-    for cls in ("rk", "pr", "tm", "rc", "gp", "cmp"):
+    assert 'class="more-btn"' not in t and 'class="mono"' not in li
+    for cls in ("rk", "pr", "wb", "gp", "l2", "tm", "rc", "cmp"):
         assert f'class="{cls}"' in li, cls
-    assert re.search(r'<span class="gp">\d+\.\d lower</span>', li)
-    assert re.search(r"Together <span class=\"mono\">\d+–\d+</span> \d+\.\d% · Without <span class=\"mono\">\d+–\d+</span> \d+\.\d%", li)
+    assert re.search(r'<span class="gp"><b>\d+\.\d</b> <small>points lower</small></span>', li)
+    assert re.search(r"Together \d+–\d+ \(\d+\.\d%\) · Without [^<]+ \d+–\d+ \(\d+\.\d%\)", li)
+    assert '<span class="vh">Together </span>' in li                 # the phone version reads the same to screen readers
     assert li.count('href="../player/') == 2 and "nba-career-map/team/" in li
+    css = read("assets/ts.css")
+    block = css[css.index("/* Biggest teammate swings: two lines per pair"):]
+    assert "var(--mono)" not in block
 
 
 def test_card_data(views):
