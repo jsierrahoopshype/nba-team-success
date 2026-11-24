@@ -535,10 +535,40 @@ details > summary{min-height:44px;padding:.7rem 0;box-sizing:border-box;cursor:p
 .asmates .mrec.wide{grid-template-columns:minmax(0,1fr);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.6rem .75rem}
 @media(min-width:700px){.asmates .mrec.wide{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .asmates .det{font-size:.78rem;color:var(--text-secondary)}
-.swings .wo{font-weight:400;color:var(--text-secondary)}
-.swings .det{overflow-wrap:anywhere}
-.swings .more-btn{margin-top:.35rem}
-.swings .val small{display:block;font-size:.6rem;color:var(--text-secondary)}
-#tsw-as:checked~.seg .l-as,#tsw-all:checked~.seg .l-all{background:var(--text);color:#fff;border-color:var(--text);font-weight:600}
-#tsw-as:focus-visible~.seg .l-as,#tsw-all:focus-visible~.seg .l-all{outline:2px solid var(--text);outline-offset:2px}
-#tsw-as:checked~.panels .p-as,#tsw-all:checked~.panels .p-all{display:block}
+/* Biggest teammate swings: one line per pair on wide screens, two short lines on phones; three views */
+#tsw-as:checked~.seg .l-as,#tsw-both:checked~.seg .l-both,#tsw-all:checked~.seg .l-all{background:var(--text);color:#fff;border-color:var(--text);font-weight:600}
+#tsw-as:focus-visible~.seg .l-as,#tsw-both:focus-visible~.seg .l-both,#tsw-all:focus-visible~.seg .l-all{outline:2px solid var(--text);outline-offset:2px}
+#tsw-as:checked~.panels .p-as,#tsw-both:checked~.panels .p-both,#tsw-all:checked~.panels .p-all{display:block}
+.swl{list-style:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;font-size:.76rem}
+.swl>li{display:grid;grid-template-columns:1.5rem 22px minmax(0,1fr);column-gap:.45rem;row-gap:.15rem;align-items:center;padding:.4rem .7rem;border-bottom:1px solid var(--border);line-height:1.3}
+.swl>li:last-child{border-bottom:0}
+.swl .hs{width:22px;height:22px;font-size:8px}
+.swl .rk{text-align:right;font-family:var(--mono);font-size:.64rem;color:var(--text-secondary)}
+.swl .pr{min-width:0;font-weight:700}
+.swl .wo{font-weight:400;color:var(--text-secondary)}
+.swl .mt{grid-column:1/-1;display:flex;align-items:center;gap:.45rem;min-width:0;font-family:var(--mono);font-size:.58rem;color:var(--text-secondary)}
+.swl .tm{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swl .tm .lg{width:13px;height:13px}
+.swl .yrs,.swl .rc .long{display:none}
+.swl .rc{white-space:nowrap}
+.swl .gp{margin-left:auto;white-space:nowrap;font-weight:700;font-size:.66rem;color:var(--red);font-variant-numeric:tabular-nums}
+.swl .cmp{display:inline-flex;align-items:center;min-height:44px;margin:-14px 0;padding:0 .15rem;white-space:nowrap;text-decoration:underline;text-decoration-color:var(--border);color:var(--text)}
+@media(min-width:700px){.swl .yrs{display:inline}}
+@media(min-width:900px){
+  .swl>li{grid-template-columns:1.5rem 22px minmax(11rem,1.1fr) minmax(0,1.3fr) auto 5rem auto;column-gap:.6rem;padding:.12rem .7rem}
+  .swl .mt{display:contents}
+  .swl .tm{white-space:normal;overflow:visible}
+  .swl .tm,.swl .rc,.swl .gp,.swl .cmp{font-family:var(--mono);font-size:.58rem}
+  .swl .gp{font-size:.66rem;text-align:right}
+  .swl .rc .long{display:inline}.swl .rc .short{display:none}
+  .swl .cmp{min-height:0;margin:-.12rem 0;padding:.3rem .2rem}
+}
+@media(min-width:900px) and (pointer:coarse){.swl .cmp{min-height:44px;margin:-.8rem 0}}
+/* one set of columns for every row (subgrid, Baseline 2023): names at their own width, columns aligned */
+@supports (grid-template-columns:subgrid){@media(min-width:900px){
+  .swl{display:grid;grid-template-columns:1.5rem 22px fit-content(17rem) minmax(0,1fr) max-content max-content max-content;column-gap:.6rem}
+  .swl>li{grid-column:1/-1;grid-template-columns:subgrid}
+  .swl .pr{overflow-wrap:anywhere}
+}}
+/* "full board" / "full list" in a box header: 44 px tap area through padding, same look and layout */
+.boxhead a{display:inline-block;padding:.75rem 0;margin:-.75rem 0}

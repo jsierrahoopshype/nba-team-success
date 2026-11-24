@@ -27,7 +27,7 @@ const PAGES = [
   'compare/index.html', 'compare/?a=lebron-james&b=michael-jordan', 'compare/?a=cooper-flagg&b=luka-doncic',
   'player/cooper-flagg.html',
   // with and without his teammates, As teammates, Biggest teammate swings
-  'player/draymond-green.html', 'compare/?a=draymond-green&b=stephen-curry', 'lists/teammate-swings.html',
+  'player/draymond-green.html', 'compare/?a=draymond-green&b=stephen-curry', 'lists/teammate-swings.html', 'lists/teammate-swings.html?f=both',
 ];
 const TEXT_CHECK = ['player/michael-jordan.html', 'player/lebron-james.html', 'player/chris-paul.html',
   'player/tiny-archibald.html', 'compare/karl-malone--michael-jordan.html', 'lists/sixty-win-pace.html',

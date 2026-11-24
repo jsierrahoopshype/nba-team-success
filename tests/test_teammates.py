@@ -138,7 +138,7 @@ def test_swings_page_rows_qualify(pairs, ids):
     want_as = sum(1 for (a, b), r in pairs.items() if a in ids and b in ids and TM.qualifies(r) and players.get(b, {}).get("as"))
     assert f"{want_as:,} pairs qualify." in t and f"{want_all:,} pairs qualify." in t
     for tag, n in (("as", want_as), ("all", want_all)):
-        got = re.findall(rf'<li id="{tag}-([a-z0-9-]+?)--([a-z0-9-]+)"><span class="rk mono">(\d+)</span>', t)
+        got = re.findall(rf'<li id="{tag}-([a-z0-9-]+?)--([a-z0-9-]+)"><span class="rk">(\d+)</span>', t)
         assert len(got) == n
         prev_gap, prev_rank = None, 0
         for i, (sa, sb, rk) in enumerate(got):
