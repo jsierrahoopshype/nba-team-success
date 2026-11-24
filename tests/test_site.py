@@ -16,7 +16,7 @@ FOOTER = ('<footer class="hm-site-footer">\n'
           '</footer>')
 OG = "https://hoopsmatic.com/og/team-success/"
 OG_LISTS = {"average-finish", "career-wins", "deepest-run", "gap-career", "no-allstar-teammate", "playoff-trips",
-            "titles", "winning-seasons", "wins-minus-losses"}
+            "titles", "winning-seasons", "wins-minus-losses", "teammate-swings"}
 WORKER_MARKERS = ("<body", "</head", "</style", "</script", "<!--")
 
 
