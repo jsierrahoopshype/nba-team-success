@@ -1134,23 +1134,30 @@ def swing_teams_html(s, runs):
             groups[-1][3].append(yrs)
         else:
             groups.append([f, name(f, b), b, [yrs]])
-    return "; ".join(f'{s.tlink(f, b)}<span class="yrs"> {", ".join(y)}</span>' for f, nm, b, y in groups)
+    # phones show the first team and "+N" for the others (ts.css .swl .tg.x / .more)
+    parts = [f'<span class="tg{" x" if i else ""}">{"; " if i else ""}{s.tlink(f, b)}<span class="yrs"> {", ".join(y)}</span></span>'
+             for i, (f, nm, b, y) in enumerate(groups)]
+    more = f'<span class="more" aria-hidden="true"> +{len(groups) - 1}</span>' if len(groups) > 1 else ""
+    return "".join(parts) + more
 
 
 def swings_list_html(s, rows, up, tag):
-    """One compact line per pair on wide screens, two short lines on a phone (ts.css .swl)."""
+    """Two lines per pair (ts.css .swl): rank, face, "Player without Teammate" and the gap; then the
+    team and seasons, both records and a small Compare link."""
     if not rows:
         return '<p class="empty">Nobody qualifies.</p>'
     out = []
     for rank, g, (a, b, r, _, _) in swing_ranks(rows):
+        snb = short_name(s.ids[b]["name"], s.ids[a]["name"])
         out.append(f'<li id="{tag}-{e(s.ids[a]["slug"])}--{e(s.ids[b]["slug"])}"><span class="rk">{rank}</span>'
-                   f'{s.pic(a, up, "sm")}<span class="pr">{s.plink(a, up)} <span class="wo">without</span> {s.plink(b, up)}</span>'
-                   f'<span class="mt"><span class="tm">{swing_teams_html(s, mate_runs(s, r["seasons"]))}</span>'
-                   f'<span class="rc"><span class="long">Together <span class="mono">{wl(*r["t"])}</span> {pct1(TM.pct(r["t"]))} · '
-                   f'Without <span class="mono">{wl(*r["o"])}</span> {pct1(TM.pct(r["o"]))}</span>'
-                   f'<span class="short" aria-hidden="true">{pct1(TM.pct(r["t"]))} \u2192 {pct1(TM.pct(r["o"]))}</span></span>'
-                   f'<span class="gp">{g:.1f} lower</span>'
-                   f'<a class="cmp" href="{mate_compare_href(s, up, a, b)}">Compare</a></span></li>')
+                   f'{s.pic(a, up)}<span class="pr">{s.plink(a, up)}</span> <span class="wb"><span class="wo">without</span> {s.plink(b, up)}</span>'
+                   f'<span class="gp"><b>{g:.1f}</b> <small>points lower</small></span>'
+                   f'<span class="l2"><span class="tm">{swing_teams_html(s, mate_runs(s, r["seasons"]))}</span>'
+                   f'<span class="sep"> · </span><span class="rc"><span class="long">Together {wl(*r["t"])} ({pct1(TM.pct(r["t"]))}) · '
+                   f'Without {e(snb)} {wl(*r["o"])} ({pct1(TM.pct(r["o"]))})</span>'
+                   f'<span class="short"><span class="vh">Together </span>{pct1(TM.pct(r["t"]))}'
+                   f'<span aria-hidden="true"> \u2192 </span><span class="vh">, without {e(snb)} </span>{pct1(TM.pct(r["o"]))}</span></span>'
+                   f'<span class="sep"> · </span><a class="cmp" href="{mate_compare_href(s, up, a, b)}">Compare</a></span></li>')
     return '<ol class="swl">' + "".join(out) + "</ol>"
 
 
