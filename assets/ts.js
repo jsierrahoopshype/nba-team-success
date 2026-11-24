@@ -26,11 +26,18 @@
       "&b=" + encodeURIComponent(peer));
     return;
   }
-  if (location.search && !document.querySelector('meta[name="robots"]')) {
-    var m = document.createElement("meta");
-    m.name = "robots";
-    m.content = "noindex, follow";
-    document.head.appendChild(m);
+  if (location.search) {
+    // hoopsmatic.com adds its own robots tag (max-image-preview:large) to every page, so add
+    // noindex to it rather than skipping when one exists; a tag that already says noindex stays.
+    var robots = document.querySelectorAll('meta[name="robots"]'), has = false;
+    for (var ri = 0; ri < robots.length; ri++) if (/noindex/i.test(robots[ri].content)) has = true;
+    if (!has && robots.length) robots[0].content = robots[0].content + ", noindex, follow";
+    else if (!has) {
+      var m = document.createElement("meta");
+      m.name = "robots";
+      m.content = "noindex, follow";
+      document.head.appendChild(m);
+    }
   }
 
   var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });

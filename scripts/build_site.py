@@ -37,7 +37,7 @@ TERMS = "https://hoopsmatic.com/terms"
 # when checked are used; everything else keeps assets/og-team-success.png.
 OG = "https://hoopsmatic.com/og/team-success/"
 OG_LISTS = {"average-finish", "career-wins", "deepest-run", "gap-career", "no-allstar-teammate", "playoff-trips",
-            "titles", "winning-seasons", "wins-minus-losses"}
+            "titles", "winning-seasons", "wins-minus-losses", "teammate-swings"}
 FINGERPRINT = "hm-ts-7f3a91c2"
 TEAM_SLUG = {
     "ATL": "atlanta-hawks", "BOS": "boston-celtics", "BKN": "brooklyn-nets", "CHA": "charlotte-hornets",
@@ -1206,7 +1206,8 @@ def swings_page(s):
 <script src="../assets/swings.js" defer></script>"""
     desc = (f"{SWINGS_TITLE}: how much each NBA player's team win % dropped without one teammate, "
             f"{len(star)} pairs with an All-Star teammate and {len(rows)} in all, led by {lead}. Records since 1946-47.")
-    return rel, page(rel, f"{SWINGS_TITLE}: NBA records with and without a teammate | HoopsMatic", desc, body, up)
+    og = f"{OG}list/{SWINGS_KEY}.png" if SWINGS_KEY in OG_LISTS else None
+    return rel, page(rel, f"{SWINGS_TITLE}: NBA records with and without a teammate | HoopsMatic", desc, body, up, og=og)
 
 
 DUO_MIN, DUO_TOP = 50, 10     # same rule as build_history.py's stored duos (completed seasons)

@@ -90,3 +90,15 @@ def test_homepage_leaderboards_nine_boxes():
     for keep in ("lists/winning-seasons.html", "lists/average-finish.html", "lists/low-help-all-stars.html"):
         assert keep in note
     assert sec.count("<li>") == 45
+
+
+def test_list_share_card_and_filtered_views_noindex():
+    t = read("lists/teammate-swings.html")
+    assert '<meta property="og:image" content="https://hoopsmatic.com/og/team-success/list/teammate-swings.png">' in t
+    assert '<link rel="canonical" href="https://hoopsmatic.com/team-success/lists/teammate-swings.html">' in t
+    assert '<meta property="og:url" content="https://hoopsmatic.com/team-success/lists/teammate-swings.html">' in t
+    assert "github.io" not in t
+    # ts.js: a filtered address gets noindex even when the page already has a robots tag without it
+    # (hoopsmatic.com adds "max-image-preview:large" to every page)
+    js = read("assets/ts.js")
+    assert 'robots[0].content = robots[0].content + ", noindex, follow"' in js and "/noindex/i.test" in js
