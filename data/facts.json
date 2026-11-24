@@ -1,58 +1,66 @@
 {
  "cutoff": "2026-11-22",
- "date": "2026-11-23",
+ "date": "2026-11-24",
  "facts": [
   {
-   "href": "seasons/2026-27.html#t-SAC",
-   "key": "start:worst:SAC:16|The Sacramento Kings/ are 2–14, the franchise's worst record through 16 games in 79 seasons.",
+   "href": "seasons/2026-27.html#t-UTA",
+   "key": "start:worst:UTA:18|The Utah Jazz/ are 3–15, the franchise's worst start through 18 games since the /2013-14 Utah Jazz/ (also 3–15).",
    "parts": [
     [
-     "The Sacramento Kings",
-     "seasons/2026-27.html#t-SAC",
+     "The Utah Jazz",
+     "seasons/2026-27.html#t-UTA",
      1
     ],
     [
-     " are 2–14, the franchise's worst record through 16 games in 79 seasons."
+     " are 3–15, the franchise's worst start through 18 games since the "
+    ],
+    [
+     "2013-14 Utah Jazz",
+     "seasons/2013-14.html#t-UTA",
+     0
+    ],
+    [
+     " (also 3–15)."
     ]
    ],
    "pid": null,
    "team": [
-    "SAC",
+    "UTA",
     2027
    ],
    "type": "start"
   },
   {
-   "href": "seasons/2026-27.html#t-PHI",
-   "key": "start:best:PHI:17|The Philadelphia 76ers/ are 14–3, the franchise's best start through 17 games since the /2000-01 Philadelphia 76ers/ (also 14–3).",
+   "href": "seasons/2026-27.html#t-ATL",
+   "key": "start:best:ATL:17|The Atlanta Hawks/ are 11–6, the franchise's best start through 17 games since the /2014-15 Atlanta Hawks/ (also 11–6).",
    "parts": [
     [
-     "The Philadelphia 76ers",
-     "seasons/2026-27.html#t-PHI",
+     "The Atlanta Hawks",
+     "seasons/2026-27.html#t-ATL",
      1
     ],
     [
-     " are 14–3, the franchise's best start through 17 games since the "
+     " are 11–6, the franchise's best start through 17 games since the "
     ],
     [
-     "2000-01 Philadelphia 76ers",
-     "seasons/2000-01.html#t-PHI",
+     "2014-15 Atlanta Hawks",
+     "seasons/2014-15.html#t-ATL",
      0
     ],
     [
-     " (also 14–3)."
+     " (also 11–6)."
     ]
    ],
    "pid": null,
    "team": [
-    "PHI",
+    "ATL",
     2027
    ],
    "type": "start"
   },
   {
    "href": "player/donovan-mitchell.html?vs=CHI#vs-CHI",
-   "key": "matchup:donovan-mitchell:CHI|Tonight vs the Chicago Bulls: /Donovan Mitchell/'s teams are /17–4 (81.0%)/ in his 21 regular-season games against them.",
+   "key": "matchup:donovan-mitchell:CHI|Tonight vs the Chicago Bulls: /Donovan Mitchell/'s teams are /18–4 (81.8%)/ in his 22 regular-season games against them (incl. 2026-27 to date).",
    "parts": [
     [
      "Tonight vs the Chicago Bulls: "
@@ -66,12 +74,12 @@
      "'s teams are "
     ],
     [
-     "17–4 (81.0%)",
+     "18–4 (81.8%)",
      "player/donovan-mitchell.html?vs=CHI#vs-CHI",
      0
     ],
     [
-     " in his 21 regular-season games against them."
+     " in his 22 regular-season games against them (incl. 2026-27 to date)."
     ]
    ],
    "pid": "1628378",
@@ -80,7 +88,7 @@
   },
   {
    "href": "player/jarrett-allen.html?vs=CHI#vs-CHI",
-   "key": "matchup:jarrett-allen:CHI|Tonight vs the Chicago Bulls: /Jarrett Allen/'s teams are /24–6 (80.0%)/ in his 30 regular-season games against them.",
+   "key": "matchup:jarrett-allen:CHI|Tonight vs the Chicago Bulls: /Jarrett Allen/'s teams are /25–6 (80.6%)/ in his 31 regular-season games against them (incl. 2026-27 to date).",
    "parts": [
     [
      "Tonight vs the Chicago Bulls: "
@@ -94,12 +102,12 @@
      "'s teams are "
     ],
     [
-     "24–6 (80.0%)",
+     "25–6 (80.6%)",
      "player/jarrett-allen.html?vs=CHI#vs-CHI",
      0
     ],
     [
-     " in his 30 regular-season games against them."
+     " in his 31 regular-season games against them (incl. 2026-27 to date)."
     ]
    ],
    "pid": "1628386",
@@ -107,12 +115,37 @@
    "type": "matchup"
   },
   {
-   "href": "player/lamelo-ball.html#cap-seasons",
-   "key": "streak:drought:lamelo-ball|LaMelo Ball/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
+   "href": "player/nikola-jokic.html#cap-seasons",
+   "key": "streak:winning:nikola-jokic|Nikola Jokic/'s teams have had a winning record in each of his last /9 seasons/ (2017-18 to 2025-26), No. 4 among active players.",
    "parts": [
     [
-     "LaMelo Ball",
-     "player/lamelo-ball.html",
+     "Nikola Jokic",
+     "player/nikola-jokic.html",
+     1
+    ],
+    [
+     "'s teams have had a winning record in each of his last "
+    ],
+    [
+     "9 seasons",
+     "player/nikola-jokic.html#cap-seasons",
+     0
+    ],
+    [
+     " (2017-18 to 2025-26), No. 4 among active players."
+    ]
+   ],
+   "pid": "203999",
+   "team": null,
+   "type": "streak"
+  },
+  {
+   "href": "player/nick-richards.html#cap-seasons",
+   "key": "streak:drought:nick-richards|Nick Richards/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
+   "parts": [
+    [
+     "Nick Richards",
+     "player/nick-richards.html",
      1
     ],
     [
@@ -120,72 +153,82 @@
     ],
     [
      "6 seasons",
-     "player/lamelo-ball.html#cap-seasons",
+     "player/nick-richards.html#cap-seasons",
      0
     ],
     [
      " (2020-21 to 2025-26), No. 4 among active players."
     ]
    ],
-   "pid": "1630163",
+   "pid": "1630208",
    "team": null,
    "type": "streak"
   },
   {
-   "href": "player/shai-gilgeous-alexander.html#mates",
-   "key": "mates:together:shai-gilgeous-alexander:cason-wallace|Shai Gilgeous-Alexander/ and /Cason Wallace/ have played 211 regular-season games together: /167–44 (79.1%)/, the best record together among current teammates with 200+ games (through Nov. 22).",
+   "href": "lists/teammate-swings.html#as-draymond-green--stephen-curry",
+   "key": "mates:drop:draymond-green:stephen-curry|Draymond Green/'s teams are 564–240 (70.1%) with /Stephen Curry/ and 50–86 (36.8%) without him, 33.4 points lower: /the biggest drop for an active player/ (regular season, through Nov. 22).",
    "parts": [
     [
-     "Shai Gilgeous-Alexander",
-     "player/shai-gilgeous-alexander.html",
+     "Draymond Green",
+     "player/draymond-green.html",
+     1
+    ],
+    [
+     "'s teams are 564–240 (70.1%) with "
+    ],
+    [
+     "Stephen Curry",
+     "player/stephen-curry.html",
+     0
+    ],
+    [
+     " and 50–86 (36.8%) without him, 33.4 points lower: "
+    ],
+    [
+     "the biggest drop for an active player",
+     "lists/teammate-swings.html#as-draymond-green--stephen-curry",
+     0
+    ],
+    [
+     " (regular season, through Nov. 22)."
+    ]
+   ],
+   "pid": "203110",
+   "team": null,
+   "type": "mates"
+  },
+  {
+   "href": "player/jayson-tatum.html#mates",
+   "key": "mates:together:jayson-tatum:derrick-white|Jayson Tatum/ and /Derrick White/ have played 263 regular-season games together: /198–65 (75.3%)/, No. 2 among current teammates with 200+ games (through Nov. 22).",
+   "parts": [
+    [
+     "Jayson Tatum",
+     "player/jayson-tatum.html",
      1
     ],
     [
      " and "
     ],
     [
-     "Cason Wallace",
-     "player/cason-wallace.html",
+     "Derrick White",
+     "player/derrick-white.html",
      1
     ],
     [
-     " have played 211 regular-season games together: "
+     " have played 263 regular-season games together: "
     ],
     [
-     "167–44 (79.1%)",
-     "player/shai-gilgeous-alexander.html#mates",
+     "198–65 (75.3%)",
+     "player/jayson-tatum.html#mates",
      0
     ],
     [
-     ", the best record together among current teammates with 200+ games (through Nov. 22)."
+     ", No. 2 among current teammates with 200+ games (through Nov. 22)."
     ]
    ],
-   "pid": "1628983",
+   "pid": "1628369",
    "team": null,
    "type": "mates"
-  },
-  {
-   "href": "seasons/1977-78.html#t-WAS",
-   "key": "onthisday:1978:WAS|On this date in 1977-78, the /Washington Bullets/ were 8–7. They finished 44–38 and won the title.",
-   "parts": [
-    [
-     "On this date in 1977-78, the "
-    ],
-    [
-     "Washington Bullets",
-     "seasons/1977-78.html#t-WAS",
-     1
-    ],
-    [
-     " were 8–7. They finished 44–38 and won the title."
-    ]
-   ],
-   "pid": null,
-   "team": [
-    "WAS",
-    1978
-   ],
-   "type": "onthisday"
   }
  ],
  "history": {
@@ -229,6 +272,16 @@
    "streak:drought:lamelo-ball|LaMelo Ball/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
    "mates:together:shai-gilgeous-alexander:cason-wallace|Shai Gilgeous-Alexander/ and /Cason Wallace/ have played 211 regular-season games together: /167–44 (79.1%)/, the best record together among current teammates with 200+ games (through Nov. 22).",
    "onthisday:1978:WAS|On this date in 1977-78, the /Washington Bullets/ were 8–7. They finished 44–38 and won the title."
+  ],
+  "2026-11-24": [
+   "start:worst:UTA:18|The Utah Jazz/ are 3–15, the franchise's worst start through 18 games since the /2013-14 Utah Jazz/ (also 3–15).",
+   "start:best:ATL:17|The Atlanta Hawks/ are 11–6, the franchise's best start through 17 games since the /2014-15 Atlanta Hawks/ (also 11–6).",
+   "matchup:donovan-mitchell:CHI|Tonight vs the Chicago Bulls: /Donovan Mitchell/'s teams are /18–4 (81.8%)/ in his 22 regular-season games against them (incl. 2026-27 to date).",
+   "matchup:jarrett-allen:CHI|Tonight vs the Chicago Bulls: /Jarrett Allen/'s teams are /25–6 (80.6%)/ in his 31 regular-season games against them (incl. 2026-27 to date).",
+   "streak:winning:nikola-jokic|Nikola Jokic/'s teams have had a winning record in each of his last /9 seasons/ (2017-18 to 2025-26), No. 4 among active players.",
+   "streak:drought:nick-richards|Nick Richards/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
+   "mates:drop:draymond-green:stephen-curry|Draymond Green/'s teams are 564–240 (70.1%) with /Stephen Curry/ and 50–86 (36.8%) without him, 33.4 points lower: /the biggest drop for an active player/ (regular season, through Nov. 22).",
+   "mates:together:jayson-tatum:derrick-white|Jayson Tatum/ and /Derrick White/ have played 263 regular-season games together: /198–65 (75.3%)/, No. 2 among current teammates with 200+ games (through Nov. 22)."
   ]
  }
 }
