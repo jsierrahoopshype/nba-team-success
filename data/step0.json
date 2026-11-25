@@ -8,11 +8,11 @@
   "file": "awards.json",
   "first": 1947,
   "last": 2027,
-  "rows": 10652,
+  "rows": 10654,
   "rows_by_season": {
    "2025": 203,
    "2026": 207,
-   "2027": 8
+   "2027": 10
   },
   "unmatched": {
    "2026": [],
@@ -3344,11 +3344,11 @@
   "2026 regular"
  ],
  "sources": {
-  "hh-teammates": "d7e4d52 2026-11-19",
+  "hh-teammates": "19b4d82 2026-11-25",
   "nba-boxscores": "05efb8f 2026-11-17",
   "nba-career-map": "a7f4d78 2026-11-17",
   "nba-headshots": "9d46952d 2026-11-16",
-  "nba-player-data": "8bed800 2026-11-21"
+  "nba-player-data": "c403007 2026-11-25"
  },
  "standings": {
   "atl_2024_trailing": [

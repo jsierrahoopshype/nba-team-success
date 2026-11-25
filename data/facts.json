@@ -1,85 +1,86 @@
 {
  "cutoff": "2026-11-23",
- "date": "2026-11-24",
+ "date": "2026-11-25",
  "facts": [
   {
-   "href": "seasons/2026-27.html#t-PHI",
-   "key": "start:best:PHI:18|The Philadelphia 76ers/ are 14–4, the franchise's best start through 18 games since the /2002-03 Philadelphia 76ers/ (also 14–4).",
+   "href": "seasons/2026-27.html#t-SAC",
+   "key": "start:worst:SAC:17|The Sacramento Kings/ are 2–15, the franchise's worst record through 17 games in 79 seasons.",
    "parts": [
     [
-     "The Philadelphia 76ers",
-     "seasons/2026-27.html#t-PHI",
+     "The Sacramento Kings",
+     "seasons/2026-27.html#t-SAC",
      1
     ],
     [
-     " are 14–4, the franchise's best start through 18 games since the "
-    ],
-    [
-     "2002-03 Philadelphia 76ers",
-     "seasons/2002-03.html#t-PHI",
-     0
-    ],
-    [
-     " (also 14–4)."
+     " are 2–15, the franchise's worst record through 17 games in 79 seasons."
     ]
    ],
    "pid": null,
    "team": [
-    "PHI",
+    "SAC",
     2027
    ],
    "type": "start"
   },
   {
-   "href": "seasons/2026-27.html#t-LAC",
-   "key": "start:worst:LAC:16|The LA Clippers/ are 4–12, the franchise's worst start through 16 games since the /2010-11 Los Angeles Clippers/ (3–13).",
+   "href": "seasons/2026-27.html#t-MIL",
+   "key": "start:worst:MIL:18|The Milwaukee Bucks/ are 2–16, the franchise's worst record through 18 games in 59 seasons.",
    "parts": [
     [
-     "The LA Clippers",
-     "seasons/2026-27.html#t-LAC",
+     "The Milwaukee Bucks",
+     "seasons/2026-27.html#t-MIL",
      1
     ],
     [
-     " are 4–12, the franchise's worst start through 16 games since the "
-    ],
-    [
-     "2010-11 Los Angeles Clippers",
-     "seasons/2010-11.html#t-LAC",
-     0
-    ],
-    [
-     " (3–13)."
+     " are 2–16, the franchise's worst record through 18 games in 59 seasons."
     ]
    ],
    "pid": null,
    "team": [
-    "LAC",
+    "MIL",
     2027
    ],
    "type": "start"
+  },
+  {
+   "href": "lists/winning-without-him.html?hl=cody-williams#p-cody-williams",
+   "key": "split:perfect-with:cody-williams|The Minnesota Timberwolves are 10–0 in the games /Cody Williams/ played this season.",
+   "parts": [
+    [
+     "The Minnesota Timberwolves are 10–0 in the games "
+    ],
+    [
+     "Cody Williams",
+     "player/cody-williams.html",
+     1
+    ],
+    [
+     " played this season."
+    ]
+   ],
+   "pid": "1642262",
+   "team": null,
+   "type": "split"
   },
   {
    "href": "player/payton-pritchard.html?vs=WAS#vs-WAS",
-   "key": "matchup:payton-pritchard:WAS|Tonight vs the Washington Wizards: /Payton Pritchard/'s teams are /17–3 (85.0%)/ in his 20 regular-season games against them (incl. 2026-27 to date).",
+   "key": "matchup:payton-pritchard:WAS|Payton Pritchard/ faces the Washington Wizards tonight. His teams are /17–3/ against them in the regular season, an 85.0% win rate.",
    "parts": [
-    [
-     "Tonight vs the Washington Wizards: "
-    ],
     [
      "Payton Pritchard",
      "player/payton-pritchard.html",
      1
     ],
     [
-     "'s teams are "
+     " faces the Washington Wizards tonight. His teams are "
     ],
     [
-     "17–3 (85.0%)",
+     "17–3",
      "player/payton-pritchard.html?vs=WAS#vs-WAS",
      0
     ],
     [
-     " in his 20 regular-season games against them (incl. 2026-27 to date)."
+     " against them in the regular season, an 85.0% win rate."
     ]
    ],
    "pid": "1630202",
@@ -88,26 +89,23 @@
   },
   {
    "href": "player/trae-young.html?vs=BOS#vs-BOS",
-   "key": "matchup:trae-young:BOS|Tonight vs the Boston Celtics: /Trae Young/'s teams are /5–15 (25.0%)/ in his 20 regular-season games against them (incl. 2026-27 to date).",
+   "key": "matchup:trae-young:BOS|Trae Young/ faces the Boston Celtics tonight. His teams are /5–15/ against them in the regular season, a 25.0% win rate.",
    "parts": [
-    [
-     "Tonight vs the Boston Celtics: "
-    ],
     [
      "Trae Young",
      "player/trae-young.html",
      1
     ],
     [
-     "'s teams are "
+     " faces the Boston Celtics tonight. His teams are "
     ],
     [
-     "5–15 (25.0%)",
+     "5–15",
      "player/trae-young.html?vs=BOS#vs-BOS",
      0
     ],
     [
-     " in his 20 regular-season games against them (incl. 2026-27 to date)."
+     " against them in the regular season, a 25.0% win rate."
     ]
    ],
    "pid": "1629027",
@@ -115,37 +113,37 @@
    "type": "matchup"
   },
   {
-   "href": "player/nikola-jokic.html#cap-seasons",
-   "key": "streak:winning:nikola-jokic|Nikola Jokic/'s teams have had a winning record in each of his last /9 seasons/ (2017-18 to 2025-26), No. 4 among active players.",
+   "href": "player/brook-lopez.html#cap-seasons",
+   "key": "streak:winning:brook-lopez|Brook Lopez/'s teams have had a winning record in each of his last /8 seasons/ (2018-19 to 2025-26), No. 6 among active players.",
    "parts": [
     [
-     "Nikola Jokic",
-     "player/nikola-jokic.html",
+     "Brook Lopez",
+     "player/brook-lopez.html",
      1
     ],
     [
      "'s teams have had a winning record in each of his last "
     ],
     [
-     "9 seasons",
-     "player/nikola-jokic.html#cap-seasons",
+     "8 seasons",
+     "player/brook-lopez.html#cap-seasons",
      0
     ],
     [
-     " (2017-18 to 2025-26), No. 4 among active players."
+     " (2018-19 to 2025-26), No. 6 among active players."
     ]
    ],
-   "pid": "203999",
+   "pid": "201572",
    "team": null,
    "type": "streak"
   },
   {
-   "href": "player/nick-richards.html#cap-seasons",
-   "key": "streak:drought:nick-richards|Nick Richards/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
+   "href": "player/tre-jones.html#cap-seasons",
+   "key": "streak:drought:tre-jones|Tre Jones/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
    "parts": [
     [
-     "Nick Richards",
-     "player/nick-richards.html",
+     "Tre Jones",
+     "player/tre-jones.html",
      1
     ],
     [
@@ -153,80 +151,47 @@
     ],
     [
      "6 seasons",
-     "player/nick-richards.html#cap-seasons",
+     "player/tre-jones.html#cap-seasons",
      0
     ],
     [
      " (2020-21 to 2025-26), No. 4 among active players."
     ]
    ],
-   "pid": "1630208",
+   "pid": "1630200",
    "team": null,
    "type": "streak"
   },
   {
-   "href": "lists/teammate-swings.html#as-draymond-green--stephen-curry",
-   "key": "mates:drop:draymond-green:stephen-curry|Draymond Green/'s teams are 564–240 (70.1%) with /Stephen Curry/ and 50–86 (36.8%) without him, 33.4 points lower: /the biggest drop for an active player/ (regular season, through Nov. 23).",
+   "href": "lists/teammate-swings.html#as-zeke-nnaji--nikola-jokic",
+   "key": "mates:drop:zeke-nnaji:nikola-jokic|Zeke Nnaji/'s teams are 184–74 (71.3%) with /Nikola Jokic/ and 19–26 (42.2%) without him, 29.1 points lower: /No. 2 among active players/ (regular season, through Nov. 23).",
    "parts": [
     [
-     "Draymond Green",
-     "player/draymond-green.html",
+     "Zeke Nnaji",
+     "player/zeke-nnaji.html",
      1
     ],
     [
-     "'s teams are 564–240 (70.1%) with "
+     "'s teams are 184–74 (71.3%) with "
     ],
     [
-     "Stephen Curry",
-     "player/stephen-curry.html",
+     "Nikola Jokic",
+     "player/nikola-jokic.html",
      0
     ],
     [
-     " and 50–86 (36.8%) without him, 33.4 points lower: "
+     " and 19–26 (42.2%) without him, 29.1 points lower: "
     ],
     [
-     "the biggest drop for an active player",
-     "lists/teammate-swings.html#as-draymond-green--stephen-curry",
+     "No. 2 among active players",
+     "lists/teammate-swings.html#as-zeke-nnaji--nikola-jokic",
      0
     ],
     [
      " (regular season, through Nov. 23)."
     ]
    ],
-   "pid": "203110",
-   "team": null,
-   "type": "mates"
-  },
-  {
-   "href": "player/jayson-tatum.html#mates",
-   "key": "mates:together:jayson-tatum:derrick-white|Jayson Tatum/ and /Derrick White/ have played 263 regular-season games together: /198–65 (75.3%)/, No. 2 among current teammates with 200+ games (through Nov. 23).",
-   "parts": [
-    [
-     "Jayson Tatum",
-     "player/jayson-tatum.html",
-     1
-    ],
-    [
-     " and "
-    ],
-    [
-     "Derrick White",
-     "player/derrick-white.html",
-     1
-    ],
-    [
-     " have played 263 regular-season games together: "
-    ],
-    [
-     "198–65 (75.3%)",
-     "player/jayson-tatum.html#mates",
-     0
-    ],
-    [
-     ", No. 2 among current teammates with 200+ games (through Nov. 23)."
-    ]
-   ],
-   "pid": "1628369",
+   "pid": "1630192",
    "team": null,
    "type": "mates"
   }
@@ -282,6 +247,16 @@
    "streak:drought:nick-richards|Nick Richards/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
    "mates:drop:draymond-green:stephen-curry|Draymond Green/'s teams are 564–240 (70.1%) with /Stephen Curry/ and 50–86 (36.8%) without him, 33.4 points lower: /the biggest drop for an active player/ (regular season, through Nov. 23).",
    "mates:together:jayson-tatum:derrick-white|Jayson Tatum/ and /Derrick White/ have played 263 regular-season games together: /198–65 (75.3%)/, No. 2 among current teammates with 200+ games (through Nov. 23)."
+  ],
+  "2026-11-25": [
+   "start:worst:SAC:17|The Sacramento Kings/ are 2–15, the franchise's worst record through 17 games in 79 seasons.",
+   "start:worst:MIL:18|The Milwaukee Bucks/ are 2–16, the franchise's worst record through 18 games in 59 seasons.",
+   "split:perfect-with:cody-williams|The Minnesota Timberwolves are 10–0 in the games /Cody Williams/ played this season.",
+   "matchup:payton-pritchard:WAS|Payton Pritchard/ faces the Washington Wizards tonight. His teams are /17–3/ against them in the regular season, an 85.0% win rate.",
+   "matchup:trae-young:BOS|Trae Young/ faces the Boston Celtics tonight. His teams are /5–15/ against them in the regular season, a 25.0% win rate.",
+   "streak:winning:brook-lopez|Brook Lopez/'s teams have had a winning record in each of his last /8 seasons/ (2018-19 to 2025-26), No. 6 among active players.",
+   "streak:drought:tre-jones|Tre Jones/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
+   "mates:drop:zeke-nnaji:nikola-jokic|Zeke Nnaji/'s teams are 184–74 (71.3%) with /Nikola Jokic/ and 19–26 (42.2%) without him, 29.1 points lower: /No. 2 among active players/ (regular season, through Nov. 23)."
   ]
  }
 }
