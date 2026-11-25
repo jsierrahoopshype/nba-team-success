@@ -7,7 +7,7 @@ Read-only checks on the sources, run before building the pages. Every number bel
 | Source | Version used | What we take |
 |---|---|---|
 | aderoa/nba-boxscores | 05efb8f 2026-11-17 | every game and box score, 1946-47 to 2025-26 |
-| jsierrahoopshype/nba-player-data | c403007 2026-11-25 | RS-Stats.csv (names), awards.json (honors) |
+| jsierrahoopshype/nba-player-data | 6f2c02e 2026-11-25 | RS-Stats.csv (names), awards.json (honors) |
 | jsierrahoopshype/hh-teammates | 19b4d82 2026-11-25 | accolade weights (`scores`) and the scoring rules |
 | ramirobentes/nbadatar (data in ramirobentes/nba_data releases) | Parquet files of 2026-11-18 | lineups and possessions, 1996-97 on |
 | jsierrahoopshype/nba-headshots | 9d46952d 2026-11-16 | face-fill headshots, team slugs |
