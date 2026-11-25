@@ -41,8 +41,8 @@ h3{font-size:.8rem;font-weight:700;margin:.9rem 0 .4rem}
 .prose a{text-decoration:underline;text-decoration-color:var(--border)}
 .vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);border:0;white-space:nowrap}
 
-/* faces (H2H .ph): the transparent face-fill cut-out on a #f0f0f2 disc, shown whole; initials when
-   there is no file. Logos (H2H .lg): only the current logo for a current name, a historical file for
+/* faces (H2H .ph): the transparent face-fill cut-out on a #f0f0f2 disc, shown whole; nothing at
+   all when there is no file. Logos (H2H .lg): only the current logo for a current name, a historical file for
    an exact old name, otherwise none. */
 .hs{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;border-radius:50%;overflow:hidden;
   background:#f0f0f2;vertical-align:middle;font-weight:700;font-size:11px;color:#55555c;line-height:1}

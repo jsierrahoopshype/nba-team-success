@@ -191,10 +191,12 @@
         var li = document.createElement("li");
         li.id = list.id + "-o" + i;
         li.setAttribute("role", "option");
-        var pic = h.h ? document.createElement("img") : document.createElement("span");
-        pic.className = "hs sm" + (h.h ? "" : " nohs");
-        if (h.h) { pic.src = up + "assets/hs/" + h.h; pic.alt = ""; pic.width = 36; pic.height = 36; pic.loading = "lazy"; }
-        li.appendChild(pic);
+        if (h.h) {  // no photo: no picture at all (no empty or initials circle)
+          var pic = document.createElement("img");
+          pic.className = "hs sm";
+          pic.src = up + "assets/hs/" + h.h; pic.alt = ""; pic.width = 36; pic.height = 36; pic.loading = "lazy";
+          li.appendChild(pic);
+        }
         var txt = document.createElement("span");
         var nm = document.createElement("strong"); nm.textContent = h.n;
         var ctx = document.createElement("span"); ctx.className = "sub blk";

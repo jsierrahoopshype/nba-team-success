@@ -339,11 +339,7 @@ class Site:
         if hs and os.path.exists(os.path.join(ROOT, "assets", "hs", hs)):
             return (f'<span class="{cls}"><img src="{up}assets/hs/{e(hs)}" alt="" width="160" height="160" '
                     f'loading="lazy" decoding="async"></span>')
-        # H2H placeholder: the player's initials on the light grey disc
-        nm = v.get("name") or ""
-        w = [x for x in re.sub(r"\.", " ", nm).split() if x.lower().strip(",") not in ("jr", "sr", "ii", "iii", "iv", "v")]
-        ini = (w[0][0] + (w[-1][0] if len(w) > 1 else "")).upper() if w else "?"
-        return f'<span class="{cls} nohs" aria-hidden="true">{e(ini)}</span>'
+        return ""  # no photo: nothing at all (no initials circle), the name stands alone
 
 
 # ---------------------------------------------------------------------------

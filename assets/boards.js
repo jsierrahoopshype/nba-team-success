@@ -214,20 +214,20 @@
     td.setAttribute("data-l", "Player");
     var wrapN = document.createElement("span");
     wrapN.className = "tmn";
-    var face = document.createElement("span");
-    face.className = "hs sm" + (m.hs ? "" : " nohs");
+    // no photo: no face at all (no initials circle), the name stands alone
+    var face = null;
     if (m.hs) {
+      face = document.createElement("span");
+      face.className = "hs sm";
       var im = document.createElement("img");
       im.src = UP + "assets/hs/" + m.hs; im.alt = ""; im.width = 160; im.height = 160; im.loading = "lazy";
       face.appendChild(im);
-    } else {
-      var w = m.name.replace(/\./g, " ").split(/\s+/).filter(function (x) { return x && !/^(jr|sr|ii|iii|iv|v),?$/i.test(x); });
-      face.textContent = w.length ? (w[0][0] + (w.length > 1 ? w[w.length - 1][0] : "")).toUpperCase() : "?";
     }
     var a = document.createElement("a");
     a.href = UP + "player/" + encodeURIComponent(m.slug) + ".html";
     a.textContent = m.name;
-    wrapN.appendChild(face); wrapN.appendChild(document.createTextNode(" ")); wrapN.appendChild(a);
+    if (face) { wrapN.appendChild(face); wrapN.appendChild(document.createTextNode(" ")); }
+    wrapN.appendChild(a);
     td.appendChild(wrapN);
     tr.appendChild(td);
     DEF.cols.forEach(function (c) {
