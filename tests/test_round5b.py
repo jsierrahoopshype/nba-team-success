@@ -73,7 +73,9 @@ def test_list_pass_names_a_notable_player():
     for it in st["items"]:
         if not it["type"].endswith("-pass"):
             continue
-        q = it["parts"][2][1].split("/")[-1][:-5]                    # "player/<slug>.html"
+        # the passer's link is bold; the first plain player link is the most notable player passed
+        q = [p[1] for p in it["parts"] if len(p) == 3 and p[1].startswith("player/")
+             and not p[2]][0].split("/")[-1][:-5]                     # "player/<slug>.html"
         best = _notable(q)
         hof, n_as, hof_other = best
         assert _board_rank(it["href"], q) <= 100 or hof or hof_other or n_as >= 3, (it["key"], q)
