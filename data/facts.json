@@ -1,5 +1,5 @@
 {
- "cutoff": "2026-11-23",
+ "cutoff": "2026-11-24",
  "date": "2026-11-25",
  "facts": [
   {
@@ -63,52 +63,52 @@
    "type": "split"
   },
   {
-   "href": "player/payton-pritchard.html?vs=WAS#vs-WAS",
-   "key": "matchup:payton-pritchard:WAS|Payton Pritchard/ faces the Washington Wizards tonight. His teams are /17–3/ against them in the regular season, an 85.0% win rate.",
+   "href": "player/al-horford.html?vs=SAC#vs-SAC",
+   "key": "matchup:al-horford:SAC|Al Horford/ faces the Sacramento Kings tonight. His teams are /26–6/ against them in the regular season, an 81.2% win rate.",
    "parts": [
     [
-     "Payton Pritchard",
-     "player/payton-pritchard.html",
+     "Al Horford",
+     "player/al-horford.html",
      1
     ],
     [
-     " faces the Washington Wizards tonight. His teams are "
+     " faces the Sacramento Kings tonight. His teams are "
     ],
     [
-     "17–3",
-     "player/payton-pritchard.html?vs=WAS#vs-WAS",
+     "26–6",
+     "player/al-horford.html?vs=SAC#vs-SAC",
      0
     ],
     [
-     " against them in the regular season, an 85.0% win rate."
+     " against them in the regular season, an 81.2% win rate."
     ]
    ],
-   "pid": "1630202",
+   "pid": "201143",
    "team": null,
    "type": "matchup"
   },
   {
-   "href": "player/trae-young.html?vs=BOS#vs-BOS",
-   "key": "matchup:trae-young:BOS|Trae Young/ faces the Boston Celtics tonight. His teams are /5–15/ against them in the regular season, a 25.0% win rate.",
+   "href": "player/james-harden.html?vs=NYK#vs-NYK",
+   "key": "matchup:james-harden:NYK|James Harden/ faces the New York Knicks tonight. His teams are /30–7/ against them in the regular season, an 81.1% win rate.",
    "parts": [
     [
-     "Trae Young",
-     "player/trae-young.html",
+     "James Harden",
+     "player/james-harden.html",
      1
     ],
     [
-     " faces the Boston Celtics tonight. His teams are "
+     " faces the New York Knicks tonight. His teams are "
     ],
     [
-     "5–15",
-     "player/trae-young.html?vs=BOS#vs-BOS",
+     "30–7",
+     "player/james-harden.html?vs=NYK#vs-NYK",
      0
     ],
     [
-     " against them in the regular season, a 25.0% win rate."
+     " against them in the regular season, an 81.1% win rate."
     ]
    ],
-   "pid": "1629027",
+   "pid": "201935",
    "team": null,
    "type": "matchup"
   },
@@ -164,7 +164,7 @@
   },
   {
    "href": "lists/teammate-swings.html#as-zeke-nnaji--nikola-jokic",
-   "key": "mates:drop:zeke-nnaji:nikola-jokic|Zeke Nnaji/'s teams are 184–74 (71.3%) with /Nikola Jokic/ and 19–26 (42.2%) without him, 29.1 points lower: /No. 2 among active players/ (regular season, through Nov. 23).",
+   "key": "mates:drop:zeke-nnaji:nikola-jokic|Zeke Nnaji/'s teams are 184–75 (71.0%) with /Nikola Jokic/ and 19–26 (42.2%) without him, 28.8 points lower: /No. 2 among active players/ (regular season, through Nov. 24).",
    "parts": [
     [
      "Zeke Nnaji",
@@ -172,7 +172,7 @@
      1
     ],
     [
-     "'s teams are 184–74 (71.3%) with "
+     "'s teams are 184–75 (71.0%) with "
     ],
     [
      "Nikola Jokic",
@@ -180,7 +180,7 @@
      0
     ],
     [
-     " and 19–26 (42.2%) without him, 29.1 points lower: "
+     " and 19–26 (42.2%) without him, 28.8 points lower: "
     ],
     [
      "No. 2 among active players",
@@ -188,7 +188,7 @@
      0
     ],
     [
-     " (regular season, through Nov. 23)."
+     " (regular season, through Nov. 24)."
     ]
    ],
    "pid": "1630192",
@@ -252,11 +252,11 @@
    "start:worst:SAC:17|The Sacramento Kings/ are 2–15, the franchise's worst record through 17 games in 79 seasons.",
    "start:worst:MIL:18|The Milwaukee Bucks/ are 2–16, the franchise's worst record through 18 games in 59 seasons.",
    "split:perfect-with:cody-williams|The Minnesota Timberwolves are 10–0 in the games /Cody Williams/ played this season.",
-   "matchup:payton-pritchard:WAS|Payton Pritchard/ faces the Washington Wizards tonight. His teams are /17–3/ against them in the regular season, an 85.0% win rate.",
-   "matchup:trae-young:BOS|Trae Young/ faces the Boston Celtics tonight. His teams are /5–15/ against them in the regular season, a 25.0% win rate.",
+   "matchup:al-horford:SAC|Al Horford/ faces the Sacramento Kings tonight. His teams are /26–6/ against them in the regular season, an 81.2% win rate.",
+   "matchup:james-harden:NYK|James Harden/ faces the New York Knicks tonight. His teams are /30–7/ against them in the regular season, an 81.1% win rate.",
    "streak:winning:brook-lopez|Brook Lopez/'s teams have had a winning record in each of his last /8 seasons/ (2018-19 to 2025-26), No. 6 among active players.",
    "streak:drought:tre-jones|Tre Jones/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
-   "mates:drop:zeke-nnaji:nikola-jokic|Zeke Nnaji/'s teams are 184–74 (71.3%) with /Nikola Jokic/ and 19–26 (42.2%) without him, 29.1 points lower: /No. 2 among active players/ (regular season, through Nov. 23)."
+   "mates:drop:zeke-nnaji:nikola-jokic|Zeke Nnaji/'s teams are 184–75 (71.0%) with /Nikola Jokic/ and 19–26 (42.2%) without him, 28.8 points lower: /No. 2 among active players/ (regular season, through Nov. 24)."
   ]
  }
 }

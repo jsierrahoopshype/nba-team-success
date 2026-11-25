@@ -2,6 +2,259 @@
  "stories": [
   {
    "body": [
+    "Payton Pritchard reached 300 career wins in his games: 300, No. 859 on the board.",
+    "Carlton Carrington reached −100 wins minus losses: −100, No. 4,926 on the board.",
+    "Derrick White passed Matt Bonner in career win % in his games: 63.8%, No. 61 among players with 500+ games.",
+    "Jayson Tatum passed Oscar Robertson (Hall of Famer) for No. 81 in career W − L (+215).",
+    "Paul George passed Kawhi Leonard (7-time All-Star) for No. 143 in career wins (572).",
+    "Zach LaVine faces the Golden State Warriors tonight. His teams are 2–23 against them in the regular season, an 8.0% win rate.",
+    "Clint Capela faces the Phoenix Suns tonight. His teams are 22–5 against them in the regular season, an 81.5% win rate."
+   ],
+   "cutoff": "2026-11-24",
+   "date": "2026-11-25",
+   "games": 3,
+   "games_date": "2026-11-24",
+   "headline": "Last night in Team Success · Nov. 24 games",
+   "img": "stories/img/2026-11-25.png",
+   "items": [
+    {
+     "href": "lists/career-wins.html?hl=payton-pritchard#p-payton-pritchard",
+     "key": "wins-mark:payton-pritchard:300",
+     "parts": [
+      [
+       "Payton Pritchard",
+       "player/payton-pritchard.html",
+       1
+      ],
+      [
+       " reached 300 career wins in his games: "
+      ],
+      [
+       "300, No. 859",
+       "lists/career-wins.html?hl=payton-pritchard#p-payton-pritchard",
+       0
+      ],
+      [
+       " on the board."
+      ]
+     ],
+     "pid": "1630202",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "wins-mark"
+    },
+    {
+     "href": "lists/wins-minus-losses.html?hl=carlton-carrington#p-carlton-carrington",
+     "key": "wl-mark:carlton-carrington:-100",
+     "parts": [
+      [
+       "Carlton Carrington",
+       "player/carlton-carrington.html",
+       1
+      ],
+      [
+       " reached −100 wins minus losses: "
+      ],
+      [
+       "−100, No. 4,926",
+       "lists/wins-minus-losses.html?hl=carlton-carrington#p-carlton-carrington",
+       0
+      ],
+      [
+       " on the board."
+      ]
+     ],
+     "pid": "1642267",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "wl-mark"
+    },
+    {
+     "href": "lists/career-wins.html?sort=pct&cg=500&hl=derrick-white#p-derrick-white",
+     "key": "pct-pass:derrick-white:matt-bonner",
+     "parts": [
+      [
+       "Derrick White",
+       "player/derrick-white.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "Matt Bonner",
+       "player/matt-bonner.html",
+       0
+      ],
+      [
+       " in career win % in his games: "
+      ],
+      [
+       "63.8%, No. 61",
+       "lists/career-wins.html?sort=pct&cg=500&hl=derrick-white#p-derrick-white",
+       0
+      ],
+      [
+       " among players with 500+ games."
+      ]
+     ],
+     "passed": [
+      "matt-bonner"
+     ],
+     "pid": "1628401",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "pct-pass"
+    },
+    {
+     "href": "lists/wins-minus-losses.html?hl=jayson-tatum#p-jayson-tatum",
+     "key": "wl-pass:jayson-tatum:oscar-robertson",
+     "parts": [
+      [
+       "Jayson Tatum",
+       "player/jayson-tatum.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "Oscar Robertson",
+       "player/oscar-robertson.html",
+       0
+      ],
+      [
+       " (Hall of Famer)"
+      ],
+      [
+       " for "
+      ],
+      [
+       "No. 81 in career W − L",
+       "lists/wins-minus-losses.html?hl=jayson-tatum#p-jayson-tatum",
+       0
+      ],
+      [
+       " (+215)."
+      ]
+     ],
+     "passed": [
+      "oscar-robertson"
+     ],
+     "pid": "1628369",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "wl-pass"
+    },
+    {
+     "href": "lists/career-wins.html?hl=paul-george#p-paul-george",
+     "key": "wins-pass:paul-george:kawhi-leonard",
+     "parts": [
+      [
+       "Paul George",
+       "player/paul-george.html",
+       1
+      ],
+      [
+       " passed "
+      ],
+      [
+       "Kawhi Leonard",
+       "player/kawhi-leonard.html",
+       0
+      ],
+      [
+       " (7-time All-Star)"
+      ],
+      [
+       " for "
+      ],
+      [
+       "No. 143 in career wins",
+       "lists/career-wins.html?hl=paul-george#p-paul-george",
+       0
+      ],
+      [
+       " (572)."
+      ]
+     ],
+     "passed": [
+      "kawhi-leonard"
+     ],
+     "pid": "202331",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "wins-pass"
+    },
+    {
+     "href": "player/zach-lavine.html?vs=GSW#vs-GSW",
+     "key": "tonight:zach-lavine:GSW",
+     "parts": [
+      [
+       "Zach LaVine",
+       "player/zach-lavine.html",
+       1
+      ],
+      [
+       " faces the Golden State Warriors tonight. His teams are "
+      ],
+      [
+       "2–23",
+       "player/zach-lavine.html?vs=GSW#vs-GSW",
+       0
+      ],
+      [
+       " against them in the regular season, an 8.0% win rate."
+      ]
+     ],
+     "pid": "203897",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "tonight"
+    },
+    {
+     "href": "player/clint-capela.html?vs=PHX#vs-PHX",
+     "key": "tonight:clint-capela:PHX",
+     "parts": [
+      [
+       "Clint Capela",
+       "player/clint-capela.html",
+       1
+      ],
+      [
+       " faces the Phoenix Suns tonight. His teams are "
+      ],
+      [
+       "22–5",
+       "player/clint-capela.html?vs=PHX#vs-PHX",
+       0
+      ],
+      [
+       " against them in the regular season, an 81.5% win rate."
+      ]
+     ],
+     "pid": "203991",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "type": "tonight"
+    }
+   ],
+   "kind": "night",
+   "players": [
+    "payton-pritchard",
+    "carlton-carrington",
+    "derrick-white",
+    "jayson-tatum",
+    "paul-george",
+    "zach-lavine",
+    "clint-capela"
+   ],
+   "quiet": 0,
+   "rule": "night",
+   "stale": 0
+  },
+  {
+   "body": [
     "Kevin Durant passed Paul Pierce (Hall of Famer) and 1 other for No. 30 in career wins (759, incl. 2026-27 to date).",
     "Steven Adams passed Donovan Mitchell (7-time All-Star) and 1 other for No. 105 in career W − L (+188, incl. 2026-27 to date).",
     "Rudy Gobert passed Paul Westphal (Hall of Famer) and 2 others for No. 154 in career W − L (+160, incl. 2026-27 to date).",
