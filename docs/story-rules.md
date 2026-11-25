@@ -329,7 +329,7 @@ before Nov. 26, 2026 keep their wording.
 1. {P}'s teams are {rec} against {opp}, who they play tonight.
 1. {P} has owned {opp}, going {rec} in his career. They meet again tonight.
 1. Good sign for {P} tonight. His teams are {rec} against {opp}.
-1. {P} gets {opp} tonight, a team his teams have beaten {rec} over the years.
+1. {P} takes on {opp} tonight, a matchup his teams have won {won} times.
 1. Tonight {P} sees {opp} again. His teams have won {pct} of those games ({rec}).
 1. History favors {P} tonight against {opp}, with his teams at {rec} in the regular season.
 1. {Opp} have been a good matchup for {P}. His teams are {rec} against them, and they play tonight.
@@ -342,7 +342,7 @@ before Nov. 26, 2026 keep their wording.
 1. {Opp} have had {P}'s number, {rec} against his teams. They meet again tonight.
 1. {P} gets {opp} tonight. His teams have won only {pct} of those games ({rec}).
 1. History isn't on {P}'s side tonight against {opp}, with his teams at {rec} in the regular season.
-1. Tonight {P} sees {opp} again, a team his teams are {rec} against.
+1. {P} faces {opp} tonight. He's been on the winning side {tries}.
 1. {P}'s teams have struggled against {opp}, going {rec}. They play tonight.
 
 **`archive-title`** (links: {team})

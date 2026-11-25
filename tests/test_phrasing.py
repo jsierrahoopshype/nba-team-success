@@ -110,3 +110,19 @@ def test_docs_list_every_template():
         assert f"**`{kind}`**" in doc, kind
         for t in tpls:
             assert f"1. {t}\n" in doc, (kind, t)
+
+
+def test_tonight_says_team_once():
+    """"a team his teams have beaten ..." reads badly: "team(s)" at most once per tonight template."""
+    for k in ("tonight-good", "tonight-bad"):
+        for t in PH.SETS[k]:
+            assert len(re.findall(r"\bteams?\b", PH.SLOT_RE.sub("", t).lower())) <= 1, t
+
+
+def test_tonight_record_wordings():
+    P, R = D.L("A", "player/a.html", True), D.L("30\u20137", "player/a.html?vs=NYK#vs-NYK")
+    s = D.tonight_slots(P, "New York Knicks", R, 30 / 37)[1]
+    assert s["won"] == ["30 of 37", R[1], 0]
+    tries = lambda w, l: D.tonight_slots(P, "X", D.L(f"{w}\u2013{l}", "h"), w / (w + l))[1]["tries"][0]
+    assert tries(2, 23) == "only 2 times in 25 tries"
+    assert tries(1, 19) == "only once in 20 tries" and tries(0, 16) == "in none of 16 tries"

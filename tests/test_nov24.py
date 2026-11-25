@@ -68,7 +68,8 @@ def test_tonight_wording():
             hrefs = [p[1] for p in parts if len(p) == 3]
             assert "player/isaiah-hartenstein.html" in hrefs and R[1] in hrefs, tpl
             t = PH.text(parts)
-            assert "Indiana Pacers" in t and "13–3" in t and "tonight" in t.lower(), t
+            assert "Indiana Pacers" in t and "tonight" in t.lower(), t
+            assert "13–3" in t or "13 of 16" in t or "13 times in 16 tries" in t, t
     assert slots["pct"] == "81.2%" and slots["a"] == "an"
     assert D.tonight_slots(P, "Utah Jazz", R, 0.7)[1]["a"] == "a"
     assert D.tonight_slots(P, "Utah Jazz", R, 2 / 11)[1]["a"] == "an"
