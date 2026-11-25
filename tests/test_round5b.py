@@ -152,9 +152,13 @@ def test_tonight_uses_the_head_to_head_schedule():
         assert "cdn.nba.com" not in read(f"scripts/{f}")
     for it in json.loads(read("data/stories.json"))["stories"][0]["items"]:
         if it["type"] == "tonight":
+            # fields, not wording: the record is the part that links to his row vs that opponent
             assert "?vs=" in it["href"] and "#vs-" in it["href"]
-            n = int(re.search(r"in his (\d+) regular-season games", "".join(p[0] for p in it["parts"])).group(1))
-            assert n >= 15
+            rec = [p for p in it["parts"] if len(p) == 3 and p[1] == it["href"]]
+            assert rec, it["key"]
+            w, l = map(int, re.match(r"(\d+)–(\d+)", rec[0][0]).groups())
+            assert w + l >= 15
+            assert it["parts"][0][1].startswith("player/") and it["pid"]
 
 
 def test_awards_refresh_runs_only_on_change():

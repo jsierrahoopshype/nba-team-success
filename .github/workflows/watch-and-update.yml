@@ -1,0 +1,112 @@
+# (c) 2026 HoopsMatic. All rights reserved.
+# Team Success watcher, hm-ts-7f3a91c2-watch. GitHub runs scheduled jobs hours late or not at all
+# (Nov 24-25 2026: two runs in ~20 hours), so the site waits for Ramiro's files instead of a clock.
+#   1. watch: every 10 minutes, HEAD-request Ramiro's current-season Parquet files and compare their
+#      ETag / Last-Modified with the stamps data/current.json was built from (scripts/source_stamps.py).
+#      Stops at the first change, or after 5 h 30 min.
+#   2. update: on a change, the nightly workflow's own steps, once (update, build, tests, commit).
+#   3. again: re-dispatch this workflow with GITHUB_TOKEN (allowed to start workflow_dispatch runs),
+#      so one watcher is always waiting. After 3 failed updates in a row (the new data still did not land)
+#      it stops and the nightly schedule stays as the fallback.
+# One watcher at a time (concurrency, never cancelled). No secrets, no personal tokens; the repo is
+# public, so Actions minutes are free (about 24 runner-hours a day, almost all of it sleeping).
+name: Watch and update
+on:
+  schedule:
+    - cron: "17 12-23,2,5 * * *"        # starts the chain if it ever stops; extra starts just wait
+  workflow_dispatch:
+    inputs:
+      failures:
+        description: "Failed update attempts in a row so far (set by the watcher itself)"
+        required: false
+        default: "0"
+      minutes:
+        description: "How long to watch (10 to 330; for a manual test run)"
+        required: false
+        default: "330"
+permissions: {}
+concurrency:
+  group: watch-and-update
+  cancel-in-progress: false
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    permissions:
+      contents: read
+    outputs:
+      changed: ${{ steps.poll.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Poll Ramiro's files every 10 minutes (up to 5 h 30 min)
+        id: poll
+        env:
+          MINUTES: ${{ inputs.minutes || '330' }}
+        run: |
+          m=$(printf '%s' "$MINUTES" | tr -cd '0-9'); m=${m:-330}
+          if [ "$m" -lt 10 ]; then m=10; fi; if [ "$m" -gt 330 ]; then m=330; fi
+          echo "watching for up to $m minutes"
+          deadline=$(( $(date +%s) + m * 60 ))
+          while :; do
+            git pull -q --ff-only || true          # compare with the latest current.json on main
+            set +e; python scripts/source_stamps.py --check; rc=$?; set -e
+            if [ "$rc" = "10" ]; then echo "changed=yes" >> "$GITHUB_OUTPUT"; exit 0; fi
+            if [ $(( $(date +%s) + 600 )) -gt "$deadline" ]; then echo "No change in $m minutes"; exit 0; fi
+            sleep 600
+          done
+
+  update:
+    needs: watch
+    if: needs.watch.outputs.changed == 'yes'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/nightly.yml
+
+  again:
+    needs: [watch, update]
+    if: ${{ !cancelled() }}                 # a run cancelled by hand ends the chain
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Count failed updates, then start the next watcher
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PREV: ${{ inputs.failures || '0' }}
+          WATCHED: ${{ needs.watch.result }}
+          UPDATED: ${{ needs.update.result }}
+        run: |
+          prev=$(printf '%s' "$PREV" | tr -cd '0-9'); prev=${prev:-0}
+          failures=0
+          if [ "$WATCHED" != "success" ]; then
+            failures=$((prev + 1))                 # the watch step itself broke: never loop on errors
+          elif [ "$UPDATED" != "skipped" ]; then
+            # an update ran: did the new data land on main? (tests can fail after a good commit)
+            set +e; python scripts/source_stamps.py --check; rc=$?; set -e
+            if [ "$rc" = "10" ]; then failures=$((prev + 1)); fi
+          else
+            failures=$prev
+          fi
+          echo "failed updates in a row: $failures"
+          if [ "$failures" -ge 3 ]; then
+            echo "::error::3 failed updates in a row: the watcher stops; the nightly schedule is the fallback."
+            exit 1
+          fi
+          gh api -X POST "repos/$REPO/actions/workflows/watch-and-update.yml/dispatches" \
+            -f ref=main -f "inputs[failures]=$failures"
+          echo "next watcher dispatched (failures=$failures)"

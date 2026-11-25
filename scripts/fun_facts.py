@@ -68,6 +68,20 @@ def L(text, href, bold=False):
     return [text, href, 1 if bold else 0]
 
 
+def latest_list():
+    """The newest "Last night" list (data/stories.json), or None."""
+    st = load_json(os.path.join(DATA, "stories.json"), {"stories": []})["stories"]
+    return max(st, key=lambda x: x["date"]) if st else None
+
+
+def subjects(item):
+    """(player or current-season team) an item is about, or None."""
+    if item.get("pid"):
+        return str(item["pid"])
+    t = item.get("team")
+    return t[0] if t and t[1] == CURRENT_SEASON else None
+
+
 def build(date):
     d = A.Data()
     cur = load_json(os.path.join(DATA, "current.json"))
@@ -75,7 +89,10 @@ def build(date):
     ids.update(cur.get("newIds", {}))
     doc = load_json(os.path.join(DATA, "facts.json"), {"history": {}})
     through = cur["through"]
-    if doc.get("date") == date and doc.get("cutoff") == through:
+    # the "Last night" list the homepage shows next to the strip: the latest one, whatever its date
+    latest = latest_list()
+    against = f"{latest['date']}|{latest['cutoff']}" if latest else ""
+    if doc.get("date") == date and doc.get("cutoff") == through and doc.get("against", against) == against:
         print("UNCHANGED facts for", date, "already written with data through", through)
         return False
     hist = {k: v for k, v in doc.get("history", {}).items() if k != date and
@@ -138,7 +155,7 @@ def build(date):
         add(1, r, f"pass:{board}:{slug(p)}:{slug(q)}",
             [plink(p), T(" passed "), plink(q, False), T(f"{more} {when} for "),
              L(f"{B.rank_label(r, tied)} in {title}", href),
-             T(f" ({val} in his games, {B.SCOPE_LIVE}).")], href, pid=p)
+             T(f" ({val} in his games).")], href, pid=p)
 
     # ---- 2. a team's best / worst start through N games since a season ------------------------
     at_n = defaultdict(list)          # N -> [(sy, f, wins)]
@@ -401,14 +418,16 @@ def build(date):
     # passes moved to the daily "Last night" list (daily_story.py); fun facts keep the season-scale items
     caps = {"pass": 0, "start": 2, "split": 2, "matchup": 2, "streak": 2, "mates": 2, "onthisday": 1}
     # the day's story already covers its players: they get no fun fact
-    story = [x for x in load_json(os.path.join(DATA, "stories.json"), {"stories": []})["stories"] if x["date"] == date]
+    # no repeats: nothing about a player or team in the latest "Last night" list (the one shown above the
+    # strip), even when that list is from the day before (a new UTC date before the night's games arrive)
+    story = [latest] if latest else []
     by_slug = {v["slug"]: k for k, v in ids.items()}
     picked, count, seen = [], defaultdict(int), {by_slug[x] for x in (story[0]["players"] if story else []) if x in by_slug}
     skip = set()
     # teams and archive items already in the day's list get no fun fact either
     for it in (story[0].get("items", []) if story else []):
-        if it.get("team") and it["team"][1] == CURRENT_SEASON:
-            seen.add(it["team"][0])
+        if subjects(it):
+            seen.add(subjects(it))
         if it.get("archive"):
             skip.add("onthisday:" + it["key"].split(":", 1)[1])
     for _, _, f in cands:
@@ -429,7 +448,7 @@ def build(date):
         if f not in picked and not (who and who in seen) and f["key"].rsplit("|", 1)[0] not in skip:
             picked.append(f)
     hist[date] = [f["key"] for f in picked]
-    out = {"date": date, "cutoff": through, "facts": picked, "history": dict(sorted(hist.items()))}
+    out = {"date": date, "cutoff": through, "against": against, "facts": picked, "history": dict(sorted(hist.items()))}
     changed = dump_json(os.path.join(DATA, "facts.json"), out, compact=False)
     print(("CHANGED" if changed else "UNCHANGED"), "facts for", date, ":", ", ".join(f["type"] for f in picked))
     return changed

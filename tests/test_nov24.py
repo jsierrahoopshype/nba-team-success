@@ -32,18 +32,28 @@ def names(n, notes=None):
 
 # ---- "Last night": name every player passed -------------------------------------------------
 def test_name_listing_rule():
+    """Up to 7 players passed: every name, linked, labels kept. 8 or more: the 3 most notable, then
+    "and N others" (N >= 5) linking to the board. Never "and 1 other" ... "and 4 others"."""
     assert text(D.join_names(names(1, {1: " (Hall of Famer)"}), "x")) == "P1 (Hall of Famer)"
     assert text(D.join_names(names(2, {1: " (Hall of Famer)"}), "x")) == "P1 (Hall of Famer) and P2"
     assert text(D.join_names(names(3), "x")) == "P1, P2 and P3"
+    assert text(D.join_names(names(4), "x")) == "P1, P2, P3 and P4"
     assert text(D.join_names(names(7), "x")) == "P1, P2, P3, P4, P5, P6 and P7"
     eight = D.join_names(names(8), "lists/career-wins.html?hl=a#p-a")
-    assert text(eight) == "P1, P2, P3, P4, P5, P6, P7 and 1 more players"
-    assert eight[-1] == ["1 more players", "lists/career-wins.html?hl=a#p-a", 0]      # links to the board
-    assert text(D.join_names(names(12), "x")).endswith("P7 and 5 more players")
-    for n in range(1, 13):
+    assert text(eight) == "P1, P2, P3 and 5 others"
+    assert eight[-1] == ["5 others", "lists/career-wins.html?hl=a#p-a", 0]              # links to the board
+    assert text(D.join_names(names(12), "x")).endswith("P3 and 9 others")
+    for n in range(1, 30):
         t = text(D.join_names(names(n), "x"))
-        assert "other" not in t
-        assert sum(1 for p in D.join_names(names(n), "x") if len(p) == 3 and p[1].startswith("player/")) == min(n, 7 if n >= 8 else n)
+        assert not re.search(r"and [1-4] others?\b", t) and "more players" not in t, (n, t)
+        linked = sum(1 for p in D.join_names(names(n), "x") if len(p) == 3 and p[1].startswith("player/"))
+        assert linked == (n if n < 8 else 3)
+
+
+def test_name_listing_2_to_4_all_named():
+    for n in (2, 3, 4):
+        t = text(D.join_names(names(n), "x"))
+        assert all(f"P{i}" in t for i in range(1, n + 1)) and "other" not in t
 
 
 def test_tonight_wording():
@@ -60,6 +70,12 @@ def test_last_night_sources_have_no_scope_suffix_or_others():
     src = read("scripts/daily_story.py")
     assert "other{'s'" not in src and " and {len(passed) - 1} other" not in src
     assert '({B.SCOPE_LIVE}).")' not in src and "on the board ({B.scope_label" not in src
+    # no season-scope parenthetical in any sentence of the list or the fun facts
+    for f in ("scripts/daily_story.py", "scripts/fun_facts.py"):
+        # sentence parts only; an item's scope= field is metadata, never shown
+        body = "\n".join(re.sub(r'scope=(f?"[^"]*"|[\w.]+(\([^)]*\))?)', "", line)
+                         for line in read(f).splitlines() if "T(" in line or "L(" in line)
+        assert "to date" not in body and "SCOPE_LIVE" not in body, f
     assert "Tonight vs the" not in src and "Tonight vs the" not in read("scripts/fun_facts.py")
     assert "Tonight vs the" not in read("docs/story-rules.md")
 
