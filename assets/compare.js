@@ -74,16 +74,12 @@
     return last(n) === last(other) ? n : last(n);
   }
   function face(c) {
-    var f = el("span", undefined, "hs md" + (c.hs ? "" : " nohs"));
-    if (c.hs) {
-      var im = document.createElement("img");
-      im.src = up + "assets/hs/" + c.hs; im.alt = ""; im.width = 160; im.height = 160; im.loading = "lazy";
-      f.appendChild(im);
-    } else {
-      var w = c.name.replace(/\./g, " ").split(/\s+/).filter(function (x) { return x && !/^(jr|sr|ii|iii|iv|v),?$/i.test(x); });
-      f.textContent = w.length ? (w[0][0] + (w.length > 1 ? w[w.length - 1][0] : "")).toUpperCase() : "?";
-      f.setAttribute("aria-hidden", "true");
-    }
+    // no photo: an empty text node (nothing drawn, no initials circle)
+    if (!c.hs) return document.createTextNode("");
+    var f = el("span", undefined, "hs md");
+    var im = document.createElement("img");
+    im.src = up + "assets/hs/" + c.hs; im.alt = ""; im.width = 160; im.height = 160; im.loading = "lazy";
+    f.appendChild(im);
     return f;
   }
   function team(f, sy) {
