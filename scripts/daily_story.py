@@ -110,8 +110,14 @@ def tonight_slots(player, opp_name, rec_link, rate):
     """(set, slots) for "tonight": his teams' record against tonight's opponent (incl. the season to date,
     like his opponent row). Good records read upbeat, bad ones dry."""
     pct = pct1(rate)
+    # the record link can also read "30 of 37" or "only 2 times in 25 tries" (same href)
+    w, l = (int(x) for x in rec_link[0].replace("\u2013", "-").split("-"))
+    n = w + l
+    tries = (f"in none of {n} tries" if w == 0 else f"only once in {n} tries" if w == 1
+             else f"only {w} times in {n} tries")
     return ("tonight-good" if rate >= 0.5 else "tonight-bad",
             {"P": player, "opp": f"the {opp_name}", "Opp": f"The {opp_name}", "rec": rec_link,
+             "won": L(f"{w} of {n}", rec_link[1]), "tries": L(tries, rec_link[1]),
              "pct": pct, "a": PH.article(pct)})
 
 

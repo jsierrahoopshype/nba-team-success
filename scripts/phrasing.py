@@ -242,7 +242,7 @@ SETS = {
         "{P}'s teams are {rec} against {opp}, who they play tonight.",
         "{P} has owned {opp}, going {rec} in his career. They meet again tonight.",
         "Good sign for {P} tonight. His teams are {rec} against {opp}.",
-        "{P} gets {opp} tonight, a team his teams have beaten {rec} over the years.",
+        "{P} takes on {opp} tonight, a matchup his teams have won {won} times.",
         "Tonight {P} sees {opp} again. His teams have won {pct} of those games ({rec}).",
         "History favors {P} tonight against {opp}, with his teams at {rec} in the regular season.",
         "{Opp} have been a good matchup for {P}. His teams are {rec} against them, and they play tonight.",
@@ -254,7 +254,7 @@ SETS = {
         "{Opp} have had {P}'s number, {rec} against his teams. They meet again tonight.",
         "{P} gets {opp} tonight. His teams have won only {pct} of those games ({rec}).",
         "History isn't on {P}'s side tonight against {opp}, with his teams at {rec} in the regular season.",
-        "Tonight {P} sees {opp} again, a team his teams are {rec} against.",
+        "{P} faces {opp} tonight. He's been on the winning side {tries}.",
         "{P}'s teams have struggled against {opp}, going {rec}. They play tonight.",
     ],
     # ---- from the archive / on this date ------------------------------------------------------------
@@ -385,7 +385,9 @@ for _k in SETS:
 SLOT_RE = re.compile(r"\{(\w+)\}")
 OPT_RE = re.compile(r"\[\[(.*?)\]\]")
 # a slot and its capitalised twin are the same link ("{Team}" / "{team}")
-TWINS = {"Team": "team", "Tm": "tm", "Opp": "opp", "AP": "ap"}
+TWINS = {"Team": "team", "Tm": "tm", "Opp": "opp", "AP": "ap",
+         # the same record link, worded "30 of 37" / "only 2 times in 25 tries"
+         "won": "rec", "tries": "rec"}
 
 
 def slots_of(tpl):
