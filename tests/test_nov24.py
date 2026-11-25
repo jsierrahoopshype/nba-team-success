@@ -32,22 +32,21 @@ def names(n, notes=None):
 
 # ---- "Last night": name every player passed -------------------------------------------------
 def test_name_listing_rule():
-    """Up to 7 players passed: every name, linked, labels kept. 8 or more: the 3 most notable, then
-    "and N others" (N >= 5) linking to the board. Never "and 1 other" ... "and 4 others"."""
+    """1 to 5 players passed: every name, linked, labels kept. 6 or more: the 2 most notable, then
+    "and N others" (N >= 4) linking to the board at that spot."""
     assert text(D.join_names(names(1, {1: " (Hall of Famer)"}), "x")) == "P1 (Hall of Famer)"
     assert text(D.join_names(names(2, {1: " (Hall of Famer)"}), "x")) == "P1 (Hall of Famer) and P2"
     assert text(D.join_names(names(3), "x")) == "P1, P2 and P3"
-    assert text(D.join_names(names(4), "x")) == "P1, P2, P3 and P4"
-    assert text(D.join_names(names(7), "x")) == "P1, P2, P3, P4, P5, P6 and P7"
-    eight = D.join_names(names(8), "lists/career-wins.html?hl=a#p-a")
-    assert text(eight) == "P1, P2, P3 and 5 others"
-    assert eight[-1] == ["5 others", "lists/career-wins.html?hl=a#p-a", 0]              # links to the board
-    assert text(D.join_names(names(12), "x")).endswith("P3 and 9 others")
+    assert text(D.join_names(names(5), "x")) == "P1, P2, P3, P4 and P5"
+    six = D.join_names(names(6), "lists/career-wins.html?hl=a#p-a")
+    assert text(six) == "P1, P2 and 4 others"
+    assert six[-1] == ["4 others", "lists/career-wins.html?hl=a#p-a", 0]               # links to the board
+    assert text(D.join_names(names(9), "x")) == "P1, P2 and 7 others"
     for n in range(1, 30):
         t = text(D.join_names(names(n), "x"))
-        assert not re.search(r"and [1-4] others?\b", t) and "more players" not in t, (n, t)
+        assert not re.search(r"and [1-3] others?\b", t) and "more players" not in t, (n, t)
         linked = sum(1 for p in D.join_names(names(n), "x") if len(p) == 3 and p[1].startswith("player/"))
-        assert linked == (n if n < 8 else 3)
+        assert linked == (n if n < 6 else 2)
 
 
 def test_name_listing_2_to_4_all_named():
@@ -57,13 +56,22 @@ def test_name_listing_2_to_4_all_named():
 
 
 def test_tonight_wording():
-    parts = D.tonight_parts(D.L("Isaiah Hartenstein", "player/isaiah-hartenstein.html", True), "Indiana Pacers",
-                            D.L("13–3", "player/isaiah-hartenstein.html?vs=IND#vs-IND"), 13 / 16)
-    assert text(parts) == ("Isaiah Hartenstein faces the Indiana Pacers tonight. His teams are 13–3 against them "
-                           "in the regular season, an 81.2% win rate.")
-    assert parts[0][1] == "player/isaiah-hartenstein.html" and parts[2][1].endswith("?vs=IND#vs-IND")
-    assert text(D.tonight_parts(D.L("A", "a"), "Utah Jazz", D.L("7–3", "b"), 0.7)).endswith("a 70.0% win rate.")
-    assert text(D.tonight_parts(D.L("A", "a"), "Utah Jazz", D.L("2–9", "b"), 2 / 11)).endswith("an 18.2% win rate.")
+    """Every tonight template keeps the player link and the record link, and the rate picks the set."""
+    import phrasing as PH
+    P = D.L("Isaiah Hartenstein", "player/isaiah-hartenstein.html", True)
+    R = D.L("13–3", "player/isaiah-hartenstein.html?vs=IND#vs-IND")
+    kind, slots = D.tonight_slots(P, "Indiana Pacers", R, 13 / 16)
+    assert kind == "tonight-good" and D.tonight_slots(P, "Utah Jazz", R, 2 / 11)[0] == "tonight-bad"
+    for k in ("tonight-good", "tonight-bad"):
+        for tpl in PH.SETS[k]:
+            parts = PH.render(tpl, slots)
+            hrefs = [p[1] for p in parts if len(p) == 3]
+            assert "player/isaiah-hartenstein.html" in hrefs and R[1] in hrefs, tpl
+            t = PH.text(parts)
+            assert "Indiana Pacers" in t and "13–3" in t and "tonight" in t.lower(), t
+    assert slots["pct"] == "81.2%" and slots["a"] == "an"
+    assert D.tonight_slots(P, "Utah Jazz", R, 0.7)[1]["a"] == "a"
+    assert D.tonight_slots(P, "Utah Jazz", R, 2 / 11)[1]["a"] == "an"
 
 
 def test_last_night_sources_have_no_scope_suffix_or_others():

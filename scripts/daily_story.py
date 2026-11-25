@@ -28,6 +28,7 @@ from collections import defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import analysis as A  # noqa: E402
 import boards as B  # noqa: E402
+import phrasing as PH  # noqa: E402
 from common import (CURRENT_SEASON, DATA, LAST_COMPLETE, ROOT, dump_json, era_lookup,  # noqa: E402
                     franchise_name, load_json, season_label)
 
@@ -38,9 +39,9 @@ MAX_ITEMS, MIN_ITEMS, ARCHIVE_N = 10, 4, 3
 WINS_STEP, WINS_FROM = 100, 300            # career wins milestones: 300, 400, ... 1,000, ...
 WL_STEP = 100                              # career W - L milestones: +100, +200, ... (and -100, ...)
 PCT_MIN_GAMES, PCT_TOP = 500, 25           # career win %: players with 500+ games, top 25
-# players passed: up to 7 are all named; 8+: the 3 most notable, then "and N others" (N is then 5+,
-# so a list never ends "and 1 other" ... "and 4 others")
-NAMES_MAX, NAMES_SHOWN = 8, 3
+# players passed: 1 to 5 are all named; 6+: the 2 most notable, then "and N others" (N is then 4+)
+NAMES_MAX, NAMES_SHOWN = 6, 2
+RANK_SHOWN_MAX = 1000                      # a milestone's rank is left out when worse than No. 1,000
 NOTABLE_RANK, NOTABLE_AS = 100, 3          # a passed player is notable: top 100 on that board, a Hall of Famer or a 3+ time All-Star
 PASS_MAX_RANK, PASS_CAP = 250, 4           # the passer is in that board's top 250; at most 4 pass items a night
 TYPE_CAP = {"start": 3, "tonight": 2}      # at most 3 team starts and 2 tonight items, so tonight always has room
@@ -82,7 +83,7 @@ def note_of(p):
 
 def join_names(entries, more_href):
     """[(name link part, label)] in order -> parts: "A (Hall of Famer)", "A and B", "A, B and C";
-    8 or more: the first 3, then "and N others" (N >= 5) linking to more_href."""
+    6 or more: the first 2, then "and N others" (N >= 4) linking to more_href."""
     shown = entries if len(entries) < NAMES_MAX else entries[:NAMES_SHOWN]
     parts = []
     for i, (link, note) in enumerate(shown):
@@ -96,12 +97,28 @@ def join_names(entries, more_href):
     return parts
 
 
-def tonight_parts(player, opp_name, rec_link, rate):
-    """ "Isaiah Hartenstein faces the Indiana Pacers tonight. His teams are 13–3 against them in the
-    regular season, an 81.2% win rate." (record incl. the season to date, like his opponent row)"""
-    return [player, T(f" faces the {opp_name} tonight. His teams are "), rec_link,
-            T(f" against them in the regular season, {'an' if f'{100 * rate:.1f}'.startswith(('8', '11', '18')) else 'a'} "
-              f"{pct1(rate)} win rate.")]
+def archive_slots(season, team_link, rec, t, champ):
+    """(set, slots) for a team-season on this date (archive items, on-this-day fun facts)."""
+    pace = round(82 * t["w"] / (t["w"] + t["l"]))
+    ap = PH.article(f"{pace}")
+    return ("archive-title" if champ else "archive-pace",
+            {"season": season, "team": team_link, "rec": rec, "final": wl(t["w"], t["l"]), "pace": f"{pace}",
+             "ap": ap, "AP": ap.capitalize()})
+
+
+def tonight_slots(player, opp_name, rec_link, rate):
+    """(set, slots) for "tonight": his teams' record against tonight's opponent (incl. the season to date,
+    like his opponent row). Good records read upbeat, bad ones dry."""
+    pct = pct1(rate)
+    return ("tonight-good" if rate >= 0.5 else "tonight-bad",
+            {"P": player, "opp": f"the {opp_name}", "Opp": f"The {opp_name}", "rec": rec_link,
+             "pct": pct, "a": PH.article(pct)})
+
+
+def tonight_parts(player, opp_name, rec_link, rate, date="", subject="", used=None):
+    """The rendered "tonight" sentence (one template of the set, picked like every other item)."""
+    kind, slots = tonight_slots(player, opp_name, rec_link, rate)
+    return PH.render(PH.pick(kind, date, subject, used if used is not None else set())[1], slots)
 
 
 def signed(n):
@@ -258,8 +275,11 @@ def build(date):
 
     items = []
 
-    def add(pri, order, key, parts, href, pid=None, team=None, scope=None, passed=None):
-        it = {"key": key, "type": key.split(":")[0], "parts": parts, "href": href, "pid": pid, "team": team, "scope": scope}
+    def add(pri, order, key, kind, slots, href, pid=None, team=None, scope=None, passed=None):
+        """kind / slots: the sentence's template set and its values (phrasing.py); the sentence itself is
+        written once the list is picked, so no template repeats within the list."""
+        it = {"key": key, "type": key.split(":")[0], "_k": kind, "_s": slots, "href": href, "pid": pid, "team": team,
+              "scope": scope}
         if passed is not None:
             it["passed"] = passed          # every player he passed (slug), for the "most notable" check
         items.append((pri, order, it))
@@ -290,9 +310,11 @@ def build(date):
             v0 = before[p][2]
             m = step_fn(v0, v)
             if m is not None:
-                add(1, r, f"{'wins' if board == 'career-wins' else 'wl'}-mark:{slug(p)}:{m}",
-                    [plink(p), T(f" reached {fmt(m)} {B.BOARDS[board]['h1'].lower() if board != 'career-wins' else 'career wins in his games'}: "),
-                     L(f"{fmt(v)}, {B.rank_label(r, tied)}", href(p)), T(" on the board.")],
+                kind = "wins-mark" if board == "career-wins" else ("wl-mark-up" if m > 0 else "wl-mark-down")
+                add(1, r, f"{'wins' if board == 'career-wins' else 'wl'}-mark:{slug(p)}:{m}", kind,
+                    {"P": plink(p), "M": L(f"{abs(m):,}", href(p)),
+                     # a rank worse than No. 1,000 says nothing: the milestone stands alone
+                     "rank": L(B.rank_label(r, tied), href(p)) if r <= RANK_SHOWN_MAX and m > 0 else None},
                     href(p), pid=p, scope=B.scope_label(board, flt))
                 done.add(p)
         for p, (r, tied, v), passed in B.passes(data, board, delta, flt):
@@ -304,8 +326,9 @@ def build(date):
             q, (rq, tq, vq) = most_notable(nq)
             ranks = {x: a[0] for x, a in passed}
             add(2, r, f"{'wins' if board == 'career-wins' else 'wl'}-pass:{slug(p)}:{slug(q)}",
-                [plink(p), T(" passed ")] + passed_names(passed, ranks.get, href(p)) + [T(" for "),
-                 L(f"{B.rank_label(r, tied)} in {what}", href(p)), T(f" ({fmt(v)}).")],
+                "wins-pass" if board == "career-wins" else "wl-pass",
+                {"P": plink(p), "names": passed_names(passed, ranks.get, href(p)),
+                 "rank": L(B.rank_label(r, tied), href(p)), "val": fmt(v)},
                 href(p), pid=p, scope=B.scope_label(board, flt), passed=[slug(x) for x, _ in passed if x in ids])
 
     def round_up(step, start=None):
@@ -333,10 +356,9 @@ def build(date):
         if p in after and after[p][0] <= PCT_TOP and (p not in before or before[p][0] > PCT_TOP):
             r, tied, v = after[p]
             href = f"lists/career-wins.html?sort=pct&cg={PCT_MIN_GAMES}&hl={slug(p)}#p-{slug(p)}"
-            add(1, r, f"pct-top:{slug(p)}",
-                [plink(p), T(f" moved into the top {PCT_TOP} in career win % in his games: "),
-                 L(f"{pct1(v)}, {B.rank_label(r, tied)}", href),
-                 T(f" among players with {PCT_MIN_GAMES}+ games.")], href, pid=p, scope=B.SCOPE_LIVE)
+            add(1, r, f"pct-top:{slug(p)}", "pct-top",
+                {"P": plink(p), "pct": pct1(v), "rank": L(B.rank_label(r, tied), href), "mins": f"{PCT_MIN_GAMES}"},
+                href, pid=p, scope=B.SCOPE_LIVE)
     for p, (r, tied, v), passed in B.passes(data, "career-wins", delta, pflt):
         if any(x[2]["key"] == f"pct-top:{slug(p)}" for x in items) or r > NOTABLE_RANK:
             continue
@@ -345,10 +367,9 @@ def build(date):
             q = most_notable(nq)[0]
             href = f"lists/career-wins.html?sort=pct&cg={PCT_MIN_GAMES}&hl={slug(p)}#p-{slug(p)}"
             ranks = {x: a[0] for x, a in passed}
-            add(2, r, f"pct-pass:{slug(p)}:{slug(q)}",
-                [plink(p), T(" passed ")] + passed_names(passed, ranks.get, href) + [T(" in career win % in his games: "),
-                 L(f"{pct1(v)}, {B.rank_label(r, tied)}", href),
-                 T(f" among players with {PCT_MIN_GAMES}+ games.")], href, pid=p, scope=B.SCOPE_LIVE,
+            add(2, r, f"pct-pass:{slug(p)}:{slug(q)}", "pct-pass",
+                {"P": plink(p), "names": passed_names(passed, ranks.get, href), "pct": pct1(v),
+                 "rank": L(B.rank_label(r, tied), href), "mins": f"{PCT_MIN_GAMES}"}, href, pid=p, scope=B.SCOPE_LIVE,
                 passed=[slug(x) for x, _ in passed if x in ids])
 
     # ---- 3. teams that played last night: starts and streaks ---------------------------------
@@ -386,17 +407,18 @@ def build(date):
                 if len(own) < START_GAP:
                     continue
                 if not hit:
-                    add(3, -len(own), f"start:{kind}:{f}:{n}",
-                        [L(f"The {tn}", href, True), T(f" are {wl(w, n - w)}, the franchise's {kind} start through {n} games "
-                                                       f"in {len(own) + 1} seasons.")],
+                    add(3, -len(own), f"start:{kind}:{f}:{n}", f"start-fr-ever-{kind}",
+                        {"Team": L(f"The {tn}", href, True), "team": L(f"the {tn}", href, True), "rec": wl(w, n - w),
+                         "n": f"{n}", "k": f"{len(own) + 1}"},
                         href, team=[f, CURRENT_SEASON], scope=f"{season_label(CURRENT_SEASON)} to date")
                 else:
                     sy = max(x[0] for x in hit)
                     if CURRENT_SEASON - sy >= START_GAP:
                         w2 = [x for x in hit if x[0] == sy][0][2]
-                        add(3, -(CURRENT_SEASON - sy), f"start:{kind}:{f}:{n}",
-                            [L(f"The {tn}", href, True), T(f" are {wl(w, n - w)}, the franchise's {kind} start through {n} games since "),
-                             L(f"{season_label(sy)}", f"seasons/{season_label(sy)}.html#t-{f}"), T(f" ({wl(w2, n - w2)}).")],
+                        add(3, -(CURRENT_SEASON - sy), f"start:{kind}:{f}:{n}", f"start-fr-since-{kind}",
+                            {"Team": L(f"The {tn}", href, True), "team": L(f"the {tn}", href, True), "rec": wl(w, n - w),
+                             "n": f"{n}", "then": L(f"{season_label(sy)}", f"seasons/{season_label(sy)}.html#t-{f}"),
+                             "then_rec": wl(w2, n - w2)},
                             href, team=[f, CURRENT_SEASON], scope=f"{season_label(CURRENT_SEASON)} to date")
         k = 0
         for x in reversed(res):
@@ -409,15 +431,18 @@ def build(date):
             hist = [(sy, bw if won else bl) for sy, bw, bl in streaks.get(f, [])]
             longer = [sy for sy, v in hist if v >= k]
             word = "winning" if won else "losing"
+            slots = {"Team": L(f"The {tn}", href, True), "team": L(f"the {tn}", href, True), "k": f"{k}"}
+            side = "win" if won else "lose"
             if not longer and len(hist) >= START_GAP:
-                tail = f", the longest in franchise history ({len(hist) + 1} seasons)."
+                kind = f"streak-{side}-ever"
+                slots["S"] = f"{len(hist) + 1}"
             elif longer and CURRENT_SEASON - max(longer) >= STREAK_GAP:
-                tail = f", the franchise's longest since {season_label(max(longer))}."
+                kind = f"streak-{side}-since"
+                slots["then"] = season_label(max(longer))
             else:
-                tail = None
-            if tail:
-                add(3, -k, f"streak:{f}:{word}:{k}",
-                    [L(f"The {tn}", href, True), T(f" have a {k}-game {word} streak{tail}")],
+                kind = None
+            if kind:
+                add(3, -k, f"streak:{f}:{word}:{k}", kind, slots,
                     href, team=[f, CURRENT_SEASON], scope=f"{season_label(CURRENT_SEASON)} to date")
 
     # ---- 4. with / without this season, a real sample, his team played last night -------------
@@ -433,9 +458,9 @@ def build(date):
             continue
         tn = tname(st["f"])
         href = f"lists/winning-without-him.html?mp={WW_PLAYED}&mm={WW_MISSED}&hl={slug(p)}#p-{slug(p)}"
-        add(4, -abs(gap), f"ww:{slug(p)}",
-            [T(f"The {tn} are "), L(f"{wl(st['ow'], st['ol'])} without ", href), plink(p),
-             T(f" and {wl(st['w'], st['l'])} with him ({st['g']} played, {gm} missed).")],
+        add(4, -abs(gap), f"ww:{slug(p)}", "ww-with" if gap > 0 else "ww-without",
+            {"Tm": f"The {tn}", "tm": f"the {tn}", "P": plink(p), "wo": L(wl(st['ow'], st['ol']), href),
+             "w": wl(st['w'], st['l']), "g": f"{st['g']}", "m": f"{gm}"},
             href, pid=p, scope=f"{season_label(CURRENT_SEASON)} to date")
 
     # ---- 5. tonight: a notable record against tonight's opponent (15+ games) -------------------
@@ -478,7 +503,7 @@ def build(date):
                 continue
             href = f"player/{slug(p)}.html?vs={opp}#vs-{opp}"
             add(5, -abs(w / (w + l) - 0.5), f"tonight:{slug(p)}:{opp}",
-                tonight_parts(plink(p), tname(opp), L(wl(w, l), href), w / (w + l)),
+                *tonight_slots(plink(p), tname(opp), L(wl(w, l), href), w / (w + l)),
                 href, pid=p, scope=B.SCOPE_LIVE)
 
     # ---- pick ---------------------------------------------------------------------------------
@@ -516,14 +541,18 @@ def build(date):
             key = f"archive:{sy}:{f}"
             if key in used:
                 continue
-            end = (f"finished {wl(t['w'], t['l'])} and won the title" if champ else
-                   f"finished {wl(t['w'], t['l'])}, a {round(82 * t['w'] / (t['w'] + t['l']))}-win pace over 82 games")
             href = f"seasons/{season_label(sy)}.html#t-{f}"
+            kind, slots = archive_slots(season_label(sy), L(t["name"], href, True), wl(w, l), t, champ)
             picked.append({"key": key, "type": "archive", "archive": 1, "pid": None, "team": [f, sy],
-                           "parts": [T(f"On this date in {season_label(sy)}, the "), L(t["name"], href, True),
-                                     T(f" were {wl(w, l)}. They {end}.")], "href": href, "scope": season_label(sy)})
+                           "_k": kind, "_s": slots, "href": href, "scope": season_label(sy)})
             used.add(key)
             need -= 1
+    # one sentence per item, no template twice in the list (phrasing.pick: hash of date, set, subject)
+    used_tpl = set()
+    for it in picked:
+        kind, slots = it.pop("_k"), it.pop("_s")
+        i, tpl = PH.pick(kind, date, it["pid"] or (it["team"][0] if it.get("team") else it["key"]), used_tpl)
+        it["parts"], it["tpl"] = PH.render(tpl, slots), f"{kind}#{i}"
     head = f"Last night in Team Success · {nice_md(through)} games"
     entry = {"date": date, "kind": "night", "cutoff": through, "games_date": through, "stale": 1 if stale else 0,
              "quiet": 1 if quiet else 0, "games": len(night), "items": picked, "headline": head,
