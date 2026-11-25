@@ -23,6 +23,7 @@ from common import (CURRENT_SEASON, DATA, ROOT, SRC, dump_json, era_lookup, load
                     slugify)
 import build_history as bh  # noqa: E402
 from fetch_ramiro import fetch  # noqa: E402
+import source_stamps as SS  # noqa: E402
 
 BOX_RAW = "https://raw.githubusercontent.com/aderoa/nba-boxscores/main/data/{s}/{f}"
 PBP_URL = "https://github.com/ramirobentes/nba_data/releases/download/pbp/pbp_regular_{s}.parquet"
@@ -122,6 +123,10 @@ def add(a, b):
 
 
 def build(sy=CURRENT_SEASON):
+    # what the watcher compares (scripts/source_stamps.py): the published versions of Ramiro's files,
+    # read just before downloading them; a file that cannot be read keeps its previous stamp
+    old_doc = load_json(os.path.join(DATA, "current.json"), {}) or {}
+    sources = SS.merged(old_doc.get("sources"), SS.live_stamps(sy))
     for t in ("lineup_stats", "possessions"):
         fetch(t, "regular", sy, force=True)
     box = games_from_boxscores(sy)
@@ -257,7 +262,7 @@ def build(sy=CURRENT_SEASON):
     for g in sorted(games.values(), key=lambda x: (x["date"], x["gid"])):
         glog.append([g["gid"], g["date"], g["h"], g["a"], int(g["hs"]), int(g["as"])])
     log = {"games": glog, "app": {gid: [sorted(v[0]), sorted(v[1])] for gid, v in sorted(gapp.items())}}
-    doc = {"season": sy, "source": source, "start": start, "through": through, "teams": trec,
+    doc = {"season": sy, "source": source, "sources": sources, "start": start, "through": through, "teams": trec,
            "cutoff30": cutoff, "games": len(games), "players": out, "newIds": new_ids, "log": log}
     changed = dump_json(os.path.join(DATA, "current.json"), doc)
     print("CHANGED" if changed else "UNCHANGED", f"{len(games)} games through {through}")

@@ -38,7 +38,9 @@ MAX_ITEMS, MIN_ITEMS, ARCHIVE_N = 10, 4, 3
 WINS_STEP, WINS_FROM = 100, 300            # career wins milestones: 300, 400, ... 1,000, ...
 WL_STEP = 100                              # career W - L milestones: +100, +200, ... (and -100, ...)
 PCT_MIN_GAMES, PCT_TOP = 500, 25           # career win %: players with 500+ games, top 25
-NAMES_MAX, NAMES_SHOWN = 8, 7              # 8+ players passed: name the 7 most notable, then "and N more players"
+# players passed: up to 7 are all named; 8+: the 3 most notable, then "and N others" (N is then 5+,
+# so a list never ends "and 1 other" ... "and 4 others")
+NAMES_MAX, NAMES_SHOWN = 8, 3
 NOTABLE_RANK, NOTABLE_AS = 100, 3          # a passed player is notable: top 100 on that board, a Hall of Famer or a 3+ time All-Star
 PASS_MAX_RANK, PASS_CAP = 250, 4           # the passer is in that board's top 250; at most 4 pass items a night
 TYPE_CAP = {"start": 3, "tonight": 2}      # at most 3 team starts and 2 tonight items, so tonight always has room
@@ -80,7 +82,7 @@ def note_of(p):
 
 def join_names(entries, more_href):
     """[(name link part, label)] in order -> parts: "A (Hall of Famer)", "A and B", "A, B and C";
-    8 or more: the first 7, then "and N more players" linking to more_href. Never "and N others"."""
+    8 or more: the first 3, then "and N others" (N >= 5) linking to more_href."""
     shown = entries if len(entries) < NAMES_MAX else entries[:NAMES_SHOWN]
     parts = []
     for i, (link, note) in enumerate(shown):
@@ -90,7 +92,7 @@ def join_names(entries, more_href):
         if note:
             parts.append(T(note))
     if len(shown) < len(entries):
-        parts += [T(" and "), L(f"{len(entries) - len(shown)} more players", more_href)]
+        parts += [T(" and "), L(f"{len(entries) - len(shown)} others", more_href)]
     return parts
 
 
@@ -386,7 +388,7 @@ def build(date):
                 if not hit:
                     add(3, -len(own), f"start:{kind}:{f}:{n}",
                         [L(f"The {tn}", href, True), T(f" are {wl(w, n - w)}, the franchise's {kind} start through {n} games "
-                                                       f"in {len(own) + 1} seasons ({season_label(CURRENT_SEASON)} to date).")],
+                                                       f"in {len(own) + 1} seasons.")],
                         href, team=[f, CURRENT_SEASON], scope=f"{season_label(CURRENT_SEASON)} to date")
                 else:
                     sy = max(x[0] for x in hit)
@@ -433,7 +435,7 @@ def build(date):
         href = f"lists/winning-without-him.html?mp={WW_PLAYED}&mm={WW_MISSED}&hl={slug(p)}#p-{slug(p)}"
         add(4, -abs(gap), f"ww:{slug(p)}",
             [T(f"The {tn} are "), L(f"{wl(st['ow'], st['ol'])} without ", href), plink(p),
-             T(f" and {wl(st['w'], st['l'])} with him ({season_label(CURRENT_SEASON)} to date, {st['g']} played, {gm} missed).")],
+             T(f" and {wl(st['w'], st['l'])} with him ({st['g']} played, {gm} missed).")],
             href, pid=p, scope=f"{season_label(CURRENT_SEASON)} to date")
 
     # ---- 5. tonight: a notable record against tonight's opponent (15+ games) -------------------

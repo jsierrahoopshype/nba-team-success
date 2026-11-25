@@ -22,11 +22,15 @@ column shows the plain number (128). Team finishes keep "#{r} of {N}".
 | 1 | career wins milestone | his career wins in his games (incl. 2026-27 to date) crossed 300, 400, 500 ... | "{P} reached {M} career wins in his games: {W}, {rank} on the board." | career wins board row |
 | 1 | W − L milestone | his career W − L crossed a multiple of 100 (+100, +200 ... or −100 ...) | "{P} reached {M} wins minus losses: ..." | W − L board row |
 | 1 | win % top 25 | among players with 500+ games, he moved into the top 25 in career win % | "{P} moved into the top 25 in career win % in his games: {pct}, {rank} among players with 500+ games." | career wins board, win % sort, 500+ games |
-| 2 | notable pass (wins, W − L, win %) | the passer is in that board's top 250 (win %: top 100), AND the player passed is notable on that board: top 100 on it, a Hall of Famer (as a player, coach or contributor) or a 3+ time All-Star. Several passes for one player: only the most notable name (Hall of Famer as a player first, then most All-Star selections, then Hall of Famer as a coach or contributor, then best rank on the board) | "{P} passed {Q1} (Hall of Famer / Hall of Famer as a coach / Hall of Famer as a contributor / {n}-time All-Star)[, {Q2} and {Q3}] for {rank} in career wins / career W − L ({value})." Every player passed is named and linked, labels kept, most notable first ("A and B"; "A, B and C"); never "and k others". 8 or more passed: the 7 most notable, then "and {n} more players" linking to the board at the passer's row. | board row |
-| 3 | team start | his team played last night, 8+ games, and the record is the franchise's best (worst) through that many games since a season 10+ years ago, or ever (10+ earlier seasons) | "The {team} are {W}–{L}, the franchise's best / worst start through {n} games since {season} ({W}–{L})." | the team's row in this season's standings |
+| 2 | notable pass (wins, W − L, win %) | the passer is in that board's top 250 (win %: top 100), AND the player passed is notable on that board: top 100 on it, a Hall of Famer (as a player, coach or contributor) or a 3+ time All-Star. Several passes for one player: only the most notable name (Hall of Famer as a player first, then most All-Star selections, then Hall of Famer as a coach or contributor, then best rank on the board) | "{P} passed {Q1} (Hall of Famer / Hall of Famer as a coach / Hall of Famer as a contributor / {n}-time All-Star)[, {Q2} and {Q3}] for {rank} in career wins / career W − L ({value})." Every player passed is named and linked, labels kept, most notable first ("A and B"; "A, B and C"), up to 7 names. 8 or more passed: the 3 most notable, then "and {n} others" (n is then 5 or more) linking to the board at the passer's row, so an item never ends "and 1 other" to "and 4 others". | board row |
+| 3 | team start | his team played last night, 8+ games, and the record is the franchise's best (worst) through that many games since a season 10+ years ago, or ever (10+ earlier seasons) | "The {team} are {W}–{L}, the franchise's best / worst start through {n} games since {season} ({W}–{L})." / "... through {n} games in {k} seasons." (no earlier season that good / bad) | the team's row in this season's standings |
 | 3 | team streak | a current winning or losing streak of 5+ games that is the franchise's longest since a season 10+ years ago, or ever | "The {team} have a {k}-game winning / losing streak, the franchise's longest since {season}." | standings row |
-| 4 | with / without | his team played last night; 10+ games played and 8+ missed this season; one side unbeaten or winless, or a gap of 40+ points | "The {team} are {W}–{L} without {P} and {W}–{L} with him (2026-27 to date, {g} played, {m} missed)." | his row on the with and without board at 10 and 8 |
+| 4 | with / without | his team played last night; 10+ games played and 8+ missed this season; one side unbeaten or winless, or a gap of 40+ points | "The {team} are {W}–{L} without {P} and {W}–{L} with him ({g} played, {m} missed)." | his row on the with and without board at 10 and 8 |
 | 5 | tonight | an active player with 15+ regular-season games against tonight's opponent (nba-editorial-bots' schedule CSV, `data/schedule_<season>.csv` on its Pages site, read the way nba-head-to-head reads it for "Tonight's duels": games on today's US Eastern date that are not final) and a win rate of .700+ or .350 or lower | "{P} faces the {opp} tonight. His teams are {W}–{L} against them in the regular season, a / an {pct} win rate." Counts completed seasons plus the season to date, like the opponent row the record links to. | his opponent row |
+
+No sentence in the list or in the fun facts carries a season-scope parenthetical ("2026-27 to date",
+"incl. 2026-27 to date"); a scope stays only where a number stops at an earlier season ("(2018-19 to
+2025-26)" on a streak, "(through 2025-26)").
 
 Picking: priority order (within a priority, the best board rank or the biggest number first), one
 item per player or team, at most 4 passes, 3 team starts and 2 "tonight" items, up to 10 items. Hall of Famers come from the "Hall of
@@ -66,10 +70,12 @@ run of a UTC date writes the set, a later run rewrites it only when the data cut
 | 6 | on this day (1, more to fill) | a title-winning or 60-win-pace team-season with 5+ games by this calendar date | "On this date in {season}, the {team} were {W}–{L}. They finished {W}–{L} and won the title / a {n}-win pace over 82 games." | the team's row on that season's standings |
 
 Picking: candidates in priority order, within the caps, one fact per player (or current team) a
-day, players and teams of the day's list left out (and its archive items), up to 8; if fewer than 6, more candidates in priority
+day, players and teams of the latest "Last night" list left out (the list shown above the strip, even
+when it is from the day before; its archive items too), up to 8; if fewer than 6, more candidates in priority
 order fill the strip. **Never the same fact two days running** (the exact fact text of yesterday's
 set is excluded), and a streak or on-this-day fact (same player or team-season) never repeats
-within 30 days (the teammate facts too, per pair). Sets are kept 60 days in `data/facts.json`.
+within 30 days (the teammate facts too, per pair). Sets are kept 60 days in `data/facts.json`, each with the list it was checked against
+(`against`: that list's date and cutoff); when that list is regenerated, the next run rebuilds the set.
 
 ## Comparison of the day (`scripts/picks.py`, homepage)
 

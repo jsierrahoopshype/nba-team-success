@@ -18,6 +18,7 @@ on:
   schedule:
     - cron: "17 12-23,2,5 * * *"
   workflow_dispatch: {}
+  workflow_call: {}                      # run once by watch-and-update.yml when Ramiro's files change
 permissions:
   contents: write
 concurrency:
