@@ -1,10 +1,11 @@
 {
+ "against": "2026-11-25|2026-11-24",
  "cutoff": "2026-11-24",
- "date": "2026-11-25",
+ "date": "2026-11-26",
  "facts": [
   {
    "href": "seasons/2026-27.html#t-SAC",
-   "key": "start:worst:SAC:17|The Sacramento Kings/ are 2–15, the franchise's worst record through 17 games in 79 seasons.",
+   "key": "start:worst:SAC:17|Team=The Sacramento Kings/k=79/n=17/rec=2–15/team=the Sacramento Kings",
    "parts": [
     [
      "The Sacramento Kings",
@@ -12,7 +13,7 @@
      1
     ],
     [
-     " are 2–15, the franchise's worst record through 17 games in 79 seasons."
+     " have never been here before. They're 2–15 through 17 games, their worst start in 79 seasons."
     ]
    ],
    "pid": null,
@@ -20,11 +21,12 @@
     "SAC",
     2027
    ],
+   "tpl": "start-fr-ever-worst#6",
    "type": "start"
   },
   {
    "href": "seasons/2026-27.html#t-MIL",
-   "key": "start:worst:MIL:18|The Milwaukee Bucks/ are 2–16, the franchise's worst record through 18 games in 59 seasons.",
+   "key": "start:worst:MIL:18|Team=The Milwaukee Bucks/k=59/n=18/rec=2–16/team=the Milwaukee Bucks",
    "parts": [
     [
      "The Milwaukee Bucks",
@@ -32,7 +34,7 @@
      1
     ],
     [
-     " are 2–16, the franchise's worst record through 18 games in 59 seasons."
+     " are 2–16, the worst start through 18 games in their 59 seasons."
     ]
    ],
    "pid": null,
@@ -40,39 +42,41 @@
     "MIL",
     2027
    ],
+   "tpl": "start-fr-ever-worst#0",
    "type": "start"
   },
   {
    "href": "lists/winning-without-him.html?hl=cody-williams#p-cody-williams",
-   "key": "split:perfect-with:cody-williams|The Minnesota Timberwolves are 10–0 in the games /Cody Williams/ played this season.",
+   "key": "split:perfect-with:cody-williams|P=Cody Williams/Tm=The Minnesota Timberwolves/n=10/rec=10–0/tm=the Minnesota Timberwolves",
    "parts": [
-    [
-     "The Minnesota Timberwolves are 10–0 in the games "
-    ],
     [
      "Cody Williams",
      "player/cody-williams.html",
      1
     ],
     [
-     " played this season."
+     " has played 10 games for the Minnesota Timberwolves this season, and they've won all of them (10–0)."
     ]
    ],
    "pid": "1642262",
    "team": null,
+   "tpl": "split-perfect-with#3",
    "type": "split"
   },
   {
    "href": "player/al-horford.html?vs=SAC#vs-SAC",
-   "key": "matchup:al-horford:SAC|Al Horford/ faces the Sacramento Kings tonight. His teams are /26–6/ against them in the regular season, an 81.2% win rate.",
+   "key": "matchup:al-horford:SAC|Opp=The Sacramento Kings/P=Al Horford/a=an/opp=the Sacramento Kings/pct=81.2%/rec=26–6/tries=only 26 times in 32 tries/won=26 of 32",
    "parts": [
+    [
+     "History favors "
+    ],
     [
      "Al Horford",
      "player/al-horford.html",
      1
     ],
     [
-     " faces the Sacramento Kings tonight. His teams are "
+     " tonight against the Sacramento Kings, with his teams at "
     ],
     [
      "26–6",
@@ -80,16 +84,17 @@
      0
     ],
     [
-     " against them in the regular season, an 81.2% win rate."
+     " in the regular season."
     ]
    ],
    "pid": "201143",
    "team": null,
+   "tpl": "tonight-good#6",
    "type": "matchup"
   },
   {
    "href": "player/james-harden.html?vs=NYK#vs-NYK",
-   "key": "matchup:james-harden:NYK|James Harden/ faces the New York Knicks tonight. His teams are /30–7/ against them in the regular season, an 81.1% win rate.",
+   "key": "matchup:james-harden:NYK|Opp=The New York Knicks/P=James Harden/a=an/opp=the New York Knicks/pct=81.1%/rec=30–7/tries=only 30 times in 37 tries/won=30 of 37",
    "parts": [
     [
      "James Harden",
@@ -97,7 +102,7 @@
      1
     ],
     [
-     " faces the New York Knicks tonight. His teams are "
+     "'s teams are "
     ],
     [
      "30–7",
@@ -105,94 +110,104 @@
      0
     ],
     [
-     " against them in the regular season, an 81.1% win rate."
+     " against the New York Knicks, who they play tonight."
     ]
    ],
    "pid": "201935",
    "team": null,
+   "tpl": "tonight-good#1",
    "type": "matchup"
   },
   {
-   "href": "player/brook-lopez.html#cap-seasons",
-   "key": "streak:winning:brook-lopez|Brook Lopez/'s teams have had a winning record in each of his last /8 seasons/ (2018-19 to 2025-26), No. 6 among active players.",
+   "href": "player/isaiah-hartenstein.html#cap-seasons",
+   "key": "streak:winning:isaiah-hartenstein|P=Isaiah Hartenstein/n=8 seasons/span=2018-19 to 2025-26/tag=No. 6 among active players",
    "parts": [
     [
-     "Brook Lopez",
-     "player/brook-lopez.html",
+     "Isaiah Hartenstein",
+     "player/isaiah-hartenstein.html",
      1
     ],
     [
-     "'s teams have had a winning record in each of his last "
+     "'s run of winning seasons is up to "
     ],
     [
      "8 seasons",
-     "player/brook-lopez.html#cap-seasons",
+     "player/isaiah-hartenstein.html#cap-seasons",
      0
     ],
     [
      " (2018-19 to 2025-26), No. 6 among active players."
     ]
    ],
-   "pid": "201572",
+   "pid": "1628392",
    "team": null,
+   "tpl": "career-winning#5",
    "type": "streak"
   },
   {
-   "href": "player/tre-jones.html#cap-seasons",
-   "key": "streak:drought:tre-jones|Tre Jones/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
+   "href": "player/anfernee-simons.html#cap-seasons",
+   "key": "streak:drought:anfernee-simons|P=Anfernee Simons/n=5 seasons/span=2021-22 to 2025-26/tag=No. 7 among active players",
    "parts": [
     [
-     "Tre Jones",
-     "player/tre-jones.html",
+     "Every one of "
+    ],
+    [
+     "Anfernee Simons",
+     "player/anfernee-simons.html",
      1
     ],
     [
-     " has not been on a playoff team in his last "
+     "' last "
     ],
     [
-     "6 seasons",
-     "player/tre-jones.html#cap-seasons",
+     "5 seasons",
+     "player/anfernee-simons.html#cap-seasons",
      0
     ],
     [
-     " (2020-21 to 2025-26), No. 4 among active players."
+     " has ended without a playoff trip (2021-22 to 2025-26), No. 7 among active players."
     ]
    ],
-   "pid": "1630200",
+   "pid": "1629014",
    "team": null,
+   "tpl": "career-drought#7",
    "type": "streak"
   },
   {
-   "href": "lists/teammate-swings.html#as-zeke-nnaji--nikola-jokic",
-   "key": "mates:drop:zeke-nnaji:nikola-jokic|Zeke Nnaji/'s teams are 184–75 (71.0%) with /Nikola Jokic/ and 19–26 (42.2%) without him, 28.8 points lower: /No. 2 among active players/ (regular season, through Nov. 24).",
+   "href": "lists/teammate-swings.html#as-jordan-poole--stephen-curry",
+   "key": "mates:drop:jordan-poole:stephen-curry|P=Jordan Poole/Q=Stephen Curry/gap=28.7/o=28–61/op=31.5%/t=98–65/tag=the No. 3 drop for an active player/tp=60.1%",
    "parts": [
     [
-     "Zeke Nnaji",
-     "player/zeke-nnaji.html",
+     "Take "
+    ],
+    [
+     "Stephen Curry",
+     "player/stephen-curry.html",
+     0
+    ],
+    [
+     " away and "
+    ],
+    [
+     "Jordan Poole",
+     "player/jordan-poole.html",
      1
     ],
     [
-     "'s teams are 184–75 (71.0%) with "
+     "'s teams drop from 60.1% to 31.5%, 28.7 points, "
     ],
     [
-     "Nikola Jokic",
-     "player/nikola-jokic.html",
+     "the No. 3 drop for an active player",
+     "lists/teammate-swings.html#as-jordan-poole--stephen-curry",
      0
     ],
     [
-     " and 19–26 (42.2%) without him, 28.8 points lower: "
-    ],
-    [
-     "No. 2 among active players",
-     "lists/teammate-swings.html#as-zeke-nnaji--nikola-jokic",
-     0
-    ],
-    [
-     " (regular season, through Nov. 24)."
+     "."
     ]
    ],
-   "pid": "1630192",
+   "pid": "1629673",
    "team": null,
+   "tpl": "mates-drop#3",
    "type": "mates"
   }
  ],
@@ -257,6 +272,16 @@
    "streak:winning:brook-lopez|Brook Lopez/'s teams have had a winning record in each of his last /8 seasons/ (2018-19 to 2025-26), No. 6 among active players.",
    "streak:drought:tre-jones|Tre Jones/ has not been on a playoff team in his last /6 seasons/ (2020-21 to 2025-26), No. 4 among active players.",
    "mates:drop:zeke-nnaji:nikola-jokic|Zeke Nnaji/'s teams are 184–75 (71.0%) with /Nikola Jokic/ and 19–26 (42.2%) without him, 28.8 points lower: /No. 2 among active players/ (regular season, through Nov. 24)."
+  ],
+  "2026-11-26": [
+   "start:worst:SAC:17|Team=The Sacramento Kings/k=79/n=17/rec=2–15/team=the Sacramento Kings",
+   "start:worst:MIL:18|Team=The Milwaukee Bucks/k=59/n=18/rec=2–16/team=the Milwaukee Bucks",
+   "split:perfect-with:cody-williams|P=Cody Williams/Tm=The Minnesota Timberwolves/n=10/rec=10–0/tm=the Minnesota Timberwolves",
+   "matchup:al-horford:SAC|Opp=The Sacramento Kings/P=Al Horford/a=an/opp=the Sacramento Kings/pct=81.2%/rec=26–6/tries=only 26 times in 32 tries/won=26 of 32",
+   "matchup:james-harden:NYK|Opp=The New York Knicks/P=James Harden/a=an/opp=the New York Knicks/pct=81.1%/rec=30–7/tries=only 30 times in 37 tries/won=30 of 37",
+   "streak:winning:isaiah-hartenstein|P=Isaiah Hartenstein/n=8 seasons/span=2018-19 to 2025-26/tag=No. 6 among active players",
+   "streak:drought:anfernee-simons|P=Anfernee Simons/n=5 seasons/span=2021-22 to 2025-26/tag=No. 7 among active players",
+   "mates:drop:jordan-poole:stephen-curry|P=Jordan Poole/Q=Stephen Curry/gap=28.7/o=28–61/op=31.5%/t=98–65/tag=the No. 3 drop for an active player/tp=60.1%"
   ]
  }
 }
