@@ -2,6 +2,374 @@
  "stories": [
   {
    "body": [
+    "Kevin Durant reached 300 games over .500 for his career, which ranks No. 41 all-time.",
+    "Jaylen Brown's 65.5% career win rate now tops Bob Cousy (Hall of Famer). He's No. 37 among players with 500+ games.",
+    "Last night moved Georges Niang past Horace Grant in career win %. He's at 65.1%, No. 40 among players with 500+ games.",
+    "Draymond Green climbed past Sam Jones (Hall of Famer) and Avery Johnson on the career wins list. He's now No. 93 with 626.",
+    "Fred VanVleet climbed to No. 99 in career win % (62.0%) among players with 500+ games, ahead of Will Perdue.",
+    "The Sacramento Kings have never been here before. They're 2–16 through 18 games, their worst start in 79 seasons.",
+    "The Milwaukee Bucks are 2–17, the worst start through 19 games in their 59 seasons.",
+    "The Philadelphia 76ers are 15–4, their best start through 19 games since 2002-03 (15–4).",
+    "The Minnesota Timberwolves are 4–5 without Cody Williams and 10–0 with him (10 played, 9 missed).",
+    "The Chicago Bulls have the better record without Caleb Wilson this season, 5–3 to 1–9 (8 missed, 10 played)."
+   ],
+   "cutoff": "2026-11-25",
+   "date": "2026-11-26",
+   "games": 9,
+   "games_date": "2026-11-25",
+   "headline": "Last night in Team Success · Nov. 25 games",
+   "img": "stories/img/2026-11-26.png",
+   "items": [
+    {
+     "href": "lists/wins-minus-losses.html?hl=kevin-durant#p-kevin-durant",
+     "key": "wl-mark:kevin-durant:300",
+     "parts": [
+      [
+       "Kevin Durant",
+       "player/kevin-durant.html",
+       1
+      ],
+      [
+       " reached "
+      ],
+      [
+       "300",
+       "lists/wins-minus-losses.html?hl=kevin-durant#p-kevin-durant",
+       0
+      ],
+      [
+       " games over .500 for his career, which ranks "
+      ],
+      [
+       "No. 41",
+       "lists/wins-minus-losses.html?hl=kevin-durant#p-kevin-durant",
+       0
+      ],
+      [
+       " all-time."
+      ]
+     ],
+     "pid": "201142",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "tpl": "wl-mark-up#1",
+     "type": "wl-mark"
+    },
+    {
+     "href": "lists/career-wins.html?sort=pct&cg=500&hl=jaylen-brown#p-jaylen-brown",
+     "key": "pct-pass:jaylen-brown:bob-cousy",
+     "parts": [
+      [
+       "Jaylen Brown",
+       "player/jaylen-brown.html",
+       1
+      ],
+      [
+       "'s 65.5% career win rate now tops "
+      ],
+      [
+       "Bob Cousy",
+       "player/bob-cousy.html",
+       0
+      ],
+      [
+       " (Hall of Famer). He's "
+      ],
+      [
+       "No. 37",
+       "lists/career-wins.html?sort=pct&cg=500&hl=jaylen-brown#p-jaylen-brown",
+       0
+      ],
+      [
+       " among players with 500+ games."
+      ]
+     ],
+     "passed": [
+      "bob-cousy"
+     ],
+     "pid": "1627759",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "tpl": "pct-pass#0",
+     "type": "pct-pass"
+    },
+    {
+     "href": "lists/career-wins.html?sort=pct&cg=500&hl=georges-niang#p-georges-niang",
+     "key": "pct-pass:georges-niang:horace-grant",
+     "parts": [
+      [
+       "Last night moved "
+      ],
+      [
+       "Georges Niang",
+       "player/georges-niang.html",
+       1
+      ],
+      [
+       " past "
+      ],
+      [
+       "Horace Grant",
+       "player/horace-grant.html",
+       0
+      ],
+      [
+       " in career win %. He's at 65.1%, "
+      ],
+      [
+       "No. 40",
+       "lists/career-wins.html?sort=pct&cg=500&hl=georges-niang#p-georges-niang",
+       0
+      ],
+      [
+       " among players with 500+ games."
+      ]
+     ],
+     "passed": [
+      "horace-grant"
+     ],
+     "pid": "1627777",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "tpl": "pct-pass#6",
+     "type": "pct-pass"
+    },
+    {
+     "href": "lists/career-wins.html?hl=draymond-green#p-draymond-green",
+     "key": "wins-pass:draymond-green:sam-jones",
+     "parts": [
+      [
+       "Draymond Green",
+       "player/draymond-green.html",
+       1
+      ],
+      [
+       " climbed past "
+      ],
+      [
+       "Sam Jones",
+       "player/sam-jones.html",
+       0
+      ],
+      [
+       " (Hall of Famer) and "
+      ],
+      [
+       "Avery Johnson",
+       "player/avery-johnson.html",
+       0
+      ],
+      [
+       " on the career wins list. He's now "
+      ],
+      [
+       "No. 93",
+       "lists/career-wins.html?hl=draymond-green#p-draymond-green",
+       0
+      ],
+      [
+       " with 626."
+      ]
+     ],
+     "passed": [
+      "sam-jones",
+      "avery-johnson"
+     ],
+     "pid": "203110",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "tpl": "wins-pass#2",
+     "type": "wins-pass"
+    },
+    {
+     "href": "lists/career-wins.html?sort=pct&cg=500&hl=fred-vanvleet#p-fred-vanvleet",
+     "key": "pct-pass:fred-vanvleet:will-perdue",
+     "parts": [
+      [
+       "Fred VanVleet",
+       "player/fred-vanvleet.html",
+       1
+      ],
+      [
+       " climbed to "
+      ],
+      [
+       "No. 99",
+       "lists/career-wins.html?sort=pct&cg=500&hl=fred-vanvleet#p-fred-vanvleet",
+       0
+      ],
+      [
+       " in career win % (62.0%) among players with 500+ games, ahead of "
+      ],
+      [
+       "Will Perdue",
+       "player/will-perdue.html",
+       0
+      ],
+      [
+       "."
+      ]
+     ],
+     "passed": [
+      "will-perdue"
+     ],
+     "pid": "1627832",
+     "scope": "incl. 2026-27 to date",
+     "team": null,
+     "tpl": "pct-pass#7",
+     "type": "pct-pass"
+    },
+    {
+     "href": "seasons/2026-27.html#t-SAC",
+     "key": "start:worst:SAC:18",
+     "parts": [
+      [
+       "The Sacramento Kings",
+       "seasons/2026-27.html#t-SAC",
+       1
+      ],
+      [
+       " have never been here before. They're 2–16 through 18 games, their worst start in 79 seasons."
+      ]
+     ],
+     "pid": null,
+     "scope": "2026-27 to date",
+     "team": [
+      "SAC",
+      2027
+     ],
+     "tpl": "start-fr-ever-worst#6",
+     "type": "start"
+    },
+    {
+     "href": "seasons/2026-27.html#t-MIL",
+     "key": "start:worst:MIL:19",
+     "parts": [
+      [
+       "The Milwaukee Bucks",
+       "seasons/2026-27.html#t-MIL",
+       1
+      ],
+      [
+       " are 2–17, the worst start through 19 games in their 59 seasons."
+      ]
+     ],
+     "pid": null,
+     "scope": "2026-27 to date",
+     "team": [
+      "MIL",
+      2027
+     ],
+     "tpl": "start-fr-ever-worst#0",
+     "type": "start"
+    },
+    {
+     "href": "seasons/2026-27.html#t-PHI",
+     "key": "start:best:PHI:19",
+     "parts": [
+      [
+       "The Philadelphia 76ers",
+       "seasons/2026-27.html#t-PHI",
+       1
+      ],
+      [
+       " are 15–4, their best start through 19 games since "
+      ],
+      [
+       "2002-03",
+       "seasons/2002-03.html#t-PHI",
+       0
+      ],
+      [
+       " (15–4)."
+      ]
+     ],
+     "pid": null,
+     "scope": "2026-27 to date",
+     "team": [
+      "PHI",
+      2027
+     ],
+     "tpl": "start-fr-since-best#0",
+     "type": "start"
+    },
+    {
+     "href": "lists/winning-without-him.html?mp=10&mm=8&hl=cody-williams#p-cody-williams",
+     "key": "ww:cody-williams",
+     "parts": [
+      [
+       "The Minnesota Timberwolves are "
+      ],
+      [
+       "4–5",
+       "lists/winning-without-him.html?mp=10&mm=8&hl=cody-williams#p-cody-williams",
+       0
+      ],
+      [
+       " without "
+      ],
+      [
+       "Cody Williams",
+       "player/cody-williams.html",
+       1
+      ],
+      [
+       " and 10–0 with him (10 played, 9 missed)."
+      ]
+     ],
+     "pid": "1642262",
+     "scope": "2026-27 to date",
+     "team": null,
+     "tpl": "ww-with#0",
+     "type": "ww"
+    },
+    {
+     "href": "lists/winning-without-him.html?mp=10&mm=8&hl=caleb-wilson#p-caleb-wilson",
+     "key": "ww:caleb-wilson",
+     "parts": [
+      [
+       "The Chicago Bulls have the better record without "
+      ],
+      [
+       "Caleb Wilson",
+       "player/caleb-wilson.html",
+       1
+      ],
+      [
+       " this season, "
+      ],
+      [
+       "5–3",
+       "lists/winning-without-him.html?mp=10&mm=8&hl=caleb-wilson#p-caleb-wilson",
+       0
+      ],
+      [
+       " to 1–9 (8 missed, 10 played)."
+      ]
+     ],
+     "pid": "1643410",
+     "scope": "2026-27 to date",
+     "team": null,
+     "tpl": "ww-without#7",
+     "type": "ww"
+    }
+   ],
+   "kind": "night",
+   "players": [
+    "kevin-durant",
+    "jaylen-brown",
+    "georges-niang",
+    "draymond-green",
+    "fred-vanvleet",
+    "cody-williams",
+    "caleb-wilson"
+   ],
+   "quiet": 0,
+   "rule": "night",
+   "stale": 0
+  },
+  {
+   "body": [
     "Payton Pritchard reached 300 career wins in his games: 300, No. 859 on the board.",
     "Carlton Carrington reached −100 wins minus losses: −100, No. 4,926 on the board.",
     "Derrick White passed Matt Bonner in career win % in his games: 63.8%, No. 61 among players with 500+ games.",

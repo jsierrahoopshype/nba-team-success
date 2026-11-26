@@ -1,122 +1,89 @@
 {
- "against": "2026-11-25|2026-11-24",
- "cutoff": "2026-11-24",
+ "against": "2026-11-26|2026-11-25",
+ "cutoff": "2026-11-25",
  "date": "2026-11-26",
  "facts": [
   {
-   "href": "seasons/2026-27.html#t-SAC",
-   "key": "start:worst:SAC:17|Team=The Sacramento Kings/k=79/n=17/rec=2–15/team=the Sacramento Kings",
+   "href": "seasons/2026-27.html#t-UTA",
+   "key": "start:worst:UTA:19|Team=The Utah Jazz/n=19/rec=3–16/team=the Utah Jazz/then=the 1979-80 Utah Jazz/then_rec=2–17",
    "parts": [
     [
-     "The Sacramento Kings",
-     "seasons/2026-27.html#t-SAC",
+     "The Utah Jazz",
+     "seasons/2026-27.html#t-UTA",
      1
     ],
     [
-     " have never been here before. They're 2–15 through 17 games, their worst start in 79 seasons."
+     " are off to a 3–16 start, the franchise's worst through 19 games since "
+    ],
+    [
+     "the 1979-80 Utah Jazz",
+     "seasons/1979-80.html#t-UTA",
+     0
+    ],
+    [
+     " (2–17)."
     ]
    ],
    "pid": null,
    "team": [
-    "SAC",
+    "UTA",
     2027
    ],
-   "tpl": "start-fr-ever-worst#6",
+   "tpl": "start-fr-since-worst#4",
    "type": "start"
   },
   {
-   "href": "seasons/2026-27.html#t-MIL",
-   "key": "start:worst:MIL:18|Team=The Milwaukee Bucks/k=59/n=18/rec=2–16/team=the Milwaukee Bucks",
+   "href": "seasons/2026-27.html#t-LAC",
+   "key": "start:worst:LAC:17|Team=The LA Clippers/n=17/rec=4–13/team=the LA Clippers/then=the 2010-11 Los Angeles Clippers/then_rec=3–14",
    "parts": [
     [
-     "The Milwaukee Bucks",
-     "seasons/2026-27.html#t-MIL",
+     "It's been a rough start for "
+    ],
+    [
+     "the LA Clippers",
+     "seasons/2026-27.html#t-LAC",
      1
     ],
     [
-     " are 2–16, the worst start through 18 games in their 59 seasons."
+     ", who are 4–13 through 17 games, their worst since "
+    ],
+    [
+     "the 2010-11 Los Angeles Clippers",
+     "seasons/2010-11.html#t-LAC",
+     0
+    ],
+    [
+     " (3–14)."
     ]
    ],
    "pid": null,
    "team": [
-    "MIL",
+    "LAC",
     2027
    ],
-   "tpl": "start-fr-ever-worst#0",
+   "tpl": "start-fr-since-worst#6",
    "type": "start"
   },
   {
-   "href": "lists/winning-without-him.html?hl=cody-williams#p-cody-williams",
-   "key": "split:perfect-with:cody-williams|P=Cody Williams/Tm=The Minnesota Timberwolves/n=10/rec=10–0/tm=the Minnesota Timberwolves",
+   "href": "lists/winning-without-him.html?hl=jericho-sims#p-jericho-sims",
+   "key": "split:winless-with:jericho-sims|P=Jericho Sims/Tm=The Milwaukee Bucks/n=11/rec=0–11/tm=the Milwaukee Bucks",
    "parts": [
     [
-     "Cody Williams",
-     "player/cody-williams.html",
+     "The Milwaukee Bucks are still looking for a win with "
+    ],
+    [
+     "Jericho Sims",
+     "player/jericho-sims.html",
      1
     ],
     [
-     " has played 10 games for the Minnesota Timberwolves this season, and they've won all of them (10–0)."
+     " on the floor (0–11)."
     ]
    ],
-   "pid": "1642262",
+   "pid": "1630579",
    "team": null,
-   "tpl": "split-perfect-with#3",
+   "tpl": "split-winless-with#4",
    "type": "split"
-  },
-  {
-   "href": "player/al-horford.html?vs=SAC#vs-SAC",
-   "key": "matchup:al-horford:SAC|Opp=The Sacramento Kings/P=Al Horford/a=an/opp=the Sacramento Kings/pct=81.2%/rec=26–6/tries=only 26 times in 32 tries/won=26 of 32",
-   "parts": [
-    [
-     "History favors "
-    ],
-    [
-     "Al Horford",
-     "player/al-horford.html",
-     1
-    ],
-    [
-     " tonight against the Sacramento Kings, with his teams at "
-    ],
-    [
-     "26–6",
-     "player/al-horford.html?vs=SAC#vs-SAC",
-     0
-    ],
-    [
-     " in the regular season."
-    ]
-   ],
-   "pid": "201143",
-   "team": null,
-   "tpl": "tonight-good#6",
-   "type": "matchup"
-  },
-  {
-   "href": "player/james-harden.html?vs=NYK#vs-NYK",
-   "key": "matchup:james-harden:NYK|Opp=The New York Knicks/P=James Harden/a=an/opp=the New York Knicks/pct=81.1%/rec=30–7/tries=only 30 times in 37 tries/won=30 of 37",
-   "parts": [
-    [
-     "James Harden",
-     "player/james-harden.html",
-     1
-    ],
-    [
-     "'s teams are "
-    ],
-    [
-     "30–7",
-     "player/james-harden.html?vs=NYK#vs-NYK",
-     0
-    ],
-    [
-     " against the New York Knicks, who they play tonight."
-    ]
-   ],
-   "pid": "201935",
-   "team": null,
-   "tpl": "tonight-good#1",
-   "type": "matchup"
   },
   {
    "href": "player/isaiah-hartenstein.html#cap-seasons",
@@ -209,6 +176,67 @@
    "team": null,
    "tpl": "mates-drop#3",
    "type": "mates"
+  },
+  {
+   "href": "player/shai-gilgeous-alexander.html#mates",
+   "key": "mates:together:shai-gilgeous-alexander:jaylin-williams|P=Shai Gilgeous-Alexander/Q=Jaylin Williams/n=203/rec=152–51 (74.9%)/tag=No. 3 among current teammates with 200+ games",
+   "parts": [
+    [
+     "When "
+    ],
+    [
+     "Shai Gilgeous-Alexander",
+     "player/shai-gilgeous-alexander.html",
+     1
+    ],
+    [
+     " and "
+    ],
+    [
+     "Jaylin Williams",
+     "player/jaylin-williams.html",
+     1
+    ],
+    [
+     " both play, their teams are "
+    ],
+    [
+     "152–51 (74.9%)",
+     "player/shai-gilgeous-alexander.html#mates",
+     0
+    ],
+    [
+     " in 203 games, No. 3 among current teammates with 200+ games."
+    ]
+   ],
+   "pid": "1628983",
+   "team": null,
+   "tpl": "mates-together#3",
+   "type": "mates"
+  },
+  {
+   "href": "seasons/1992-93.html#t-PHX",
+   "key": "onthisday:1993:PHX|AP=A/ap=a/final=62–20/pace=62/rec=6–3/season=1992-93/team=Phoenix Suns",
+   "parts": [
+    [
+     "The 1992-93 "
+    ],
+    [
+     "Phoenix Suns",
+     "seasons/1992-93.html#t-PHX",
+     1
+    ],
+    [
+     " were 6–3 on this date. They finished 62–20, a 62-win pace over 82 games."
+    ]
+   ],
+   "pid": null,
+   "team": [
+    "PHX",
+    1993
+   ],
+   "tpl": "archive-pace#1",
+   "type": "onthisday"
   }
  ],
  "history": {
@@ -274,14 +302,14 @@
    "mates:drop:zeke-nnaji:nikola-jokic|Zeke Nnaji/'s teams are 184–75 (71.0%) with /Nikola Jokic/ and 19–26 (42.2%) without him, 28.8 points lower: /No. 2 among active players/ (regular season, through Nov. 24)."
   ],
   "2026-11-26": [
-   "start:worst:SAC:17|Team=The Sacramento Kings/k=79/n=17/rec=2–15/team=the Sacramento Kings",
-   "start:worst:MIL:18|Team=The Milwaukee Bucks/k=59/n=18/rec=2–16/team=the Milwaukee Bucks",
-   "split:perfect-with:cody-williams|P=Cody Williams/Tm=The Minnesota Timberwolves/n=10/rec=10–0/tm=the Minnesota Timberwolves",
-   "matchup:al-horford:SAC|Opp=The Sacramento Kings/P=Al Horford/a=an/opp=the Sacramento Kings/pct=81.2%/rec=26–6/tries=only 26 times in 32 tries/won=26 of 32",
-   "matchup:james-harden:NYK|Opp=The New York Knicks/P=James Harden/a=an/opp=the New York Knicks/pct=81.1%/rec=30–7/tries=only 30 times in 37 tries/won=30 of 37",
+   "start:worst:UTA:19|Team=The Utah Jazz/n=19/rec=3–16/team=the Utah Jazz/then=the 1979-80 Utah Jazz/then_rec=2–17",
+   "start:worst:LAC:17|Team=The LA Clippers/n=17/rec=4–13/team=the LA Clippers/then=the 2010-11 Los Angeles Clippers/then_rec=3–14",
+   "split:winless-with:jericho-sims|P=Jericho Sims/Tm=The Milwaukee Bucks/n=11/rec=0–11/tm=the Milwaukee Bucks",
    "streak:winning:isaiah-hartenstein|P=Isaiah Hartenstein/n=8 seasons/span=2018-19 to 2025-26/tag=No. 6 among active players",
    "streak:drought:anfernee-simons|P=Anfernee Simons/n=5 seasons/span=2021-22 to 2025-26/tag=No. 7 among active players",
-   "mates:drop:jordan-poole:stephen-curry|P=Jordan Poole/Q=Stephen Curry/gap=28.7/o=28–61/op=31.5%/t=98–65/tag=the No. 3 drop for an active player/tp=60.1%"
+   "mates:drop:jordan-poole:stephen-curry|P=Jordan Poole/Q=Stephen Curry/gap=28.7/o=28–61/op=31.5%/t=98–65/tag=the No. 3 drop for an active player/tp=60.1%",
+   "mates:together:shai-gilgeous-alexander:jaylin-williams|P=Shai Gilgeous-Alexander/Q=Jaylin Williams/n=203/rec=152–51 (74.9%)/tag=No. 3 among current teammates with 200+ games",
+   "onthisday:1993:PHX|AP=A/ap=a/final=62–20/pace=62/rec=6–3/season=1992-93/team=Phoenix Suns"
   ]
  }
 }
