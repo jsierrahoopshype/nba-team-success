@@ -1,241 +1,217 @@
 {
  "against": "2026-11-26|2026-11-25",
  "cutoff": "2026-11-25",
- "date": "2026-11-26",
+ "date": "2026-11-27",
  "facts": [
   {
-   "href": "seasons/2026-27.html#t-UTA",
-   "key": "start:worst:UTA:19|Team=The Utah Jazz/n=19/rec=3–16/team=the Utah Jazz/then=the 1979-80 Utah Jazz/then_rec=2–17",
+   "href": "seasons/2026-27.html#t-ATL",
+   "key": "start:best:ATL:17|Team=The Atlanta Hawks/n=17/rec=11–6/team=the Atlanta Hawks/then=the 2014-15 Atlanta Hawks/then_rec=also 11–6",
    "parts": [
     [
-     "The Utah Jazz",
-     "seasons/2026-27.html#t-UTA",
+     "At 11–6, "
+    ],
+    [
+     "the Atlanta Hawks",
+     "seasons/2026-27.html#t-ATL",
      1
     ],
     [
-     " are off to a 3–16 start, the franchise's worst through 19 games since "
+     " have their best 17-game start since "
     ],
     [
-     "the 1979-80 Utah Jazz",
-     "seasons/1979-80.html#t-UTA",
+     "the 2014-15 Atlanta Hawks",
+     "seasons/2014-15.html#t-ATL",
      0
     ],
     [
-     " (2–17)."
+     " (also 11–6)."
     ]
    ],
    "pid": null,
    "team": [
-    "UTA",
+    "ATL",
     2027
    ],
-   "tpl": "start-fr-since-worst#4",
+   "tpl": "start-fr-since-best#2",
    "type": "start"
   },
   {
-   "href": "seasons/2026-27.html#t-LAC",
-   "key": "start:worst:LAC:17|Team=The LA Clippers/n=17/rec=4–13/team=the LA Clippers/then=the 2010-11 Los Angeles Clippers/then_rec=3–14",
+   "href": "seasons/2026-27.html#t-MEM",
+   "key": "start:best:MEM:19|Team=The Memphis Grizzlies/n=19/rec=14–5/team=the Memphis Grizzlies/then=the 2014-15 Memphis Grizzlies/then_rec=15–4",
    "parts": [
     [
-     "It's been a rough start for "
-    ],
-    [
-     "the LA Clippers",
-     "seasons/2026-27.html#t-LAC",
+     "The Memphis Grizzlies",
+     "seasons/2026-27.html#t-MEM",
      1
     ],
     [
-     ", who are 4–13 through 17 games, their worst since "
+     " keep rolling at 14–5, their best mark after 19 games since "
     ],
     [
-     "the 2010-11 Los Angeles Clippers",
-     "seasons/2010-11.html#t-LAC",
+     "the 2014-15 Memphis Grizzlies",
+     "seasons/2014-15.html#t-MEM",
      0
     ],
     [
-     " (3–14)."
+     " (15–4)."
     ]
    ],
    "pid": null,
    "team": [
-    "LAC",
+    "MEM",
     2027
    ],
-   "tpl": "start-fr-since-worst#6",
+   "tpl": "start-fr-since-best#7",
    "type": "start"
   },
   {
-   "href": "lists/winning-without-him.html?hl=jericho-sims#p-jericho-sims",
-   "key": "split:winless-with:jericho-sims|P=Jericho Sims/Tm=The Milwaukee Bucks/n=11/rec=0–11/tm=the Milwaukee Bucks",
+   "href": "player/jamal-murray.html#cap-seasons",
+   "key": "streak:winning:jamal-murray|P=Jamal Murray/n=8 seasons/span=2017-18 to 2025-26/tag=No. 6 among active players",
    "parts": [
     [
-     "The Milwaukee Bucks are still looking for a win with "
-    ],
-    [
-     "Jericho Sims",
-     "player/jericho-sims.html",
+     "Jamal Murray",
+     "player/jamal-murray.html",
      1
     ],
     [
-     " on the floor (0–11)."
-    ]
-   ],
-   "pid": "1630579",
-   "team": null,
-   "tpl": "split-winless-with#4",
-   "type": "split"
-  },
-  {
-   "href": "player/isaiah-hartenstein.html#cap-seasons",
-   "key": "streak:winning:isaiah-hartenstein|P=Isaiah Hartenstein/n=8 seasons/span=2018-19 to 2025-26/tag=No. 6 among active players",
-   "parts": [
-    [
-     "Isaiah Hartenstein",
-     "player/isaiah-hartenstein.html",
-     1
-    ],
-    [
-     "'s run of winning seasons is up to "
+     " hasn't played for a losing team in his last "
     ],
     [
      "8 seasons",
-     "player/isaiah-hartenstein.html#cap-seasons",
+     "player/jamal-murray.html#cap-seasons",
      0
     ],
     [
-     " (2018-19 to 2025-26), No. 6 among active players."
+     " (2017-18 to 2025-26), No. 6 among active players."
     ]
    ],
-   "pid": "1628392",
+   "pid": "1627750",
    "team": null,
-   "tpl": "career-winning#5",
+   "tpl": "career-winning#3",
    "type": "streak"
   },
   {
-   "href": "player/anfernee-simons.html#cap-seasons",
-   "key": "streak:drought:anfernee-simons|P=Anfernee Simons/n=5 seasons/span=2021-22 to 2025-26/tag=No. 7 among active players",
+   "href": "player/anthony-gill.html#cap-seasons",
+   "key": "streak:drought:anthony-gill|P=Anthony Gill/n=5 seasons/span=2021-22 to 2025-26/tag=No. 7 among active players",
    "parts": [
     [
      "Every one of "
     ],
     [
-     "Anfernee Simons",
-     "player/anfernee-simons.html",
+     "Anthony Gill",
+     "player/anthony-gill.html",
      1
     ],
     [
-     "' last "
+     "'s last "
     ],
     [
      "5 seasons",
-     "player/anfernee-simons.html#cap-seasons",
+     "player/anthony-gill.html#cap-seasons",
      0
     ],
     [
      " has ended without a playoff trip (2021-22 to 2025-26), No. 7 among active players."
     ]
    ],
-   "pid": "1629014",
+   "pid": "1630264",
    "team": null,
    "tpl": "career-drought#7",
    "type": "streak"
   },
   {
-   "href": "lists/teammate-swings.html#as-jordan-poole--stephen-curry",
-   "key": "mates:drop:jordan-poole:stephen-curry|P=Jordan Poole/Q=Stephen Curry/gap=28.7/o=28–61/op=31.5%/t=98–65/tag=the No. 3 drop for an active player/tp=60.1%",
+   "href": "lists/teammate-swings.html#as-kyle-kuzma--lebron-james",
+   "key": "mates:drop:kyle-kuzma:lebron-james|P=Kyle Kuzma/Q=LeBron James/gap=28.5/o=17–28/op=37.8%/t=102–52/tag=the No. 4 drop for an active player/tp=66.2%",
    "parts": [
     [
-     "Take "
+     "Few drops are as steep as this one. "
     ],
     [
-     "Stephen Curry",
-     "player/stephen-curry.html",
-     0
-    ],
-    [
-     " away and "
-    ],
-    [
-     "Jordan Poole",
-     "player/jordan-poole.html",
+     "Kyle Kuzma",
+     "player/kyle-kuzma.html",
      1
     ],
     [
-     "'s teams drop from 60.1% to 31.5%, 28.7 points, "
+     "'s teams are 102–52 with "
     ],
     [
-     "the No. 3 drop for an active player",
-     "lists/teammate-swings.html#as-jordan-poole--stephen-curry",
+     "LeBron James",
+     "player/lebron-james.html",
+     0
+    ],
+    [
+     " and 17–28 without him, "
+    ],
+    [
+     "the No. 4 drop for an active player",
+     "lists/teammate-swings.html#as-kyle-kuzma--lebron-james",
      0
     ],
     [
      "."
     ]
    ],
-   "pid": "1629673",
+   "pid": "1628398",
    "team": null,
-   "tpl": "mates-drop#3",
+   "tpl": "mates-drop#5",
    "type": "mates"
   },
   {
-   "href": "player/shai-gilgeous-alexander.html#mates",
-   "key": "mates:together:shai-gilgeous-alexander:jaylin-williams|P=Shai Gilgeous-Alexander/Q=Jaylin Williams/n=203/rec=152–51 (74.9%)/tag=No. 3 among current teammates with 200+ games",
+   "href": "player/jayson-tatum.html#mates",
+   "key": "mates:together:jayson-tatum:sam-hauser|P=Jayson Tatum/Q=Sam Hauser/n=261/rec=195–66 (74.7%)/tag=No. 4 among current teammates with 200+ games",
    "parts": [
     [
-     "When "
-    ],
-    [
-     "Shai Gilgeous-Alexander",
-     "player/shai-gilgeous-alexander.html",
+     "Jayson Tatum",
+     "player/jayson-tatum.html",
      1
     ],
     [
      " and "
     ],
     [
-     "Jaylin Williams",
-     "player/jaylin-williams.html",
+     "Sam Hauser",
+     "player/sam-hauser.html",
      1
     ],
     [
-     " both play, their teams are "
+     " make a winning pair, "
     ],
     [
-     "152–51 (74.9%)",
-     "player/shai-gilgeous-alexander.html#mates",
+     "195–66 (74.7%)",
+     "player/jayson-tatum.html#mates",
      0
     ],
     [
-     " in 203 games, No. 3 among current teammates with 200+ games."
+     " in 261 games together, No. 4 among current teammates with 200+ games."
     ]
    ],
-   "pid": "1628983",
+   "pid": "1628369",
    "team": null,
-   "tpl": "mates-together#3",
+   "tpl": "mates-together#4",
    "type": "mates"
   },
   {
-   "href": "seasons/1992-93.html#t-PHX",
-   "key": "onthisday:1993:PHX|AP=A/ap=a/final=62–20/pace=62/rec=6–3/season=1992-93/team=Phoenix Suns",
+   "href": "seasons/1995-96.html#t-OKC",
+   "key": "onthisday:1996:OKC|AP=A/ap=a/final=64–18/pace=64/rec=9–5/season=1995-96/team=Seattle SuperSonics",
    "parts": [
     [
-     "The 1992-93 "
+     "Looking back to 1995-96, the "
     ],
     [
-     "Phoenix Suns",
-     "seasons/1992-93.html#t-PHX",
+     "Seattle SuperSonics",
+     "seasons/1995-96.html#t-OKC",
      1
     ],
     [
-     " were 6–3 on this date. They finished 62–20, a 62-win pace over 82 games."
+     " were 9–5 on this date. They finished 64–18, a 64-win pace over 82 games."
     ]
    ],
    "pid": null,
    "team": [
-    "PHX",
-    1993
+    "OKC",
+    1996
    ],
-   "tpl": "archive-pace#1",
+   "tpl": "archive-pace#6",
    "type": "onthisday"
   }
  ],
@@ -310,6 +286,15 @@
    "mates:drop:jordan-poole:stephen-curry|P=Jordan Poole/Q=Stephen Curry/gap=28.7/o=28–61/op=31.5%/t=98–65/tag=the No. 3 drop for an active player/tp=60.1%",
    "mates:together:shai-gilgeous-alexander:jaylin-williams|P=Shai Gilgeous-Alexander/Q=Jaylin Williams/n=203/rec=152–51 (74.9%)/tag=No. 3 among current teammates with 200+ games",
    "onthisday:1993:PHX|AP=A/ap=a/final=62–20/pace=62/rec=6–3/season=1992-93/team=Phoenix Suns"
+  ],
+  "2026-11-27": [
+   "start:best:ATL:17|Team=The Atlanta Hawks/n=17/rec=11–6/team=the Atlanta Hawks/then=the 2014-15 Atlanta Hawks/then_rec=also 11–6",
+   "start:best:MEM:19|Team=The Memphis Grizzlies/n=19/rec=14–5/team=the Memphis Grizzlies/then=the 2014-15 Memphis Grizzlies/then_rec=15–4",
+   "streak:winning:jamal-murray|P=Jamal Murray/n=8 seasons/span=2017-18 to 2025-26/tag=No. 6 among active players",
+   "streak:drought:anthony-gill|P=Anthony Gill/n=5 seasons/span=2021-22 to 2025-26/tag=No. 7 among active players",
+   "mates:drop:kyle-kuzma:lebron-james|P=Kyle Kuzma/Q=LeBron James/gap=28.5/o=17–28/op=37.8%/t=102–52/tag=the No. 4 drop for an active player/tp=66.2%",
+   "mates:together:jayson-tatum:sam-hauser|P=Jayson Tatum/Q=Sam Hauser/n=261/rec=195–66 (74.7%)/tag=No. 4 among current teammates with 200+ games",
+   "onthisday:1996:OKC|AP=A/ap=a/final=64–18/pace=64/rec=9–5/season=1995-96/team=Seattle SuperSonics"
   ]
  }
 }
