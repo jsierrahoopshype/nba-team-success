@@ -1,218 +1,233 @@
 {
  "against": "2026-11-26|2026-11-25",
  "cutoff": "2026-11-25",
- "date": "2026-11-27",
+ "date": "2026-11-28",
  "facts": [
   {
-   "href": "seasons/2026-27.html#t-ATL",
-   "key": "start:best:ATL:17|Team=The Atlanta Hawks/n=17/rec=11–6/team=the Atlanta Hawks/then=the 2014-15 Atlanta Hawks/then_rec=also 11–6",
+   "href": "seasons/2026-27.html#t-UTA",
+   "key": "start:worst:UTA:19|Team=The Utah Jazz/n=19/rec=3–16/team=the Utah Jazz/then=the 1979-80 Utah Jazz/then_rec=2–17",
    "parts": [
     [
-     "At 11–6, "
+     "Through 19 games, "
     ],
     [
-     "the Atlanta Hawks",
-     "seasons/2026-27.html#t-ATL",
+     "the Utah Jazz",
+     "seasons/2026-27.html#t-UTA",
      1
     ],
     [
-     " have their best 17-game start since "
+     " are 3–16. The last time they started this poorly was "
     ],
     [
-     "the 2014-15 Atlanta Hawks",
-     "seasons/2014-15.html#t-ATL",
+     "the 1979-80 Utah Jazz",
+     "seasons/1979-80.html#t-UTA",
      0
     ],
     [
-     " (also 11–6)."
+     " (2–17)."
     ]
    ],
    "pid": null,
    "team": [
-    "ATL",
+    "UTA",
     2027
    ],
-   "tpl": "start-fr-since-best#2",
+   "tpl": "start-fr-since-worst#5",
    "type": "start"
   },
   {
-   "href": "seasons/2026-27.html#t-MEM",
-   "key": "start:best:MEM:19|Team=The Memphis Grizzlies/n=19/rec=14–5/team=the Memphis Grizzlies/then=the 2014-15 Memphis Grizzlies/then_rec=15–4",
+   "href": "seasons/2026-27.html#t-LAC",
+   "key": "start:worst:LAC:17|Team=The LA Clippers/n=17/rec=4–13/team=the LA Clippers/then=the 2010-11 Los Angeles Clippers/then_rec=3–14",
    "parts": [
     [
-     "The Memphis Grizzlies",
-     "seasons/2026-27.html#t-MEM",
+     "It's been a rough start for "
+    ],
+    [
+     "the LA Clippers",
+     "seasons/2026-27.html#t-LAC",
      1
     ],
     [
-     " keep rolling at 14–5, their best mark after 19 games since "
+     ", who are 4–13 through 17 games, their worst since "
     ],
     [
-     "the 2014-15 Memphis Grizzlies",
-     "seasons/2014-15.html#t-MEM",
+     "the 2010-11 Los Angeles Clippers",
+     "seasons/2010-11.html#t-LAC",
      0
     ],
     [
-     " (15–4)."
+     " (3–14)."
     ]
    ],
    "pid": null,
    "team": [
-    "MEM",
+    "LAC",
     2027
    ],
-   "tpl": "start-fr-since-best#7",
+   "tpl": "start-fr-since-worst#6",
    "type": "start"
   },
   {
-   "href": "player/jamal-murray.html#cap-seasons",
-   "key": "streak:winning:jamal-murray|P=Jamal Murray/n=8 seasons/span=2017-18 to 2025-26/tag=No. 6 among active players",
+   "href": "lists/winning-without-him.html?hl=jericho-sims#p-jericho-sims",
+   "key": "split:winless-with:jericho-sims|P=Jericho Sims/Tm=The Milwaukee Bucks/n=11/rec=0–11/tm=the Milwaukee Bucks",
    "parts": [
     [
-     "Jamal Murray",
-     "player/jamal-murray.html",
+     "Jericho Sims",
+     "player/jericho-sims.html",
      1
     ],
     [
-     " hasn't played for a losing team in his last "
-    ],
-    [
-     "8 seasons",
-     "player/jamal-murray.html#cap-seasons",
-     0
-    ],
-    [
-     " (2017-18 to 2025-26), No. 6 among active players."
+     " has played 11 games for the Milwaukee Bucks this season, and they've lost all of them (0–11)."
     ]
    ],
-   "pid": "1627750",
+   "pid": "1630579",
    "team": null,
-   "tpl": "career-winning#3",
+   "tpl": "split-winless-with#3",
+   "type": "split"
+  },
+  {
+   "href": "player/kyle-anderson.html?vs=BKN#vs-BKN",
+   "key": "matchup:kyle-anderson:BKN|Opp=The Brooklyn Nets/P=Kyle Anderson/a=an/opp=the Brooklyn Nets/pct=81.0%/rec=17–4/tries=only 17 times in 21 tries/won=17 of 21",
+   "parts": [
+    [
+     "Kyle Anderson",
+     "player/kyle-anderson.html",
+     1
+    ],
+    [
+     " has owned the Brooklyn Nets, going "
+    ],
+    [
+     "17–4",
+     "player/kyle-anderson.html?vs=BKN#vs-BKN",
+     0
+    ],
+    [
+     " in his career. They meet again tonight."
+    ]
+   ],
+   "pid": "203937",
+   "team": null,
+   "tpl": "tonight-good#2",
+   "type": "matchup"
+  },
+  {
+   "href": "player/josh-okogie.html?vs=DEN#vs-DEN",
+   "key": "matchup:josh-okogie:DEN|Opp=The Denver Nuggets/P=Josh Okogie/a=a/opp=the Denver Nuggets/pct=23.8%/rec=5–16/tries=only 5 times in 21 tries/won=5 of 21",
+   "parts": [
+    [
+     "The Denver Nuggets have had "
+    ],
+    [
+     "Josh Okogie",
+     "player/josh-okogie.html",
+     1
+    ],
+    [
+     "'s number, "
+    ],
+    [
+     "5–16",
+     "player/josh-okogie.html?vs=DEN#vs-DEN",
+     0
+    ],
+    [
+     " against his teams. They meet again tonight."
+    ]
+   ],
+   "pid": "1629006",
+   "team": null,
+   "tpl": "tonight-bad#3",
+   "type": "matchup"
+  },
+  {
+   "href": "player/gabe-vincent.html#cap-seasons",
+   "key": "streak:winning:gabe-vincent|P=Gabe Vincent/n=7 seasons/span=2019-20 to 2025-26/tag=No. 9 among active players",
+   "parts": [
+    [
+     "Gabe Vincent",
+     "player/gabe-vincent.html",
+     1
+    ],
+    [
+     " keeps landing on winners, "
+    ],
+    [
+     "7 seasons",
+     "player/gabe-vincent.html#cap-seasons",
+     0
+    ],
+    [
+     " in a row (2019-20 to 2025-26), No. 9 among active players."
+    ]
+   ],
+   "pid": "1629216",
+   "team": null,
+   "tpl": "career-winning#7",
    "type": "streak"
   },
   {
-   "href": "player/anthony-gill.html#cap-seasons",
-   "key": "streak:drought:anthony-gill|P=Anthony Gill/n=5 seasons/span=2021-22 to 2025-26/tag=No. 7 among active players",
+   "href": "player/micah-potter.html#cap-seasons",
+   "key": "streak:drought:micah-potter|P=Micah Potter/n=5 seasons/span=2021-22 to 2025-26/tag=No. 7 among active players",
    "parts": [
     [
-     "Every one of "
-    ],
-    [
-     "Anthony Gill",
-     "player/anthony-gill.html",
+     "Micah Potter",
+     "player/micah-potter.html",
      1
     ],
     [
-     "'s last "
+     " has not been on a playoff team in his last "
     ],
     [
      "5 seasons",
-     "player/anthony-gill.html#cap-seasons",
+     "player/micah-potter.html#cap-seasons",
      0
     ],
     [
-     " has ended without a playoff trip (2021-22 to 2025-26), No. 7 among active players."
+     " (2021-22 to 2025-26), No. 7 among active players."
     ]
    ],
-   "pid": "1630264",
+   "pid": "1630695",
    "team": null,
-   "tpl": "career-drought#7",
+   "tpl": "career-drought#0",
    "type": "streak"
   },
   {
-   "href": "lists/teammate-swings.html#as-kyle-kuzma--lebron-james",
-   "key": "mates:drop:kyle-kuzma:lebron-james|P=Kyle Kuzma/Q=LeBron James/gap=28.5/o=17–28/op=37.8%/t=102–52/tag=the No. 4 drop for an active player/tp=66.2%",
+   "href": "lists/teammate-swings.html#as-paul-reed--joel-embiid",
+   "key": "mates:drop:paul-reed:joel-embiid|P=Paul Reed/Q=Joel Embiid/gap=27.5/o=30–43/op=41.1%/t=94–43/tag=the No. 5 drop for an active player/tp=68.6%",
    "parts": [
     [
-     "Few drops are as steep as this one. "
+     "With "
     ],
     [
-     "Kyle Kuzma",
-     "player/kyle-kuzma.html",
-     1
-    ],
-    [
-     "'s teams are 102–52 with "
-    ],
-    [
-     "LeBron James",
-     "player/lebron-james.html",
+     "Joel Embiid",
+     "player/joel-embiid.html",
      0
     ],
     [
-     " and 17–28 without him, "
+     ", "
     ],
     [
-     "the No. 4 drop for an active player",
-     "lists/teammate-swings.html#as-kyle-kuzma--lebron-james",
+     "Paul Reed",
+     "player/paul-reed.html",
+     1
+    ],
+    [
+     "'s teams win 68.6% of the time. Without him, 41.1%. That 27.5-point gap is "
+    ],
+    [
+     "the No. 5 drop for an active player",
+     "lists/teammate-swings.html#as-paul-reed--joel-embiid",
      0
     ],
     [
      "."
     ]
    ],
-   "pid": "1628398",
+   "pid": "1630194",
    "team": null,
-   "tpl": "mates-drop#5",
+   "tpl": "mates-drop#2",
    "type": "mates"
-  },
-  {
-   "href": "player/jayson-tatum.html#mates",
-   "key": "mates:together:jayson-tatum:sam-hauser|P=Jayson Tatum/Q=Sam Hauser/n=261/rec=195–66 (74.7%)/tag=No. 4 among current teammates with 200+ games",
-   "parts": [
-    [
-     "Jayson Tatum",
-     "player/jayson-tatum.html",
-     1
-    ],
-    [
-     " and "
-    ],
-    [
-     "Sam Hauser",
-     "player/sam-hauser.html",
-     1
-    ],
-    [
-     " make a winning pair, "
-    ],
-    [
-     "195–66 (74.7%)",
-     "player/jayson-tatum.html#mates",
-     0
-    ],
-    [
-     " in 261 games together, No. 4 among current teammates with 200+ games."
-    ]
-   ],
-   "pid": "1628369",
-   "team": null,
-   "tpl": "mates-together#4",
-   "type": "mates"
-  },
-  {
-   "href": "seasons/1995-96.html#t-OKC",
-   "key": "onthisday:1996:OKC|AP=A/ap=a/final=64–18/pace=64/rec=9–5/season=1995-96/team=Seattle SuperSonics",
-   "parts": [
-    [
-     "Looking back to 1995-96, the "
-    ],
-    [
-     "Seattle SuperSonics",
-     "seasons/1995-96.html#t-OKC",
-     1
-    ],
-    [
-     " were 9–5 on this date. They finished 64–18, a 64-win pace over 82 games."
-    ]
-   ],
-   "pid": null,
-   "team": [
-    "OKC",
-    1996
-   ],
-   "tpl": "archive-pace#6",
-   "type": "onthisday"
   }
  ],
  "history": {
@@ -295,6 +310,16 @@
    "mates:drop:kyle-kuzma:lebron-james|P=Kyle Kuzma/Q=LeBron James/gap=28.5/o=17–28/op=37.8%/t=102–52/tag=the No. 4 drop for an active player/tp=66.2%",
    "mates:together:jayson-tatum:sam-hauser|P=Jayson Tatum/Q=Sam Hauser/n=261/rec=195–66 (74.7%)/tag=No. 4 among current teammates with 200+ games",
    "onthisday:1996:OKC|AP=A/ap=a/final=64–18/pace=64/rec=9–5/season=1995-96/team=Seattle SuperSonics"
+  ],
+  "2026-11-28": [
+   "start:worst:UTA:19|Team=The Utah Jazz/n=19/rec=3–16/team=the Utah Jazz/then=the 1979-80 Utah Jazz/then_rec=2–17",
+   "start:worst:LAC:17|Team=The LA Clippers/n=17/rec=4–13/team=the LA Clippers/then=the 2010-11 Los Angeles Clippers/then_rec=3–14",
+   "split:winless-with:jericho-sims|P=Jericho Sims/Tm=The Milwaukee Bucks/n=11/rec=0–11/tm=the Milwaukee Bucks",
+   "matchup:kyle-anderson:BKN|Opp=The Brooklyn Nets/P=Kyle Anderson/a=an/opp=the Brooklyn Nets/pct=81.0%/rec=17–4/tries=only 17 times in 21 tries/won=17 of 21",
+   "matchup:josh-okogie:DEN|Opp=The Denver Nuggets/P=Josh Okogie/a=a/opp=the Denver Nuggets/pct=23.8%/rec=5–16/tries=only 5 times in 21 tries/won=5 of 21",
+   "streak:winning:gabe-vincent|P=Gabe Vincent/n=7 seasons/span=2019-20 to 2025-26/tag=No. 9 among active players",
+   "streak:drought:micah-potter|P=Micah Potter/n=5 seasons/span=2021-22 to 2025-26/tag=No. 7 among active players",
+   "mates:drop:paul-reed:joel-embiid|P=Paul Reed/Q=Joel Embiid/gap=27.5/o=30–43/op=41.1%/t=94–43/tag=the No. 5 drop for an active player/tp=68.6%"
   ]
  }
 }
